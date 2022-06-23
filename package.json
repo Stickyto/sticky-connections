@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "dependencies": {
     "cheerio": "*",
-    "got": "12.1.0",
+    "got": "11.8.5",
     "html-entities": "^2.3.3",
     "httpntlm": "^1.7.7",
     "xml2json": "^0.12.0"
