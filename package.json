@@ -1,5 +1,5 @@
 {
-  "name": "openbox-connections",
+  "name": "sticky-connections",
   "version": "1.0.0",
   "description": "",
   "main": "src/index.js",
@@ -16,7 +16,7 @@
     "jest": "^28.1.1"
   },
   "scripts": {
-    "symlink": "mkdir node_modules; rm -rf node_modules/openbox-*; ln -s $(pwd)/../openbox-node-utils node_modules/openbox-node-utils; ln -s $(pwd)/../openbox-entities node_modules/openbox-entities; ln -s $(pwd)/../openbox-secrets node_modules/openbox-secrets;",
+    "symlink": "rm -rf node_modules/openbox-*; rm -rf node_modules/sticky-*; ln -s $(pwd)/../openbox-node-utils node_modules/openbox-node-utils; ln -s $(pwd)/../openbox-entities node_modules/openbox-entities; ln -s $(pwd)/../openbox-secrets node_modules/openbox-secrets;",
     "test": "jest"
   },
   "jest": {
