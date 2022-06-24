@@ -6,6 +6,8 @@ class Connection {
     this.crons = []
     this.instructions = []
     this.methods = {}
+    this.configPerApplicationBlock = {}
+    this.eventHooks = {}
     Object.keys(json).forEach(k => {
       this[k] = json[k]
     })
@@ -20,7 +22,8 @@ class Connection {
       instructions: this.instructions,
       instructionsDone: this.instructionsDone,
       configNames: this.configNames,
-      configDefaults: this.configDefaults
+      configDefaults: this.configDefaults,
+      configPerApplicationBlock: this.configPerApplicationBlock
     }
   }
 }
