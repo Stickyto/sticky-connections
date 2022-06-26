@@ -6,7 +6,6 @@ function escapeShell (what) {
 }
 
 module.exports = async function parseResponse (response, path) {
-  console.warn('[parseResponse]', { response, path })
   const toRun = `echo '${escapeShell(response)}' | xmllint --xpath "${path}" -`
   return new Promise((resolve, reject) => {
     exec(toRun, (e, stdout, stderr) => {
