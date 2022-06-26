@@ -77,7 +77,6 @@ module.exports = new Connection({
         const innerResponse = readBorkedXml(outerResponse)
         const asJsonString = parser.toJson(innerResponse)
         const asJsonObject = JSON.parse(asJsonString).GetBooking
-        // console.warn('asJsonObject', asJsonObject)
         let {
           booking_no: id,
           no_of_adults: countAdults,

@@ -4,6 +4,7 @@
   "description": "",
   "main": "src/index.js",
   "dependencies": {
+    "adal-node": "^0.2.3",
     "cheerio": "*",
     "got": "11.8.5",
     "html-entities": "^2.3.3",
