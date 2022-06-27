@@ -4,20 +4,24 @@ const CONNECTIONS = new Map([
     require('./CONNECTION_CALENDLY')
   ],
   [
-    'CONNECTION_ELITE_DYNAMICS',
-    require('./CONNECTION_ELITE_DYNAMICS')
+    'CONNECTION_LOYALVERSE',
+    require('./CONNECTION_LOYALVERSE')
   ],
   [
     'CONNECTION_UNTAPPD',
     require('./CONNECTION_UNTAPPD')
   ],
   [
-    'CONNECTION_LOYALVERSE',
-    require('./CONNECTION_LOYALVERSE')
-  ],
-  [
     'CONNECTION_DATAVERSE',
     require('./CONNECTION_DATAVERSE')
+  ],
+  [
+    'CONNECTION_ELITE_DYNAMICS',
+    require('./CONNECTION_ELITE_DYNAMICS')
+  ],
+  [
+    'CONNECTION_API',
+    require('./CONNECTION_API')
   ]
 ])
 
