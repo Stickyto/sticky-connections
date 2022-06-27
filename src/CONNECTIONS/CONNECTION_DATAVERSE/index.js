@@ -58,7 +58,7 @@ module.exports = new Connection({
     '',
     '9.2'
   ],
-  instructionsDone: 'Form submissions will now go into Microsoft Dataverse. Update each "Form → Text box" flow step with a map to the right Microsoft Dataverse field name.',
+  instructionsDone: 'Form submissions and touchpoints will now go into Microsoft Dataverse. Update each "Form → Text box" flow step with a map to the right Microsoft Dataverse field name.',
   configPerApplicationBlock: {
     '0e1f0565-5e05-471c-b855-bbe44c20527d': CONFIG_PER_APPLICATION_BLOCK,
     'c3b92e16-a631-48da-901b-e578cccfda7e': CONFIG_PER_APPLICATION_BLOCK,
