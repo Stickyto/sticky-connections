@@ -4,7 +4,7 @@ const makeRequest = require('./makeRequest')
 const { deserialize } = require('openbox-node-utils')
 
 const COLOR = '#322CBE'
-const PARTNER_ID = '49313a23-31d7-4cc5-90d2-7d22a5ff5922'
+const PARTNER_ID = '858b1357-4467-4fa2-9f47-1bd01d4406c1'
 
 function doFail (createEvent, message, { user, application }) {
   createEvent({
