@@ -17,6 +17,27 @@ const CONFIG_PER_APPLICATION_BLOCK = [
   }
 ]
 
+async function eventHookLogic (config, eventHookContainer) {
+  const { user, application, customData, createEvent } = eventHookContainer
+  const body = {}
+  application.events.on_load.map(ab => {
+    const key = ab.config['CONNECTION_DATAVERSE--key']
+    if (key) {
+      body[key] = customData[ab.config.label]
+    }
+  })
+  try {
+    await makeRequest(config, 'post', 'leads', body)
+  } catch (e) {
+    createEvent({
+      type: 'CONNECTION_BAD',
+      userId: user.id,
+      applicationId: application.id,
+      customData: { id: 'CONNECTION_DATAVERSE', message: e.message }
+    })
+  }
+}
+
 module.exports = new Connection({
   id: 'CONNECTION_DATAVERSE',
   name: NAME,
@@ -44,25 +65,7 @@ module.exports = new Connection({
     'd6765aa6-973a-4ed8-b307-d0bf0de989c0': CONFIG_PER_APPLICATION_BLOCK
   },
   eventHooks: {
-    'LD_V2': async (config, eventHookContainer) => {
-      const { user, application, customData, createEvent } = eventHookContainer
-      const body = {}
-      application.events.on_load.map(ab => {
-        const key = ab.config['CONNECTION_DATAVERSE--key']
-        if (key) {
-          body[key] = customData[ab.config.label]
-        }
-      })
-      try {
-        await makeRequest(config, 'post', 'leads', body)
-      } catch (e) {
-        createEvent({
-          type: 'CONNECTION_BAD',
-          userId: user.id,
-          applicationId: application.id,
-          customData: { id: 'CONNECTION_DATAVERSE', message: e.message }
-        })
-      }
-    }
+    'LD_V2': eventHookLogic,
+    'CHECK_IN': eventHookLogic
   }
 })
