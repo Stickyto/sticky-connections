@@ -4,7 +4,6 @@ const makeRequest = require('./makeRequest')
 const { deserialize } = require('openbox-node-utils')
 
 const COLOR = '#322CBE'
-const PARTNER_ID = '858b1357-4467-4fa2-9f47-1bd01d4406c1'
 
 function doFail (createEvent, message, { user, application }) {
   createEvent({
@@ -17,6 +16,7 @@ function doFail (createEvent, message, { user, application }) {
 
 async function eventHookLogic (config, eventHookContainer) {
   const { rdic, user, application, thing, customData, createEvent } = eventHookContainer
+  const { partnerId } = user
   const { apiUrl } = rdic.get('environment')
 
   // customData {
@@ -30,20 +30,21 @@ async function eventHookLogic (config, eventHookContainer) {
 
   const yourPhoto = deserialize(customData['Your photo'])
   const body = {
+    password: 'choose a new password 123',
+    userType: 'GENERIC',
+
     name: `${customData['Name']} (${customData['Company']})`,
     email: customData['Email'],
     phone: customData['Phone'],
     address: customData['Address for free stickers'],
-    password: 'choose a new password 123',
-    userType: 'GENERIC',
-    partnerId: PARTNER_ID
+    partnerId
   }
 
   global.rdic.logger.log({}, '[CONNECTION_API]', { customData, apiUrl, yourPhoto, body })
 
   let privateKey
   try {
-    ({ privateKey } = await makeRequest(user.privateKey, 'post', `${apiUrl}/v1/users`, body))
+    ({ privateKey } = await makeRequest(undefined, 'post', `${apiUrl}/v1/users`, body))
   } catch (e) {
     doFail(createEvent, e.message, { user, application })
   }
