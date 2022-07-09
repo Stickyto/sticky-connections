@@ -67,5 +67,6 @@ module.exports = new Connection({
   eventHooks: {
     'LD_V2': eventHookLogic,
     'CHECK_IN': eventHookLogic
-  }
+  },
+  partnerIds: ['3caf5a65-12ba-4db7-aeb6-a8b4c8b37c98']
 })

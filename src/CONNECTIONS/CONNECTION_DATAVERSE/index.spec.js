@@ -4,6 +4,8 @@ const CONNECTION_DATAVERSE = require('.')
 const config = {}
 let user, application, customData
 
+const createEvent = jest.fn()
+
 beforeEach(() => {
   user = new User({})
   application = new Application({
@@ -57,11 +59,7 @@ beforeEach(() => {
   })
 })
 
-it('calls makeRequest with something', async () => {
-  const result = await CONNECTION_DATAVERSE.eventHooks.LD_V2(config, user, application, customData.getRaw())
-  expect(result).toMatchObject({
-    'companyname': 'My cool company',
-    'industrycode': '899310000',
-    'favouritecolor': 'Green'
-  })
+it('calls createEvent elegantly', async () => {
+  await CONNECTION_DATAVERSE.eventHooks.LD_V2(config, { user, application, customData: customData.getRaw(), createEvent })
+  expect(createEvent).toHaveBeenCalled()
 })
