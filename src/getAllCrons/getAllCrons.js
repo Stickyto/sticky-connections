@@ -1,8 +1,7 @@
 const CONNECTIONS = require('../CONNECTIONS')
 
-module.exports = (userId, partnerId) => {
+module.exports = () => {
   const allConnections = Array.from(CONNECTIONS.values())
-    .filter(c => c.isAMatch(userId, partnerId))
   const toReturn = []
   allConnections.forEach(connection => {
     connection.crons.forEach(cron => {
