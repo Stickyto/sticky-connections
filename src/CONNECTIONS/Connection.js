@@ -8,9 +8,22 @@ class Connection {
     this.methods = {}
     this.configPerApplicationBlock = {}
     this.eventHooks = {}
+    this.userIds = []
+    this.partnerIds = []
     Object.keys(json).forEach(k => {
       this[k] = json[k]
     })
+  }
+
+  isAMatch (userId, partnerId) {
+    let doesUserMatch = true, doesPartnerMatch = true
+    if (userId && this.userIds.length > 0) {
+      doesUserMatch = this.userIds.includes(userId)
+    }
+    if (partnerId && this.partnerIds.length > 0) {
+      doesPartnerMatch = this.partnerIds.includes(partnerId)
+    }
+    return (doesUserMatch && doesPartnerMatch)
   }
 
   toJson () {
