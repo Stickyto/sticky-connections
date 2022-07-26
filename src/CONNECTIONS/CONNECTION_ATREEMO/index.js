@@ -1,5 +1,5 @@
 /* eslint-disable quotes */
-const { assert, isEmailValid } = require('openbox-node-utils')
+const { assert, deserialize, isEmailValid } = require('openbox-node-utils')
 const Connection = require('../Connection')
 const makeRequest = require('./makeRequest')
 
@@ -22,20 +22,20 @@ async function eventHookLogic (config, eventHookContainer) {
   const [, configUsername, configPassword] = config
   assert(isEmailValid(configUsername), 'You have not set a valid username. It must be an email address.')
 
-  const sourceId = [
-    (thing ? `Sticky: ${thing.name}` : undefined),
-    (application ? `Flow: ${application.name}` : undefined)
-  ]
-    .filter(_ => _)
-    .join(' / ')
+  // const sourceId = [
+  //   (thing ? `Sticky: ${thing.name}` : undefined),
+  //   (application ? `Flow: ${application.name}` : undefined)
+  // ]
+  //   .filter(_ => _)
+  //   .join(' / ')
 
   const body = {
-    SourceID: sourceId
+    SourceID: 'Sticky'
   }
   application.events.on_load.map(ab => {
     const key = ab.config['CONNECTION_ATREEMO--key']
     if (key) {
-      body[key] = customData[ab.config.label]
+      body[key] = deserialize(customData[ab.config.label], user, true)
     }
   })
 
@@ -91,7 +91,8 @@ module.exports = new Connection({
   configPerApplicationBlock: {
     '0e1f0565-5e05-471c-b855-bbe44c20527d': CONFIG_PER_APPLICATION_BLOCK,
     'c3b92e16-a631-48da-901b-e578cccfda7e': CONFIG_PER_APPLICATION_BLOCK,
-    'd6765aa6-973a-4ed8-b307-d0bf0de989c0': CONFIG_PER_APPLICATION_BLOCK
+    'd6765aa6-973a-4ed8-b307-d0bf0de989c0': CONFIG_PER_APPLICATION_BLOCK,
+    '100ada2b-1375-42c0-958a-49e7187a7d73': CONFIG_PER_APPLICATION_BLOCK
   },
   eventHooks: {
     'LD_V2': eventHookLogic,
