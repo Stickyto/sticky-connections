@@ -16,6 +16,10 @@ const CONNECTIONS = new Map([
     require('./CONNECTION_DATAVERSE')
   ],
   [
+    'CONNECTION_ATREEMO',
+    require('./CONNECTION_ATREEMO')
+  ],
+  [
     'CONNECTION_ELITE_DYNAMICS',
     require('./CONNECTION_ELITE_DYNAMICS')
   ],
