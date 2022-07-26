@@ -16,6 +16,12 @@ class Connection {
   }
 
   isAMatch (userId, partnerId) {
+    if (!partnerId && this.partnerIds.length > 0) {
+      return false
+    }
+    if (!userId && this.userIds.length > 0) {
+      return false
+    }
     let doesUserMatch = true, doesPartnerMatch = true
     if (userId && this.userIds.length > 0) {
       doesUserMatch = this.userIds.includes(userId)
