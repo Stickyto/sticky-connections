@@ -53,7 +53,7 @@ async function eventHookLogic (config, eventHookContainer) {
       },
       'application/x-www-form-urlencoded'
     )
-    const { CtcID: createdId } = await makeRequest(
+    const { CtcID: theirId, ...theirResponse } = await makeRequest(
       config,
       'post',
       'api/Contact/PostContact',
@@ -61,6 +61,10 @@ async function eventHookLogic (config, eventHookContainer) {
       'application/json',
       bearerToken
     )
+    return {
+      theirId,
+      theirResponse
+    }
   } catch (e) {
     createEvent({
       type: 'CONNECTION_BAD',
