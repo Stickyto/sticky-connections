@@ -14,7 +14,7 @@ beforeEach(() => {
     connections: []
   }
   partner = {
-    id: '3caf5a65-12ba-4db7-aeb6-a8b4c8b37c98' // Elite Dynamics
+    id: '3caf5a65-12ba-4db7-aeb6-a8b4c8b37c98' // EliteParks
   }
 })
 
@@ -45,7 +45,7 @@ describe('doesnt work', () => {
       go('CONNECTION_ELITE_DYNAMICS', 'doesntExist', { user })
     )
       .rejects.toMatchObject({
-        message: 'Elite Dynamics doesn\'t have a method called doesntExist!',
+        message: 'EliteParks doesn\'t have a method called doesntExist!',
       })
   })
 
@@ -54,7 +54,7 @@ describe('doesnt work', () => {
       go('CONNECTION_ELITE_DYNAMICS', 'bookingAuthenticate', { user })
     )
       .rejects.toMatchObject({
-        message: 'Elite Dynamics isn\'t configured!',
+        message: 'EliteParks isn\'t configured!',
       })
   })
 })

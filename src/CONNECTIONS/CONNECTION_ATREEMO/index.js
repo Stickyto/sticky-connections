@@ -1,7 +1,8 @@
 /* eslint-disable quotes */
-const { assert, isEmailValid } = require('openbox-node-utils')
+const { assert, deserialize, isEmailValid } = require('openbox-node-utils')
 const Connection = require('../Connection')
 const makeRequest = require('./makeRequest')
+const unformatPhone = require('./unformatPhone/unformatPhone')
 
 const NAME = 'Atreemo'
 const COLOR = '#2084f1'
@@ -18,24 +19,29 @@ const CONFIG_PER_APPLICATION_BLOCK = [
 ]
 
 async function eventHookLogic (config, eventHookContainer) {
-  const { user, application, thing, customData, createEvent } = eventHookContainer
+  const { user, application, customData, createEvent } = eventHookContainer
   const [, configUsername, configPassword] = config
   assert(isEmailValid(configUsername), 'You have not set a valid username. It must be an email address.')
 
-  const sourceId = [
-    (thing ? `Sticky: ${thing.name}` : undefined),
-    (application ? `Flow: ${application.name}` : undefined)
-  ]
-    .filter(_ => _)
-    .join(' / ')
+  // const sourceId = [
+  //   (thing ? `Sticky: ${thing.name}` : undefined),
+  //   (application ? `Flow: ${application.name}` : undefined)
+  // ]
+  //   .filter(_ => _)
+  //   .join(' / ')
 
   const body = {
-    SourceID: sourceId
+    SourceID: 'Sticky'
   }
   application.events.on_load.map(ab => {
     const key = ab.config['CONNECTION_ATREEMO--key']
     if (key) {
-      body[key] = customData[ab.config.label]
+      let deserializedValue = customData[ab.config.label]
+      deserializedValue = deserialize(deserializedValue, user, true)
+      if (ab.config['type'] === ' → Phone') {
+        deserializedValue = unformatPhone(deserializedValue, user.country)
+      }
+      body[key] = deserializedValue
     }
   })
 
@@ -53,7 +59,7 @@ async function eventHookLogic (config, eventHookContainer) {
       },
       'application/x-www-form-urlencoded'
     )
-    const { CtcID: createdId } = await makeRequest(
+    const { CtcID: theirId, ...theirResponse } = await makeRequest(
       config,
       'post',
       'api/Contact/PostContact',
@@ -61,6 +67,10 @@ async function eventHookLogic (config, eventHookContainer) {
       'application/json',
       bearerToken
     )
+    return {
+      theirId,
+      theirResponse
+    }
   } catch (e) {
     createEvent({
       type: 'CONNECTION_BAD',
@@ -91,7 +101,8 @@ module.exports = new Connection({
   configPerApplicationBlock: {
     '0e1f0565-5e05-471c-b855-bbe44c20527d': CONFIG_PER_APPLICATION_BLOCK,
     'c3b92e16-a631-48da-901b-e578cccfda7e': CONFIG_PER_APPLICATION_BLOCK,
-    'd6765aa6-973a-4ed8-b307-d0bf0de989c0': CONFIG_PER_APPLICATION_BLOCK
+    'd6765aa6-973a-4ed8-b307-d0bf0de989c0': CONFIG_PER_APPLICATION_BLOCK,
+    '100ada2b-1375-42c0-958a-49e7187a7d73': CONFIG_PER_APPLICATION_BLOCK
   },
   eventHooks: {
     'LD_V2': eventHookLogic,
