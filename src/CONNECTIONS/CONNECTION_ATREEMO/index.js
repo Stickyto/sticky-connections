@@ -2,6 +2,7 @@
 const { assert, deserialize, isEmailValid } = require('openbox-node-utils')
 const Connection = require('../Connection')
 const makeRequest = require('./makeRequest')
+const unformatPhone = require('./unformatPhone/unformatPhone')
 
 const NAME = 'Atreemo'
 const COLOR = '#2084f1'
@@ -18,7 +19,7 @@ const CONFIG_PER_APPLICATION_BLOCK = [
 ]
 
 async function eventHookLogic (config, eventHookContainer) {
-  const { user, application, thing, customData, createEvent } = eventHookContainer
+  const { user, application, customData, createEvent } = eventHookContainer
   const [, configUsername, configPassword] = config
   assert(isEmailValid(configUsername), 'You have not set a valid username. It must be an email address.')
 
@@ -35,7 +36,12 @@ async function eventHookLogic (config, eventHookContainer) {
   application.events.on_load.map(ab => {
     const key = ab.config['CONNECTION_ATREEMO--key']
     if (key) {
-      body[key] = deserialize(customData[ab.config.label], user, true)
+      let deserializedValue = customData[ab.config.label]
+      deserializedValue = deserialize(deserializedValue, user, true)
+      if (ab.config['type'] === ' → Phone') {
+        deserializedValue = unformatPhone(deserializedValue, user.country)
+      }
+      body[key] = deserializedValue
     }
   })
 
