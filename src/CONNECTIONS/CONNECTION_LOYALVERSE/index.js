@@ -80,9 +80,9 @@ async function getItems(config, foundStore) {
       }
       return 0
     })(),
-    isEnabled: (() => {
-      return getFirstVariantForSale(_.variants, foundStore) ? true : false
-    })(),
+    // isEnabled: (() => {
+    //   return getFirstVariantForSale(_.variants, foundStore) ? true : false
+    // })(),
     questions: (() => {
       if (_.variants.length === 1) {
         return []
