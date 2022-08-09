@@ -154,7 +154,6 @@ async function eventHookLogic (config, eventHookContainer) {
           ]
         },
         baseIcon: 'https://cdn.sticky.to/application-bases/bb28b9f3-e1f7-4358-9155-b36996c3ccb5.svg',
-        baseEventTypes: ['on_load'],
         baseSettingsRender: 'application-blocks',
         primaryColor: '#FF1F3E'
       }
