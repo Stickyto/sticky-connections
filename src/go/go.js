@@ -10,10 +10,13 @@ module.exports = async function go (connection, method, { user, partner, body })
   const foundMethod = await foundConnection.methods[method]
   assert(typeof foundMethod === 'object', `${foundConnection.name} doesn't have a method called ${method}!`)
 
-  const foundConfigWrapper = user.connections.find(c => c.id === connection)
-  assert(typeof foundConfigWrapper === 'object', `${foundConnection.name} isn't configured!`)
+  let config = {}
 
-  const { config } = foundConfigWrapper
+  user && (() => {
+    const foundConfigWrapper = user.connections.find(c => c.id === connection)
+    assert(typeof foundConfigWrapper === 'object', `${foundConnection.name} isn't configured!`)
+    config = foundConfigWrapper.config
+  })()
 
   const toReturn = await foundMethod.logic({ user, config, body })
   return toReturn

@@ -20,6 +20,10 @@ const CONNECTIONS = new Map([
     require('./CONNECTION_ATREEMO')
   ],
   [
+    'CONNECTION_DELIVERECT',
+    require('./CONNECTION_DELIVERECT')
+  ],
+  [
     'CONNECTION_ELITE_DYNAMICS',
     require('./CONNECTION_ELITE_DYNAMICS')
   ],
