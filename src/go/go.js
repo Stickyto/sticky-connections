@@ -1,5 +1,5 @@
 const { assert } = require('openbox-node-utils')
-const { Event } = require('openbox-entities')
+const { Event, Product, ProductCategory } = require('openbox-entities')
 const CONNECTIONS = require('../CONNECTIONS')
 
 module.exports = async function go (connection, method, { rdic, user, partner, body }) {
@@ -28,6 +28,31 @@ module.exports = async function go (connection, method, { rdic, user, partner, b
         event.createdAt = customCreatedAt
       }
       await rdic.get('datalayerRelational').create('events', event.toDatalayerRelational())
+    },
+    getProducts: async (rdic, user, connection) => {
+      const rawEntities = await rdic.get('datalayerRelational').read('products', { user_id: user.id, connection })
+      return rawEntities.map(re => new Product().fromDatalayerRelational(re))
+    },
+    createProduct: async (...args) => {
+      const toWrite = new Product(...args)
+      await rdic.get('datalayerRelational').create('products', toWrite.toDatalayerRelational())
+      return toWrite
+    },
+    updateProduct: async entity => {
+      await rdic.get('datalayerRelational').updateOne('products', entity.id, entity.toDatalayerRelational(['name', 'description', 'categories', 'price', 'is_enabled', 'questions']))
+    },
+
+    getProductCategories: async (rdic, user, connection) => {
+      const rawEntities = await rdic.get('datalayerRelational').read('product_categories', { user_id: user.id, connection })
+      return rawEntities.map(re => new ProductCategory(undefined, user).fromDatalayerRelational(re))
+    },
+    createProductCategory: async (...args) => {
+      const toWrite = new ProductCategory(...args)
+      await rdic.get('datalayerRelational').create('product_categories', toWrite.toDatalayerRelational())
+      return toWrite
+    },
+    updateProductCategory: async entity => {
+      await rdic.get('datalayerRelational').updateOne('product_categories', entity.id, entity.toDatalayerRelational(['name', 'description', 'view', 'is_enabled', 'products', 'color']))
     }
   }
 
