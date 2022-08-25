@@ -1,7 +1,8 @@
 const { assert } = require('openbox-node-utils')
+const { Event } = require('openbox-entities')
 const CONNECTIONS = require('../CONNECTIONS')
 
-module.exports = async function go (connection, method, { user, partner, body }) {
+module.exports = async function go (connection, method, { rdic, user, partner, body }) {
   const foundConnection = CONNECTIONS.get(connection)
   assert(typeof foundConnection === 'object', `There isn't a connection called ${connection}!`)
 
@@ -18,6 +19,18 @@ module.exports = async function go (connection, method, { user, partner, body })
     config = foundConfigWrapper.config
   })()
 
-  const toReturn = await foundMethod.logic({ user, config, body })
+  const connectionContainer = {
+    rdic,
+    user,
+    createEvent: async function (payload, customCreatedAt) {
+      const event = new Event(payload)
+      if (typeof customCreatedAt === 'number') {
+        event.createdAt = customCreatedAt
+      }
+      await rdic.get('datalayerRelational').create('events', event.toDatalayerRelational())
+    }
+  }
+
+  const toReturn = await foundMethod.logic({ connectionContainer, config, body })
   return toReturn
 }
