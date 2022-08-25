@@ -8,6 +8,7 @@ module.exports = new Connection({
   configNames: ['Channel link ID'],
   configDefaults: [''],
   methods: {
-    inboundMenu: require('./inboundMenu/inboundMenu')
+    inboundMenu: require('./inboundMenu'),
+    snooze: require('./snooze')
   }
 })

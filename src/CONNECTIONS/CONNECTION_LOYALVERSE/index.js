@@ -276,8 +276,6 @@ module.exports = new Connection({
           })
 
           const finalPList = []
-          // global.rdic.logger.log({}, '[job-CONNECTION_LOYALVERSE]', { theirStore, theirCategories, theirItems })
-
           const allPcsToday = await cronContainer.getProductCategories(rdic, user, 'CONNECTION_LOYALVERSE')
           const allPsToday = await cronContainer.getProducts(rdic, user, 'CONNECTION_LOYALVERSE')
 
