@@ -16,8 +16,8 @@ const CONFIG_PER_APPLICATION_BLOCK = [
   }
 ]
 
-async function eventHookLogic (config, eventHookContainer) {
-  const { user, application, customData, createEvent } = eventHookContainer
+async function eventHookLogic (config, connectionContainer) {
+  const { user, application, customData, createEvent } = connectionContainer
   const body = {}
   application.events.on_load.map(ab => {
     const key = ab.config['CONNECTION_DATAVERSE--key']

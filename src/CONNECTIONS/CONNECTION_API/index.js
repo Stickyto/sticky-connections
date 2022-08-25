@@ -14,8 +14,8 @@ function doFail (createEvent, message, { user, application }) {
   })
 }
 
-async function eventHookLogic (config, eventHookContainer) {
-  const { rdic, user, application, thing, customData, createEvent } = eventHookContainer
+async function eventHookLogic (config, connectionContainer) {
+  const { rdic, user, application, thing, customData, createEvent } = connectionContainer
   const { partnerId } = user
   const { apiUrl } = rdic.get('environment')
 
