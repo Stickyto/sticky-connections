@@ -41,4 +41,5 @@ module.exports = {
     return {
       x1: 'x2'
     }
+  }
 }
