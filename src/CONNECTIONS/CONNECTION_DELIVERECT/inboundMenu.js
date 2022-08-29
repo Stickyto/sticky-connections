@@ -299,7 +299,7 @@ module.exports = {
       }
       if (allPcsTimesDelta) {
         const toSet = `days = '{${allPcsTimesDelta.days.join(', ')}}', start_at = ${allPcsTimesDelta.startAt}, end_at = ${allPcsTimesDelta.endAt}`
-        global.rdic.logger.log({}, '[job-CONNECTION_DELIVERECT] [inboundMenu]', { allPcTimes, allPcsTimesDelta, toSet })
+        global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [inboundMenu]', { allPcTimes, allPcsTimesDelta, toSet })
         await rdic.get('datalayerRelational').updateMany('product_categories', { user_id: user.id, connection: 'CONNECTION_DELIVERECT' }, toSet)
       }
 
@@ -308,7 +308,7 @@ module.exports = {
 
       const allProductTags = getPTags(body[0].productTags)
 
-      global.rdic.logger.log({}, '[job-CONNECTION_DELIVERECT] [inboundMenu]', { allProductTags })
+      global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [inboundMenu]', { allProductTags })
 
       const allPcsToday = await getProductCategories(rdic, user, 'CONNECTION_DELIVERECT')
       const allPsToday = await getProducts(rdic, user, 'CONNECTION_DELIVERECT')
@@ -319,7 +319,7 @@ module.exports = {
         const theirP = theirProducts[productsIds[productI]]
         let foundExistingP = allPsToday.find(maybeExistingP => maybeExistingP.theirId === theirP.plu)
 
-        global.rdic.logger.log({}, '[job-CONNECTION_DELIVERECT] [go]', theirP.name)
+        global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [go]', theirP.name)
         if (foundExistingP) {
           foundExistingP.name = theirP.name.trim()
           foundExistingP.description = theirP.description.trim()
@@ -357,7 +357,7 @@ module.exports = {
       for (let categoryI = 0; categoryI < theirCategories.length; categoryI++) {
         const theirPc = theirCategories[categoryI]
         let foundExistingPc = allPcsToday.find(maybeExistingPc => maybeExistingPc.theirId === theirPc._id)
-        global.rdic.logger.log({}, '[job-CONNECTION_DELIVERECT] [go]', theirPc.name)
+        global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [go]', theirPc.name)
         const pcTimes = theirPc.availabilities.map(_ => getNiceAvailability(_, user))
         const pcTimesContainer = pcTimes.length > 0 && {
           days: Array.from(new Set(pcTimes.map(_ => _.day))),

@@ -25,7 +25,7 @@ module.exports = {
       const query = { user_id: user.id, application_id: [notBusyFlowId, busyFlowId] }
       const toSet = `application_id = '${statusMap.get(status)}'`
 
-      global.rdic.logger.log({}, '[job-CONNECTION_DELIVERECT] [busy]', { query, toSet })
+      global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [busy]', { query, toSet })
       await rdic.get('datalayerRelational').updateMany('things', query, toSet)
     } catch (e) {
       createEvent({
