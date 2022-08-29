@@ -25,9 +25,7 @@ module.exports = {
 
       assert(plus.length === plusAsPs.length, `[snooze] plus.length is ${plus.length} but plusAsPs.length is ${plusAsPs.length}; are you trying to snooze a non-product?`)
 
-      // await dlr.updateMany('payments', dlrQuery, `session_paid_at = ${getNow()}, session_failed_at = NULL`)
-      await rdic.get('datalayerRelational').updateMany('products', )
-
+      await rdic.get('datalayerRelational').updateMany('products', dlrQuery, `session_paid_at = ${getNow()}, session_failed_at = NULL`)
     } catch (e) {
       createEvent({
         type: 'CONNECTION_BAD',
