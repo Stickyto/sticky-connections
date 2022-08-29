@@ -10,6 +10,7 @@ module.exports = new Connection({
   methods: {
     inboundMenu: require('./inboundMenu'),
     snooze: require('./snooze'),
-    busy: require('./busy')
+    busy: require('./busy'),
+    status: require('./status')
   }
 })
