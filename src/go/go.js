@@ -52,7 +52,17 @@ module.exports = async function go (connection, method, { rdic, user, partner, b
       return toWrite
     },
     updateProductCategory: async entity => {
-      await rdic.get('datalayerRelational').updateOne('product_categories', entity.id, entity.toDatalayerRelational(['name', 'description', 'view', 'is_enabled', 'products', 'color']))
+      await rdic.get('datalayerRelational').updateOne('product_categories', entity.id, entity.toDatalayerRelational([
+        'name',
+        'description',
+        'view',
+        'is_enabled',
+        'products',
+        'color',
+        'days',
+        'start_at',
+        'end_at'
+      ]))
     }
   }
 
