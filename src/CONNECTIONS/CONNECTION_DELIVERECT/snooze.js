@@ -1,4 +1,4 @@
-const { assert, getNow } = require('openbox-node-utils')
+const { assert } = require('openbox-node-utils')
 
 module.exports = {
   name: 'Snooze',
@@ -7,25 +7,32 @@ module.exports = {
       rdic,
       user,
       createEvent,
-      getProducts,
-      updateProduct
+      getProducts
     } = connectionContainer
 
     const { channelLinkId } = body
     let [configuredChannelLinkId] = config
 
+    const actionMap = new Map([
+      ['snooze', false],
+      ['unsnooze', true]
+    ])
+
     try {
-      assert(channelLinkId === configuredChannelLinkId, `[snooze] Channel link IDs do not match (${channelLinkId} vs configured ${configuredChannelLinkId})`)
+      const action = body.operations[0].action
       const plus = body.operations[0].data.items.map(_ => _.plu)
 
+      assert(channelLinkId === configuredChannelLinkId, `[snooze] Channel link IDs do not match (${channelLinkId} vs configured ${configuredChannelLinkId})`)
+      assert(actionMap.has(action), '[snooze] "action" body key is not valid; are you really Deliverect?')
+
       const allPsToday = await getProducts(rdic, user, 'CONNECTION_DELIVERECT')
-      const plusAsPs = plus
+      const plusAsPIds = plus
         .map(plu => allPsToday.find(_ => _.theirId === plu))
         .filter(_ => _)
 
-      assert(plus.length === plusAsPs.length, `[snooze] plus.length is ${plus.length} but plusAsPs.length is ${plusAsPs.length}; are you trying to snooze a non-product?`)
+      assert(plus.length === plusAsPIds.length, `[snooze] plus.length is ${plus.length} but plusAsPIds.length is ${plusAsPIds.length}; are you trying to snooze a non-product?`)
 
-      await rdic.get('datalayerRelational').updateMany('products', dlrQuery, `session_paid_at = ${getNow()}, session_failed_at = NULL`)
+      await rdic.get('datalayerRelational').updateMany('products', { user_id: user.id, their_id: plus, connection: 'CONNECTION_DELIVERECT' }, `is_enabled = ${actionMap.get(action)}`)
     } catch (e) {
       createEvent({
         type: 'CONNECTION_BAD',
@@ -34,10 +41,6 @@ module.exports = {
       })
       throw e
     }
-
-    // require('fs').writeFileSync('./webhook--CONNECTION_DELIVERECT.json', JSON.stringify(body))
-    return {
-      x1: 'x2'
-    }
+    return {}
   }
 }
