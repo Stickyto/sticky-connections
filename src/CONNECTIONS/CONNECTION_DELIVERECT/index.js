@@ -93,8 +93,8 @@ module.exports = new Connection({
   name: 'Deliverect',
   color: '#05CC79',
   logo: cdn => `${cdn}/connections/CONNECTION_DELIVERECT.svg`,
-  configNames: ['"Sandbox"/"Production"', 'Channel link ID', '"Not busy" flow ID', '"Busy" flow ID'],
-  configDefaults: ['Sandbox', '', '', ''],
+  configNames: ['"Sandbox"/"Production"', 'Channel link ID', 'Location ID', '"Not busy" flow ID', '"Busy" flow ID'],
+  configDefaults: ['Sandbox', '', '', '', ''],
   methods: {
     inboundMenu: require('./inboundMenu'),
     snooze: require('./snooze'),
