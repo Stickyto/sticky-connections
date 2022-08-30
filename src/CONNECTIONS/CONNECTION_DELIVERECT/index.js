@@ -7,7 +7,7 @@ const makeRequest = require('./lib/makeRequest')
 const CHANNEL_NAME = 'stickyconnections'
 
 async function eventHookLogic (config, connectionContainer) {
-  const { user, application, thing, customData, event, createEvent } = connectionContainer
+  const { user, application, thing, payment, event, customData, createEvent } = connectionContainer
 
   function goFail (e) {
     createEvent({
@@ -59,6 +59,14 @@ async function eventHookLogic (config, connectionContainer) {
       'amount': customData.total,
       'type': 0
     },
+    'customer': {
+      name: typeof payment.name && payment.name.length > 0 ? payment.name : undefined,
+      companyName: typeof payment.companyName && payment.companyName.length > 0 ? payment.companyName : undefined,
+      phoneNumber: typeof payment.phone && payment.phone.length > 0 ? payment.phone : undefined,
+      email: typeof payment.email && payment.email.length > 0 ? payment.email : undefined,
+      note: payment.sessionId
+    },
+    'note': typeof payment.extra && payment.extra.length > 0 ? payment.extra : undefined,
     'table': thing ? thing.name : undefined
   }
 
