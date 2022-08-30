@@ -1,15 +1,17 @@
 const { assert } = require('openbox-node-utils')
+const getEnvironment = require('./getEnvironment')
 const makeRequest = require('./makeRequest')
 
 module.exports = async function getToken (config) {
-  const [,,, apiEndpoint, apiClientId, apiClientSecret] = config
+  const [environment] = config
+  const foundEnvironment = getEnvironment(environment)
   const body = {
-    'audience': apiEndpoint,
+    'audience': foundEnvironment.apiUrl,
     'grant_type': 'token',
-    'client_id': apiClientId,
-    'client_secret': apiClientSecret
+    'client_id': foundEnvironment.clientId,
+    'client_secret': foundEnvironment.clientSecret
   }
-  const r = await makeRequest(undefined, 'post', `${apiEndpoint}/oauth/token`, body)
+  const r = await makeRequest(undefined, 'post', `${foundEnvironment.apiUrl}/oauth/token`, body)
   assert(typeof r.access_token, `[getToken] failed (${r.code}/${r.description})`)
   return r.access_token
 }

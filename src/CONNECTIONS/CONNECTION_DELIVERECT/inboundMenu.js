@@ -286,7 +286,7 @@ module.exports = {
     } = connectionContainer
     const { availabilities, channelLinkId, categories: theirCategories, products: theirProducts, modifierGroups, modifiers } = body[0]
 
-    let [configuredChannelLinkId] = config
+    let [, configuredChannelLinkId] = config
     try {
       assert(channelLinkId === configuredChannelLinkId, `[inboundMenu] Channel link IDs do not match (${channelLinkId} vs configured ${configuredChannelLinkId})`)
 

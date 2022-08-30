@@ -10,8 +10,8 @@ module.exports = {
       createEvent
     } = connectionContainer
 
-    const { channelLinkId, status, reason, channelOrderId } = body
-    let [configuredChannelLinkId] = config
+    const { channelLink, status, reason, channelOrderId } = body
+    let [, configuredChannelLinkId] = config
     const realReason = reason || 'Deliverect didn\'t provide a reason'
     const borkedStatusRs = p => {
       p.sessionPaidAt = undefined
@@ -31,7 +31,7 @@ module.exports = {
     }
 
     try {
-      assert(channelLinkId === configuredChannelLinkId, `[status] Channel link IDs do not match (${channelLinkId} vs configured ${configuredChannelLinkId})`)
+      assert(channelLink === configuredChannelLinkId, `[status] Channel link IDs do not match (${channelLink} vs configured ${configuredChannelLinkId})`)
       assert(statusMap.has(status), '[status] "status" body key is not valid; are you really Deliverect?')
       assert(isUuid(channelOrderId), '[status] channelOrderId is not a uuid!')
 
