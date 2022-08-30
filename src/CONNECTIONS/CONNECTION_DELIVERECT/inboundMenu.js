@@ -306,6 +306,8 @@ module.exports = {
       let nextIPc = 0
       let nextIP = 0
 
+      const pLog = new Map()
+
       const allProductTags = getPTags(body[0].productTags)
 
       global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [inboundMenu]', { allProductTags })
@@ -330,6 +332,7 @@ module.exports = {
           foundExistingP.media = getPMedia(theirP)
           foundExistingP.questions = getPQuestions(theirP, modifierGroups, modifiers).map(q => new Question(q))
           foundExistingP.categories.patch(allProductTags)
+          pLog.set(theirP._id, foundExistingP.id)
           await updateProduct(foundExistingP)
         } else {
           const payload = {
@@ -350,6 +353,7 @@ module.exports = {
             ...payload,
             id: undefined
           })).id
+          pLog.set(theirP._id, createdId)
         }
         nextIP++
       }
@@ -370,6 +374,12 @@ module.exports = {
           foundExistingPc.description = theirPc.description.trim()
           foundExistingPc.updatedAt = getNow()
           foundExistingPc.products.clear()
+          theirPc.products
+            .map(p => pLog.get(p))
+            .filter(_ => _)
+            .forEach(p => {
+              foundExistingPc.products.add(p)
+            })
           foundExistingPc.alwaysAt = false
           if (allPcsTimesDelta) {
             foundExistingPc.days = allPcsTimesDelta.days
@@ -392,7 +402,10 @@ module.exports = {
             createdAt: getNow() + nextIPc,
             connection: 'CONNECTION_DELIVERECT',
             view: 'grid-name',
-            alwaysAt: false
+            alwaysAt: false,
+            products: theirPc.products
+              .map(p => pLog.get(p))
+              .filter(_ => _)
           }
           if (allPcsTimesDelta) {
             payload = {
