@@ -10,7 +10,7 @@ module.exports = {
     } = connectionContainer
 
     const { channelLinkId, status } = body
-    let [configuredChannelLinkId, notBusyFlowId, busyFlowId] = config
+    let [, configuredChannelLinkId, notBusyFlowId, busyFlowId] = config
 
     const statusMap = new Map([
       ['PAUSED', busyFlowId],

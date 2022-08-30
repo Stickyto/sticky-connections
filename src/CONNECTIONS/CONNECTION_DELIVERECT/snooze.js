@@ -11,7 +11,7 @@ module.exports = {
     } = connectionContainer
 
     const { channelLinkId } = body
-    let [configuredChannelLinkId] = config
+    let [, configuredChannelLinkId] = config
 
     const actionMap = new Map([
       ['snooze', false],
