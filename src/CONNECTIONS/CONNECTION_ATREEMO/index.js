@@ -18,8 +18,8 @@ const CONFIG_PER_APPLICATION_BLOCK = [
   }
 ]
 
-async function eventHookLogic (config, eventHookContainer) {
-  const { user, application, customData, createEvent } = eventHookContainer
+async function eventHookLogic (config, connectionContainer) {
+  const { user, application, customData, createEvent } = connectionContainer
   const [, configUsername, configPassword] = config
   assert(isEmailValid(configUsername), 'You have not set a valid username. It must be an email address.')
 
