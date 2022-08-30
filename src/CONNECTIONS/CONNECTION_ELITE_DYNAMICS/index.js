@@ -71,7 +71,8 @@ module.exports = new Connection({
     },
     bookingGet: {
       name: 'Booking > Get',
-      logic: async ({ user, config, body }) => {
+      logic: async ({ connectionContainer, config, body }) => {
+        const { user } = connectionContainer
         const [configUsername, configPassword, configUrl] = config
         const reqBody = getBody('BookingAPI', 'GetBooking', { 'booking_no': body.bookingId })
         const outerResponse = await ntlm(configUrl, reqBody, configUsername, configPassword)
@@ -83,12 +84,12 @@ module.exports = new Connection({
           no_of_adults: countAdults,
           no_of_children: countChildren,
           notes,
-          total_price,
-          amount_paid,
+          // total_price,
+          // amount_paid,
           outstanding_amount: total
         } = asJsonObject
-        total_price = Math.trunc(parseFloat(total_price) * 100)
-        amount_paid = Math.trunc(parseFloat(amount_paid) * 100)
+        // total_price = Math.trunc(parseFloat(total_price) * 100)
+        // amount_paid = Math.trunc(parseFloat(amount_paid) * 100)
         total = Math.trunc(parseFloat(total) * 100)
         countAdults = parseInt(countAdults, 10)
         countChildren = parseInt(countChildren, 10)
