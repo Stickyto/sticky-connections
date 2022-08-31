@@ -60,13 +60,13 @@ async function eventHookLogic (config, connectionContainer) {
       'type': 0
     },
     'customer': {
-      name: typeof payment.name && payment.name.length > 0 ? payment.name : undefined,
-      companyName: typeof payment.companyName && payment.companyName.length > 0 ? payment.companyName : undefined,
-      phoneNumber: typeof payment.phone && payment.phone.length > 0 ? payment.phone : undefined,
-      email: typeof payment.email && payment.email.length > 0 ? payment.email : undefined,
+      name: typeof payment.name === 'string' && payment.name.length > 0 ? payment.name : undefined,
+      companyName: typeof payment.companyName === 'string' && payment.companyName.length > 0 ? payment.companyName : undefined,
+      phoneNumber: typeof payment.phone === 'string' && payment.phone.length > 0 ? payment.phone : undefined,
+      email: typeof payment.email === 'string' && payment.email.length > 0 ? payment.email : undefined,
       note: payment.sessionId
     },
-    'note': typeof payment.extra && payment.extra.length > 0 ? payment.extra : undefined,
+    'note': typeof payment.extra === 'string' && payment.extra.length > 0 ? payment.extra : undefined,
     'table': thing ? thing.name : undefined
   }
 
