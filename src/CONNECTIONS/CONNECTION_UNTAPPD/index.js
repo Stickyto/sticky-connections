@@ -118,16 +118,18 @@ module.exports = new Connection({
                 ]
                   .filter(e => e)
                   .join('\n\n')
+                const price = p.containers.length > 0 && p.containers[0].price !== null ? parseInt(parseFloat(p.containers[0].price) * 100, 10) : 0
                 if (foundExistingP) {
                   foundExistingP.name = pName
                   foundExistingP.description = pDescription
                   foundExistingP.categories.patch(pCategories)
+                  foundExistingP.price = price
                   await cronContainer.updateProduct(foundExistingP)
                   handledPs.push(foundExistingP.id)
                 } else {
-                  foundExistingP = await cronContainer.createProduct({
+                  const payload = {
                     name: pName,
-                    price: p.containers.length > 0 ? parseInt(parseFloat(p.containers[0].price) * 100, 10) : 0,
+                    price,
                     userId: user.id,
                     media: [
                       {
@@ -140,7 +142,8 @@ module.exports = new Connection({
                     description: pDescription,
                     createdAt: getNow() + nextIP,
                     connection: 'CONNECTION_UNTAPPD'
-                  })
+                  }
+                  foundExistingP = await cronContainer.createProduct(payload)
                   nextIP++
                 }
                 localPids.push(foundExistingP.id)
