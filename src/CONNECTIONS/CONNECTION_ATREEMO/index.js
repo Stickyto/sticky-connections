@@ -75,7 +75,7 @@ async function eventHookLogic (config, connectionContainer) {
     createEvent({
       type: 'CONNECTION_BAD',
       userId: user.id,
-      applicationId: application.id,
+      applicationId: application ? application.id : undefined,
       customData: { id: 'CONNECTION_ATREEMO', message: e.message }
     })
   }
