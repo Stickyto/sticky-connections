@@ -12,6 +12,10 @@ const CONNECTIONS = new Map([
     require('./CONNECTION_UNTAPPD')
   ],
   [
+    'CONNECTION_PLAY_IT_GREEN',
+    require('./CONNECTION_PLAY_IT_GREEN')
+  ],
+  [
     'CONNECTION_DATAVERSE',
     require('./CONNECTION_DATAVERSE')
   ],
