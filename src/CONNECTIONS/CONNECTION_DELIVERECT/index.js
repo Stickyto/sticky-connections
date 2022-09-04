@@ -18,7 +18,13 @@ async function eventHookLogic (config, connectionContainer) {
     })
   }
 
-  const [environment, channelLinkId] = config
+  const [environment, channelLinkId,,,, sendOrder] = config
+  global.rdic.logger.log({}, '[CONNECTION_DELIVERECT]', { environment, channelLinkId, sendOrder })
+
+  if (sendOrder !== 'Yes') {
+    goFail(new Error('Send order ("Yes"/"No") is not set to "Yes"'))
+    return
+  }
   let foundEnvironment
   try {
     foundEnvironment = getEnvironment(environment)
@@ -93,8 +99,8 @@ module.exports = new Connection({
   name: 'Deliverect',
   color: '#05CC79',
   logo: cdn => `${cdn}/connections/CONNECTION_DELIVERECT.svg`,
-  configNames: ['"Sandbox"/"Production"', 'Channel link ID', 'Location ID', '"Not busy" flow ID', '"Busy" flow ID'],
-  configDefaults: ['Sandbox', '', '', '', ''],
+  configNames: ['"Sandbox"/"Production"', 'Channel link ID', 'Location ID', '"Not busy" flow ID', '"Busy" flow ID', 'Send order ("Yes"/"No")'],
+  configDefaults: ['Sandbox', '', '', '', '', 'No'],
   methods: {
     inboundMenu: require('./inboundMenu'),
     snooze: require('./snooze'),
