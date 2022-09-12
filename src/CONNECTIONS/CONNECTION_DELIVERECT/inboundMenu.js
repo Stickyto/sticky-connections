@@ -246,7 +246,8 @@ function getPQuestions (theirP, modifierGroups, modifiers) {
         delta: foundM.price,
         media: getPMedia(foundM),
         description: foundM.description.trim(),
-        theirId: foundM.plu
+        theirId: foundM.plu,
+        tags: getPTags(foundM.productTags)
       }
     })
     const answer = options.length > 0 ? options[0].name : ''
@@ -308,9 +309,7 @@ module.exports = {
 
       const pLog = new Map()
 
-      const allProductTags = getPTags(body[0].productTags)
-
-      global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [inboundMenu]', { allProductTags })
+      global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [inboundMenu]')
 
       const allPcsToday = await getProductCategories(rdic, user, 'CONNECTION_DELIVERECT')
       const allPsToday = await getProducts(rdic, user, 'CONNECTION_DELIVERECT')
@@ -331,7 +330,7 @@ module.exports = {
           foundExistingP.isEnabled = !theirP.snoozed
           foundExistingP.media = getPMedia(theirP)
           foundExistingP.questions = getPQuestions(theirP, modifierGroups, modifiers).map(q => new Question(q))
-          foundExistingP.categories.patch(allProductTags)
+          foundExistingP.categories.patch(getPTags(theirP.productTags))
           pLog.set(theirP._id, foundExistingP.id)
           await updateProduct(foundExistingP)
         } else {
@@ -347,7 +346,7 @@ module.exports = {
             isEnabled: !theirP.snoozed,
             media: getPMedia(theirP),
             questions: getPQuestions(theirP, modifierGroups, modifiers),
-            categories: Array.from(new Set([...allProductTags, ...getPTags(theirP.productTags)]))
+            categories: Array.from(new Set(getPTags(theirP.productTags)))
           }
           const createdId = (await createProduct({
             ...payload,
