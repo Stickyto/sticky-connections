@@ -252,7 +252,7 @@ function getPQuestions (theirP, modifierGroups, modifiers) {
     })
     const answer = options.length > 0 ? options[0].name : ''
     return {
-      type: 'option',
+      type: foundMg.max > 1 ? 'options' : 'option',
       theirId: foundMg.plu,
       question: foundMg.name.endsWith('?') ? foundMg.name : `${foundMg.name}?`,
       answer,
