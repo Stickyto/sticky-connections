@@ -10,19 +10,19 @@ module.exports = {
     } = connectionContainer
 
     const { channelLinkId, status } = body
-    let [, configuredChannelLinkId, notBusyFlowId, busyFlowId] = config
+    let [, configuredChannelLinkId, notBusyApplicationId, busyApplicationId] = config
 
     const statusMap = new Map([
-      ['PAUSED', busyFlowId],
-      ['ONLINE', notBusyFlowId]
+      ['PAUSED', busyApplicationId],
+      ['ONLINE', notBusyApplicationId]
     ])
 
     try {
       assert(channelLinkId === configuredChannelLinkId, `[busy] Channel link IDs do not match (${channelLinkId} vs configured ${configuredChannelLinkId})`)
-      assert([notBusyFlowId, busyFlowId].every(isUuid), '[busy] One of notBusyFlowId/busyFlowId is not a uuid; please check your configuration!')
+      assert([notBusyApplicationId, busyApplicationId].every(isUuid), '[busy] One of notBusyApplicationId/busyApplicationId is not a uuid; please check your configuration!')
       assert(statusMap.has(status), '[busy] "status" body key is not valid; are you really Deliverect?')
 
-      const query = { user_id: user.id, application_id: [notBusyFlowId, busyFlowId] }
+      const query = { user_id: user.id, application_id: [notBusyApplicationId, busyApplicationId] }
       const toSet = `application_id = '${statusMap.get(status)}'`
 
       global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [busy]', { query, toSet })
