@@ -238,6 +238,15 @@ function getPMedia (theirP) {
 
 const MEDIA_MAP = new Map([
   [
+    '125ML',
+    [
+      {
+        type: 'image',
+        url: 'https://cdn.sticky.to/product-images/size--small.svg'
+      }
+    ]
+  ],
+  [
     '175ML',
     [
       {
