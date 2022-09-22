@@ -236,15 +236,46 @@ function getPMedia (theirP) {
   return theirP.imageUrl ? [{ type: 'image', url: theirP.imageUrl }] : []
 }
 
+const MEDIA_MAP = new Map([
+  [
+    '175ML',
+    [
+      {
+        type: 'image',
+        url: 'https://cdn.sticky.to/product-images/size--small.svg'
+      }
+    ]
+  ],
+  [
+    '250ML',
+    [
+      {
+        type: 'image',
+        url: 'https://cdn.sticky.to/product-images/size--large.svg'
+      }
+    ]
+  ],
+  [
+    'BOTTLE',
+    [
+      {
+        type: 'image',
+        url: 'https://cdn.sticky.to/product-images/size--bottle.svg'
+      }
+    ]
+  ]
+])
+
 function getPQuestions (theirP, modifierGroups, modifiers) {
   return theirP.subProducts.map(sp => {
     const foundMg = modifierGroups[sp]
     const options = foundMg.subProducts.map(sp2 => {
       const foundM = modifiers[sp2]
+      const finalName = foundM.name.trim()
       return {
-        name: foundM.name.trim(),
+        name: finalName,
         delta: foundM.price,
-        media: getPMedia(foundM),
+        media: MEDIA_MAP.get(finalName.toUpperCase()) || [],
         description: foundM.description.trim(),
         theirId: foundM.plu,
         tags: getPTags(foundM.productTags)
