@@ -1,4 +1,5 @@
 const got = require('got')
+const { assert } = require('openbox-node-utils')
 const Connection = require('../Connection')
 
 async function makeRequest (url) {
@@ -13,8 +14,6 @@ async function makeRequest (url) {
   global.rdic.logger.log({}, '[CONNECTION_PLAY_IT_GREEN] [makeRequest] bodyAsString.length', bodyAsString.length)
 
   const toReturn = typeof bodyAsString === 'string' && bodyAsString.length > 0 ? bodyAsString : undefined
-  global.rdic.logger.log({}, '[CONNECTION_PLAY_IT_GREEN] toReturn', toReturn)
-
   return toReturn
 }
 
@@ -24,7 +23,7 @@ module.exports = new Connection({
   partnerIds: ['3caf5a65-12ba-4db7-aeb6-a8b4c8b37c98'],
   color: '#5CC239',
   logo: cdn => `${cdn}/connections/CONNECTION_PLAY_IT_GREEN.png`,
-  configNames: ['ID'],
+  configNames: ['Forest Garden ID'],
   configDefaults: ['297'],
   methods: {
     getForestGarden: {
@@ -36,8 +35,10 @@ module.exports = new Connection({
         const vStart = r.indexOf('class="total_quantity">') + 'class="total_quantity">'.length
         let v = r.substring(vStart)
         v = v.substring(0, v.indexOf('<'))
+        const asInt = parseInt(v, 10)
+        assert(!isNaN(asInt), `There isn't a Forest Garden with ID "${configId}".`)
         return {
-          trees: parseInt(v, 10)
+          trees: asInt
         }
       }
     }
