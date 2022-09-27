@@ -45,7 +45,7 @@ async function eventHookLogic(config, connectionContainer) {
 module.exports = new Connection({
   id: 'CONNECTION_PLAY_IT_GREEN',
   name: 'Play It Green',
-  partnerIds: ['3caf5a65-12ba-4db7-aeb6-a8b4c8b37c98'],
+  partnerIds: ['3caf5a65-12ba-4db7-aeb6-a8b4c8b37c98', '09140c05-c1a6-4912-8edf-3426f30d4299'],
   color: '#5CC239',
   logo: cdn => `${cdn}/connections/CONNECTION_PLAY_IT_GREEN.png`,
   configNames: ['Forest Garden ID', 'Match products with a name containing'],
