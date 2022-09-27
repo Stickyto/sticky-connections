@@ -1,3 +1,5 @@
+/* eslint-disable max-len */
+/* eslint-disable quotes */
 const got = require('got')
 const { assert, sum } = require('openbox-node-utils')
 const Connection = require('../Connection')
@@ -70,5 +72,46 @@ module.exports = new Connection({
   },
   eventHooks: {
     'SESSION_CART_PAY': eventHookLogic
-  }
+  },
+  instructions: [
+    {
+      "id": "9545852c-d64a-457a-8ca0-2b2d1173de9b",
+      "config": {
+        "url": "https://cdn.sticky.to/connections/CONNECTION_PLAY_IT_GREEN/logo.png",
+        "dropShadow": false,
+        "corners": "Square",
+        "specialEffect": "None",
+        "goToUrl": ""
+      }
+    },
+    {
+      "id": "71d05208-3781-4c24-996e-c4c0d1c6b228",
+      "config": {
+        "what": "You can get your <strong>Forest Garden ID</strong> from the end of the Play It Green URL:",
+        "font": "#5CC239--center--100%--false",
+        "backgroundColour": "#ffffff",
+        "icon": ""
+      }
+    },
+    {
+      "id": "71d05208-3781-4c24-996e-c4c0d1c6b228",
+      "config": {
+        "what": "playitgreen.com/forestgarden/?id=[ID]",
+        "font": "#1A1F35--center--100%--true",
+        "backgroundColour": "#ffffff",
+        "icon": ""
+      }
+    },
+    {
+      "id": "71d05208-3781-4c24-996e-c4c0d1c6b228",
+      "config": {
+        "what": "Sticky generates a report for Play It Green. Only products that fit the 'Match products with a name containing' box will be in the report. This box is case sensitive.\n\nFor example, if you set up products called <strong>Save the planet - £5</strong> and <strong>Save the planet - £10</strong>, type <strong>Save the planet</strong> in the box.",
+        "font": "#5CC239--center--100%--false",
+        "backgroundColour": "#ffffff",
+        "icon": ""
+      }
+    }
+  ]
 })
+
+// https://playitgreen.com/forestgarden/?id=${configForestGardenId}
