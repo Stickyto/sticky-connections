@@ -18,6 +18,20 @@ module.exports = {
       p.sessionFailedAt = getNow()
       p.paymentGatewayExtra = realReason
       p.onUpdatedAt()
+
+      createEvent({
+        type: 'TO_DO',
+        userId: user.id,
+        paymentId: p.id,
+        applicationId: p.applicationId,
+        thingId: p.thingId,
+        customData: {
+          what: `Deliverect said the order failed (${realReason}).`,
+          colour: '#ff3838',
+          foregroundColor: '#ffffff',
+          specialEffect: 'Bounce'
+        }
+      })
     }
     const statusMap = new Map([
       [110, borkedStatusRs],
