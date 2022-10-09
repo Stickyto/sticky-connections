@@ -1,7 +1,8 @@
 /* eslint-disable max-len */
 /* eslint-disable quotes */
 const got = require('got')
-const { assert, sum } = require('openbox-node-utils')
+const safeEval = require('safe-eval')
+const { sum } = require('openbox-node-utils')
 const Connection = require('../Connection')
 
 async function makeRequest(url) {
@@ -51,21 +52,32 @@ module.exports = new Connection({
   color: '#5CC239',
   logo: cdn => `${cdn}/connections/CONNECTION_PLAY_IT_GREEN.png`,
   configNames: ['Forest Garden ID', 'Match products with a name containing'],
-  configDefaults: ['297', 'Play It Green'],
+  configDefaults: ['431', 'Play It Green'],
   methods: {
     getForestGarden: {
       name: 'Get Forest Garden',
       logic: async ({ config }) => {
         const [configForestGardenId] = config
-        const url = `https://playitgreen.com/forestgarden/?id=${configForestGardenId}`
+        const url = `https://api.playitgreen.com/pig2/widget/garden/${configForestGardenId}`
         const r = await makeRequest(url)
-        const vStart = r.indexOf('class="total_quantity">') + 'class="total_quantity">'.length
-        let v = r.substring(vStart)
-        v = v.substring(0, v.indexOf('<'))
-        const asInt = parseInt(v, 10)
-        assert(!isNaN(asInt), `There isn't a Forest Garden with ID "${configForestGardenId}".`)
+        let asString = r.substring('const model = '.length, r.indexOf('window.onload'))
+        let asObject
+        try {
+          asObject = safeEval(asString)
+        } catch (e) {
+          throw new Error(`There isn't a Forest Garden with ID "${configForestGardenId}".`)
+        }
         return {
-          trees: asInt
+          meta: {
+            name: asObject.gardenName,
+            link: asObject.gardenLink,
+          },
+          statistics: {
+            trees: asObject.gardenStats.trees,
+            co2: asObject.gardenStats.co2,
+            goodCause: asObject.gardenStats.goodCause,
+            climateAction: asObject.gardenStats.climateAction
+          }
         }
       }
     }
@@ -87,7 +99,7 @@ module.exports = new Connection({
     {
       "id": "71d05208-3781-4c24-996e-c4c0d1c6b228",
       "config": {
-        "what": "You can get your <strong>Forest Garden ID</strong> from the end of the Play It Green URL:",
+        "what": "You can get your <strong>Forest Garden ID</strong> from the end of the \"iframe grab\" URL:",
         "font": "#5CC239--center--100%--false",
         "backgroundColour": "#ffffff",
         "icon": ""
@@ -96,7 +108,7 @@ module.exports = new Connection({
     {
       "id": "71d05208-3781-4c24-996e-c4c0d1c6b228",
       "config": {
-        "what": "playitgreen.com/forestgarden/?id=[ID]",
+        "what": "api.playitgreen.com/pig2/widget/garden/[ID]",
         "font": "#1A1F35--center--100%--true",
         "backgroundColour": "#ffffff",
         "icon": ""
