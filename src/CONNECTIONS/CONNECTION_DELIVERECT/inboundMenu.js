@@ -206,6 +206,15 @@ const allDeliverectProductTags = [
   }
 ]
 
+const vatBs = new Map([
+  [0,     'vat--no'], // or vat--0
+  [12500, 'vat--125'],
+  [15000, 'vat--15'],
+  [19000, 'vat--19'],
+  [20000, 'vat--20'],
+  [21000, 'vat--21']
+])
+
 const dayBs = new Map([
   [1, 0],
   [2, 1],
@@ -287,7 +296,7 @@ function getPQuestions (theirP, modifierGroups, modifiers) {
         media: MEDIA_MAP.get(finalName.toUpperCase()) || [],
         description: foundM.description.trim(),
         theirId: foundM.plu,
-        tags: getPTags(foundM.productTags)
+        tags: getPTags(foundM, false)
       }
     })
     const answer = options.length > 0 ? options[0].name : ''
@@ -303,11 +312,16 @@ function getPQuestions (theirP, modifierGroups, modifiers) {
   })
 }
 
-function getPTags (array) {
-  return array
-    .map(_ => allDeliverectProductTags.find(__ => __.allergenId === _ && __.ourTag))
-    .filter(_ => _)
-    .map(_ => _.ourTag)
+function getPTags (theirP, caresAboutVat) {
+  const toReturn = [
+    ...theirP.productTags
+      .map(_ => allDeliverectProductTags.find(__ => __.allergenId === _ && __.ourTag))
+      .filter(_ => _)
+      .map(_ => _.ourTag)
+  ]
+  const maybeVatTag = vatBs.get(theirP.takeawayTax)
+  caresAboutVat && maybeVatTag && toReturn.push(maybeVatTag)
+  return toReturn
 }
 
 module.exports = {
@@ -372,7 +386,7 @@ module.exports = {
           foundExistingP.isEnabled = !theirP.snoozed
           foundExistingP.media = getPMedia(theirP)
           foundExistingP.questions = getPQuestions(theirP, modifierGroups, modifiers).map(q => new Question(q))
-          foundExistingP.categories.patch(getPTags(theirP.productTags))
+          foundExistingP.categories.patch(getPTags(theirP, true))
           pLog.set(theirP._id, foundExistingP.id)
           await updateProduct(foundExistingP)
         } else {
@@ -388,7 +402,7 @@ module.exports = {
             isEnabled: !theirP.snoozed,
             media: getPMedia(theirP),
             questions: getPQuestions(theirP, modifierGroups, modifiers),
-            categories: Array.from(new Set(getPTags(theirP.productTags)))
+            categories: Array.from(new Set(getPTags(theirP, true)))
           }
           const createdId = (await createProduct({
             ...payload,
