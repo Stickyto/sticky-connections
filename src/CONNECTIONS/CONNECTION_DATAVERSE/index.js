@@ -1,4 +1,3 @@
-/* eslint-disable quotes */
 const Connection = require('../Connection')
 const makeRequest = require('./makeRequest')
 

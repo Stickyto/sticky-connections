@@ -1,5 +1,3 @@
-/* eslint-disable max-len */
-/* eslint-disable quotes */
 const { assert, isEmailValid } = require('openbox-node-utils')
 const Connection = require('../Connection')
 const makeRequest = require('./makeRequest')
