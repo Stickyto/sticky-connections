@@ -1,47 +1,50 @@
 /* eslint-disable max-len */
 /* eslint-disable quotes */
-const got = require('got')
 const safeEval = require('safe-eval')
-const { sum } = require('openbox-node-utils')
+const { sum, assert } = require('openbox-node-utils')
 const Connection = require('../Connection')
-
-async function makeRequest(url) {
-  global.rdic.logger.log({}, '[CONNECTION_PLAY_IT_GREEN] [makeRequest] url', url)
-  const { body: bodyAsString } = await got.get(
-    url,
-    {
-      headers: {}
-    }
-  )
-  global.rdic.logger.log({}, '[CONNECTION_PLAY_IT_GREEN] [makeRequest] typeof bodyAsString', typeof bodyAsString)
-  global.rdic.logger.log({}, '[CONNECTION_PLAY_IT_GREEN] [makeRequest] bodyAsString.length', bodyAsString.length)
-
-  const toReturn = typeof bodyAsString === 'string' && bodyAsString.length > 0 ? bodyAsString : undefined
-  return toReturn
-}
+const makeRequest = require('./makeRequest')
 
 async function eventHookLogic(config, connectionContainer) {
-  const { user, application, thing, payment, customData, createEvent } = connectionContainer
+  const { user, application, thing, customData, createEvent } = connectionContainer
 
-  const [configForestGardenId, mustMatchProductName] = config
-  global.rdic.logger.log({}, '[CONNECTION_PLAY_IT_GREEN]', { configForestGardenId, mustMatchProductName })
+  const [configForestGardenId, configMustMatchProductName, configApiEndpoint, configApiToken] = config
 
-  const total = sum(
+  const howMany = sum(
     customData.cart
       .filter(_ => {
-        return (_.productName.indexOf(mustMatchProductName) !== -1)
+        return (_.productName.indexOf(configMustMatchProductName) !== -1)
       })
-      .map(_ => (_.productPrice * _.quantity))
+      .map(_ => _.quantity)
   )
+  global.rdic.logger.log({}, '[CONNECTION_PLAY_IT_GREEN]', { configForestGardenId, configMustMatchProductName, configApiEndpoint, configApiToken, howMany })
 
-  if (total > 0) {
-    createEvent({
-      type: 'CONNECTION_GOOD',
-      userId: user.id,
-      applicationId: application ? application.id : undefined,
-      thingId: thing ? thing.id : undefined,
-      customData: { id: 'CONNECTION_PLAY_IT_GREEN', total, currency: payment.currency }
-    })
+  if (howMany > 0) {
+    try {
+      const { productInOrderId: theirId } = await makeRequest(
+        configApiToken,
+        'post',
+        `${configApiEndpoint}/pig2/api/buy_trees`,
+        {
+          quantity: howMany
+        },
+        'json'
+      )
+      createEvent({
+        type: 'CONNECTION_GOOD',
+        userId: user.id,
+        applicationId: application ? application.id : undefined,
+        thingId: thing ? thing.id : undefined,
+        customData: { id: 'CONNECTION_PLAY_IT_GREEN', theirId }
+      })
+    } catch (e) {
+      createEvent({
+        type: 'CONNECTION_BAD',
+        userId: user.id,
+        applicationId: application ? application.id : undefined,
+        customData: { id: 'CONNECTION_PLAY_IT_GREEN', message: e.message }
+      })
+    }
   }
 }
 
@@ -51,18 +54,19 @@ module.exports = new Connection({
   partnerIds: ['3caf5a65-12ba-4db7-aeb6-a8b4c8b37c98', '09140c05-c1a6-4912-8edf-3426f30d4299'],
   color: '#5CC239',
   logo: cdn => `${cdn}/connections/CONNECTION_PLAY_IT_GREEN.png`,
-  configNames: ['Forest Garden ID', 'Match products with a name containing'],
-  configDefaults: ['431', 'Play It Green'],
+  configNames: ['Forest Garden ID', 'Match products with a name containing', 'API endpoint', 'API token'],
+  configDefaults: ['431', 'Play It Green', 'https://api.playitgreen.com', ''],
   methods: {
     getForestGarden: {
       name: 'Get Forest Garden',
       logic: async ({ config }) => {
-        const [configForestGardenId] = config
-        const url = `https://api.playitgreen.com/pig2/widget/garden/${configForestGardenId}`
-        const r = await makeRequest(url)
-        let asString = r.substring('const model = '.length, r.indexOf('window.onload'))
+        const [configForestGardenId, , configApiEndpoint] = config
+        const url = `${configApiEndpoint}/pig2/widget/garden/${configForestGardenId}`
+        const r = await makeRequest(undefined, 'get', url, undefined, 'text')
         let asObject
         try {
+          assert(r)
+          const asString = r.substring('const model = '.length, r.indexOf('window.onload'))
           asObject = safeEval(asString)
         } catch (e) {
           throw new Error(`There isn't a Forest Garden with ID "${configForestGardenId}".`)
