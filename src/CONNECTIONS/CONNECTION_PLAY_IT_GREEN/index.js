@@ -23,8 +23,8 @@ async function makeRequest(url) {
 async function eventHookLogic(config, connectionContainer) {
   const { user, application, thing, payment, customData, createEvent } = connectionContainer
 
-  const [configForestGardenId, mustMatchProductName] = config
-  global.rdic.logger.log({}, '[CONNECTION_PLAY_IT_GREEN]', { configForestGardenId, mustMatchProductName })
+  const [configForestGardenId, mustMatchProductName, apiToken] = config
+  global.rdic.logger.log({}, '[CONNECTION_PLAY_IT_GREEN]', { configForestGardenId, mustMatchProductName, apiToken })
 
   const total = sum(
     customData.cart
@@ -51,8 +51,8 @@ module.exports = new Connection({
   partnerIds: ['3caf5a65-12ba-4db7-aeb6-a8b4c8b37c98', '09140c05-c1a6-4912-8edf-3426f30d4299'],
   color: '#5CC239',
   logo: cdn => `${cdn}/connections/CONNECTION_PLAY_IT_GREEN.png`,
-  configNames: ['Forest Garden ID', 'Match products with a name containing'],
-  configDefaults: ['431', 'Play It Green'],
+  configNames: ['Forest Garden ID', 'Match products with a name containing', 'API token'],
+  configDefaults: ['431', 'Play It Green', ''],
   methods: {
     getForestGarden: {
       name: 'Get Forest Garden',
