@@ -129,5 +129,3 @@ module.exports = new Connection({
     }
   ]
 })
-
-// https://playitgreen.com/forestgarden/?id=${configForestGardenId}
