@@ -16,6 +16,10 @@ const CONNECTIONS = new Map([
     require('./CONNECTION_PLAY_IT_GREEN')
   ],
   [
+    'CONNECTION_MAILCHIMP',
+    require('./CONNECTION_MAILCHIMP')
+  ],
+  [
     'CONNECTION_DATAVERSE',
     require('./CONNECTION_DATAVERSE')
   ],
