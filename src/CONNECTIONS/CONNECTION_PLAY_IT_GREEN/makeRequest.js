@@ -2,10 +2,8 @@
 const got = require('got')
 
 const MIME_TYPES = new Map([
-  [
-    'text', _ => _,
-    'json', _ => JSON.parse(_)
-  ]
+  ['text', _ => _],
+  ['json', _ => JSON.parse(_)]
 ])
 
 module.exports = async function makeRequest (apiToken, method, url, json, mimeType) {
