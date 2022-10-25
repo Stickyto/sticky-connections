@@ -77,7 +77,7 @@ async function eventHookLogic (config, connectionContainer) {
       note: payment.sessionId
     },
     'note': typeof payment.extra === 'string' && payment.extra.length > 0 ? payment.extra : undefined,
-    'table': (thing && typeof thing.theirId === 'string' && thing.theirId.length > 0) ? thing.theirId : undefined
+    'table': (thing && typeof thing.theirId === 'string' && thing.theirId.length > 0) ? thing.theirId : thing.name
   }
 
   global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] customData', JSON.stringify(customData, null, 2))
