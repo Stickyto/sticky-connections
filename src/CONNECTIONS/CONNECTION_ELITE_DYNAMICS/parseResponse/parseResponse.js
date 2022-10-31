@@ -17,7 +17,7 @@ module.exports = async function parseResponse (response, path) {
         reject(stderr)
         return
       }
-      resolve(stdout)
+      resolve(stdout.trimEnd())
     })
   })
 }
