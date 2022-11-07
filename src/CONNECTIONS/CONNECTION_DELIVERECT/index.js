@@ -6,6 +6,7 @@ const makeRequest = require('./lib/makeRequest')
 const { assert } = require('openbox-node-utils')
 
 const CHANNEL_NAME = 'stickyconnections'
+const VALID_THING_PASSTHROUGHS = ['None', 'Your ID', 'Name', 'Number']
 
 async function eventHookLogic (config, connectionContainer) {
   const { user, application, thing, payment, event, customData, createEvent } = connectionContainer
@@ -19,14 +20,15 @@ async function eventHookLogic (config, connectionContainer) {
     })
   }
 
-  const [environment, channelLinkId, locationId, notBusyApplicationId, busyApplicationId, sendOrder] = config
-  global.rdic.logger.log({}, '[CONNECTION_DELIVERECT]', { environment, channelLinkId, sendOrder })
+  const [environment, channelLinkId, locationId, notBusyApplicationId, busyApplicationId, sendOrder, thingPassthrough = VALID_THING_PASSTHROUGHS[0]] = config
+  global.rdic.logger.log({}, '[CONNECTION_DELIVERECT]', { environment, channelLinkId, sendOrder, thingPassthrough })
 
   let foundEnvironment
   try {
     assert(application, 'There is no flow.')
     assert(application.id === notBusyApplicationId, `Flow ID ${application.id} doesn't match "Not busy" flow ID ${notBusyApplicationId}. This probably doesn't matter.`)
-    assert(sendOrder === 'Yes', 'Send order ("Yes"/"No") is not set to "Yes".')
+    assert(sendOrder === 'Yes', 'Send order (Yes/No) is not set to "Yes".')
+    assert(VALID_THING_PASSTHROUGHS.includes(thingPassthrough), `Sticker passthrough is not one of (${VALID_THING_PASSTHROUGHS.join('/')})`)
     foundEnvironment = getEnvironment(environment)
   } catch (e) {
     goFail(e)
@@ -76,8 +78,25 @@ async function eventHookLogic (config, connectionContainer) {
       email: typeof payment.email === 'string' && payment.email.length > 0 ? payment.email : undefined,
       note: payment.sessionId
     },
-    'note': typeof payment.extra === 'string' && payment.extra.length > 0 ? payment.extra : undefined
-    // 'table': (thing && typeof thing.theirId === 'string' && thing.theirId.length > 0) ? thing.theirId : thing.name.split('').filter(_ => ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'].includes(_)).join('')
+    'note': typeof payment.extra === 'string' && payment.extra.length > 0 ? payment.extra : undefined,
+    'table': (() => {
+      if (!thing) {
+        return undefined
+      }
+      if (thingPassthrough === 'None') {
+        return undefined
+      }
+      if (thingPassthrough === 'Your ID') {
+        return thing.theirId || undefined
+      }
+      if (thingPassthrough === 'Name') {
+        return thing.name
+      }
+      if (thingPassthrough === 'Number') {
+        return thing.name.split('').filter(_ => ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'].includes(_)).join('')
+      }
+      return undefined
+    })()
   }
 
   global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] customData', JSON.stringify(customData, null, 2))
@@ -103,8 +122,8 @@ module.exports = new Connection({
   name: 'Deliverect',
   color: '#05CC79',
   logo: cdn => `${cdn}/connections/CONNECTION_DELIVERECT.svg`,
-  configNames: ['"Sandbox"/"Production"', 'Channel link ID', 'Location ID', '"Not busy" flow ID', '"Busy" flow ID', 'Send order ("Yes"/"No")'],
-  configDefaults: ['Sandbox', '', '', '', '', 'No'],
+  configNames: ['"Sandbox"/"Production"', 'Channel link ID', 'Location ID', '"Not busy" flow ID', '"Busy" flow ID', 'Send order (Yes/No)', `Sticker passthrough (${VALID_THING_PASSTHROUGHS.join('/')})`],
+  configDefaults: ['Sandbox', '', '', '', '', 'No', VALID_THING_PASSTHROUGHS[0]],
   methods: {
     inboundMenu: require('./inboundMenu'),
     snooze: require('./snooze'),
