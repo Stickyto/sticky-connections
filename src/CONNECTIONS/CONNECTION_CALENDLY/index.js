@@ -6,6 +6,6 @@ module.exports = new Connection({
   color: '#006BFF',
   logo: cdn => `${cdn}/connections/CONNECTION_CALENDLY.svg`,
   configNames: ['URL'],
-  configDefaults: ['https://calendly.com/sticky/james-1'],
+  configDefaults: ['https://calendly.com/sticky/lets-talk-am'],
   instructionsDone: 'This link will be used as the default.'
 })
