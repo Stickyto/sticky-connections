@@ -31,7 +31,7 @@ async function eventHookLogic (config, connectionContainer) {
   const yourPhoto = deserialize(customData['Your photo'])
   const body = {
     password: 'choose a new password 123',
-    userType: 'UT_GENERIC_PAY',
+    userType: 'UT_GENERIC',
 
     name: `${customData['Name']} (${customData['Company']})`,
     email: customData['Email'],
