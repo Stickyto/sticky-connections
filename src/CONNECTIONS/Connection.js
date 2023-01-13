@@ -39,7 +39,6 @@ class Connection {
       color: this.color,
       logo: this.logo(secrets.cdn),
       instructions: this.instructions,
-      instructionsDone: this.instructionsDone,
       configNames: this.configNames,
       configDefaults: this.configDefaults,
       configPerApplicationBlock: this.configPerApplicationBlock

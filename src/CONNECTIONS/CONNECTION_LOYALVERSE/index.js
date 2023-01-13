@@ -3,6 +3,8 @@ const got = require('got')
 const { assert, sanitize, getNow } = require('openbox-node-utils')
 const Connection = require('../Connection')
 
+const COLOR = '#00A1E4'
+
 async function makeRequest(config, url) {
   const [apiKey] = config
   const { body: bodyAsString } = await got(
@@ -123,11 +125,23 @@ module.exports = new Connection({
   id: 'CONNECTION_LOYALVERSE',
   name: 'Loyverse',
   shortName: 'L',
-  color: '#00A1E4',
+  color: COLOR,
   logo: cdn => `${cdn}/connections/CONNECTION_LOYALVERSE.svg`,
   configNames: ['PASTE HERE: Access token', 'PASTE HERE: Store name'],
   configDefaults: ['', ''],
   instructions: [
+    {
+      'id': '71d05208-3781-4c24-996e-c4c0d1c6b228',
+      'config': {
+        'what': 'Sticky syncs with Loverse every 5 minutes.',
+        'font': `${COLOR}--center--100%--false`,
+        'icon': 'hand'
+      }
+    },
+    {
+      "id": "6121bb17-a3b4-4df4-b64e-1149ce4d7140",
+      "config": {}
+    },
     {
       "id": "9545852c-d64a-457a-8ca0-2b2d1173de9b",
       "config": {
@@ -161,7 +175,7 @@ module.exports = new Connection({
     {
       "id": "81e88b40-b16a-4619-a659-2881ea326217",
       "config": {
-        "colour": "#00A1E4",
+        "colour": COLOR,
         "foregroundColour": "#FFFFFF"
       }
     },
@@ -187,7 +201,7 @@ module.exports = new Connection({
     {
       "id": "81e88b40-b16a-4619-a659-2881ea326217",
       "config": {
-        "colour": "#00A1E4",
+        "colour": COLOR,
         "foregroundColour": "#FFFFFF"
       }
     },
@@ -213,7 +227,7 @@ module.exports = new Connection({
     {
       "id": "81e88b40-b16a-4619-a659-2881ea326217",
       "config": {
-        "colour": "#00A1E4",
+        "colour": COLOR,
         "foregroundColour": "#FFFFFF"
       }
     },
@@ -248,7 +262,6 @@ module.exports = new Connection({
       }
     }
   ],
-  instructionsDone: 'Sticky syncs with Loyverse every 5 minutes.',
   crons: [
     {
       id: 'generic',

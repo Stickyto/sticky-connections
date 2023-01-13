@@ -56,7 +56,23 @@ module.exports = new Connection({
     '',
     '9.2'
   ],
-  instructionsDone: 'Form submissions and touchpoints will now go into Microsoft Dataverse. Update each "Form → ..." flow step with a map to the right Microsoft Dataverse field name.',
+  instructions: [
+    {
+      'id': '71d05208-3781-4c24-996e-c4c0d1c6b228',
+      'config': {
+        'what': 'Form submissions and touchpoints will now go into Microsoft Dataverse. Update each "Form → ..." flow step with a map to the right Microsoft Dataverse field name.',
+        'font': `${COLOR}--center--100%--false`,
+        'icon': 'hand'
+      }
+    },
+    {
+      'id': '71d05208-3781-4c24-996e-c4c0d1c6b228',
+      'config': {
+        'what': 'Update each "Form → ..." flow step with a map to the right Microsoft Dataverse field name.',
+        'font': `${COLOR}--center--100%--false`
+      }
+    }
+  ],
   configPerApplicationBlock: {
     '0e1f0565-5e05-471c-b855-bbe44c20527d': CONFIG_PER_APPLICATION_BLOCK,
     'c3b92e16-a631-48da-901b-e578cccfda7e': CONFIG_PER_APPLICATION_BLOCK,
@@ -65,6 +81,5 @@ module.exports = new Connection({
   eventHooks: {
     'LD_V2': eventHookLogic,
     'CHECK_IN': eventHookLogic
-  },
-  partnerIds: ['3caf5a65-12ba-4db7-aeb6-a8b4c8b37c98']
+  }
 })
