@@ -2,6 +2,8 @@ const got = require('got')
 const { assert, isEmailValid, getNow } = require('openbox-node-utils')
 const Connection = require('../Connection')
 
+const COLOR = '#FFBD00'
+
 async function makeRequest (config, url) {
   const [apiKey, email] = config
   const { body: bodyAsString } = await got(
@@ -37,11 +39,20 @@ module.exports = new Connection({
   id: 'CONNECTION_UNTAPPD',
   name: 'Untappd',
   shortName: 'U',
-  color: '#FFBD00',
+  color: COLOR,
   logo: cdn => `${cdn}/connections/CONNECTION_UNTAPPD.svg`,
   configNames: ['API key', 'Email', 'Venue ID'],
   configDefaults: ['', '', ''],
-  instructionsDone: 'Sticky syncs with Untappd every 5 minutes.',
+  instructions: [
+    {
+      'id': '71d05208-3781-4c24-996e-c4c0d1c6b228',
+      'config': {
+        'what': 'Sticky syncs with Untappd every 5 minutes.',
+        'font': `${COLOR}--center--100%--false`,
+        'icon': 'hand'
+      }
+    }
+  ],
   crons: [
     {
       id: 'generic',

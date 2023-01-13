@@ -1,4 +1,3 @@
-/* eslint-disable quotes */
 const Connection = require('../Connection')
 const makeRequest = require('./makeRequest')
 const { deserialize } = require('openbox-node-utils')
@@ -63,92 +62,92 @@ async function eventHookLogic (config, connectionContainer) {
         events: {
           on_load: [
             {
-              "id": "eab1198f-f924-442c-90d7-fca408ee9ef8",
-              "config": {
-                "what": "My business card",
-                "colour": "#FF1F3E"
+              'id': 'eab1198f-f924-442c-90d7-fca408ee9ef8',
+              'config': {
+                'what': 'My business card',
+                'colour': '#FF1F3E'
               }
             },
             {
-              "id": "0433e4bf-bc53-42e1-bf1c-253a789a74d6",
-              "config": {
-                "label": customData['Name'],
-                "ccName1": customData['Name'],
-                "ccName2": "",
-                "ccCompanyName": customData['Company'],
-                "ccPhone": customData['Phone'],
-                "ccEmail": customData['Email']
+              'id': '0433e4bf-bc53-42e1-bf1c-253a789a74d6',
+              'config': {
+                'label': customData['Name'],
+                'ccName1': customData['Name'],
+                'ccName2': '',
+                'ccCompanyName': customData['Company'],
+                'ccPhone': customData['Phone'],
+                'ccEmail': customData['Email']
               }
             },
             {
-              "id": "6121bb17-a3b4-4df4-b64e-1149ce4d7140",
-              "config": {}
+              'id': '6121bb17-a3b4-4df4-b64e-1149ce4d7140',
+              'config': {}
             },
             {
-              "id": "6121bb17-a3b4-4df4-b64e-1149ce4d7140",
-              "config": {}
+              'id': '6121bb17-a3b4-4df4-b64e-1149ce4d7140',
+              'config': {}
             },
             {
-              "id": "6121bb17-a3b4-4df4-b64e-1149ce4d7140",
-              "config": {}
+              'id': '6121bb17-a3b4-4df4-b64e-1149ce4d7140',
+              'config': {}
             },
             {
-              "id": "0e1f0565-5e05-471c-b855-bbe44c20527d",
-              "config": {
-                "label": "Name",
-                "type": " → Name",
-                "value": "",
-                "disabled": false,
-                "required": false,
-                "stashUser": false,
-                "isHidden": false
+              'id': '0e1f0565-5e05-471c-b855-bbe44c20527d',
+              'config': {
+                'label': 'Name',
+                'type': ' → Name',
+                'value': '',
+                'disabled': false,
+                'required': false,
+                'stashUser': false,
+                'isHidden': false
               }
             },
             {
-              "id": "0e1f0565-5e05-471c-b855-bbe44c20527d",
-              "config": {
-                "label": "Email",
-                "type": " → Email",
-                "value": "",
-                "disabled": false,
-                "required": false,
-                "stashUser": false,
-                "isHidden": false
+              'id': '0e1f0565-5e05-471c-b855-bbe44c20527d',
+              'config': {
+                'label': 'Email',
+                'type': ' → Email',
+                'value': '',
+                'disabled': false,
+                'required': false,
+                'stashUser': false,
+                'isHidden': false
               }
             },
             {
-              "id": "0e1f0565-5e05-471c-b855-bbe44c20527d",
-              "config": {
-                "label": "Phone",
-                "type": " → Phone",
-                "value": "",
-                "disabled": false,
-                "required": false,
-                "stashUser": false,
-                "isHidden": false
+              'id': '0e1f0565-5e05-471c-b855-bbe44c20527d',
+              'config': {
+                'label': 'Phone',
+                'type': ' → Phone',
+                'value': '',
+                'disabled': false,
+                'required': false,
+                'stashUser': false,
+                'isHidden': false
               }
             },
             {
-              "id": "0e1f0565-5e05-471c-b855-bbe44c20527d",
-              "config": {
-                "label": "Why should we keep in touch?",
-                "type": "Long text",
-                "value": "",
-                "disabled": false,
-                "required": false,
-                "stashUser": false,
-                "isHidden": false
+              'id': '0e1f0565-5e05-471c-b855-bbe44c20527d',
+              'config': {
+                'label': 'Why should we keep in touch?',
+                'type': 'Long text',
+                'value': '',
+                'disabled': false,
+                'required': false,
+                'stashUser': false,
+                'isHidden': false
               }
             },
             {
-              "id": "a21eddf2-aa86-4b6a-a2af-8ac279b246f7",
-              "config": {
-                "action": "formSubmit~~||~~%%^^%%false%%^^%%%%^^%%#2f3542~~||~~false",
-                "label": "Submit",
-                "colour": "#FF1F3E",
-                "foregroundColour": "#FFFFFF",
-                "icon": "check",
-                "fullWidth": false
+              'id': 'a21eddf2-aa86-4b6a-a2af-8ac279b246f7',
+              'config': {
+                'action': 'formSubmit~~||~~%%^^%%false%%^^%%%%^^%%#2f3542~~||~~false',
+                'label': 'Submit',
+                'colour': '#FF1F3E',
+                'foregroundColour': '#FFFFFF',
+                'icon': 'check',
+                'fullWidth': false
               }
             }
           ]
@@ -179,13 +178,22 @@ async function eventHookLogic (config, connectionContainer) {
 
 module.exports = new Connection({
   id: 'CONNECTION_API',
-  name: 'Sticky API',
+  name: 'Create a Sticky dashboard',
   shortName: 'API',
   color: COLOR,
   logo: cdn => `${cdn}/connections/CONNECTION_API.svg`,
   configNames: [],
   configDefaults: [],
-  instructionsDone: 'Form submissions and touchpoints will now create Sticky accounts.',
+  instructions: [
+    {
+      'id': '71d05208-3781-4c24-996e-c4c0d1c6b228',
+      'config': {
+        'what': 'Form submissions and touchpoints will now create Sticky dashboards.',
+        'font': `${COLOR}--center--100%--false`,
+        'icon': 'hand'
+      }
+    }
+  ],
   eventHooks: {
     'LD_V2': eventHookLogic,
     'CHECK_IN': eventHookLogic

@@ -1,35 +1,35 @@
 const CONNECTIONS = new Map([
   [
-    'CONNECTION_CALENDLY',
-    require('./CONNECTION_CALENDLY')
+    'CONNECTION_MAILCHIMP',
+    require('./CONNECTION_MAILCHIMP')
   ],
   [
-    'CONNECTION_LOYALVERSE',
-    require('./CONNECTION_LOYALVERSE')
+    'CONNECTION_DELIVERECT',
+    require('./CONNECTION_DELIVERECT')
   ],
   [
     'CONNECTION_UNTAPPD',
     require('./CONNECTION_UNTAPPD')
   ],
   [
+    'CONNECTION_LOYALVERSE',
+    require('./CONNECTION_LOYALVERSE')
+  ],
+  [
     'CONNECTION_PLAY_IT_GREEN',
     require('./CONNECTION_PLAY_IT_GREEN')
-  ],
-  [
-    'CONNECTION_MAILCHIMP',
-    require('./CONNECTION_MAILCHIMP')
-  ],
-  [
-    'CONNECTION_DATAVERSE',
-    require('./CONNECTION_DATAVERSE')
   ],
   [
     'CONNECTION_ATREEMO',
     require('./CONNECTION_ATREEMO')
   ],
   [
-    'CONNECTION_DELIVERECT',
-    require('./CONNECTION_DELIVERECT')
+    'CONNECTION_CALENDLY',
+    require('./CONNECTION_CALENDLY')
+  ],
+  [
+    'CONNECTION_DATAVERSE',
+    require('./CONNECTION_DATAVERSE')
   ],
   [
     'CONNECTION_ELITE_DYNAMICS',
