@@ -178,7 +178,7 @@ async function eventHookLogic (config, connectionContainer) {
 
 module.exports = new Connection({
   id: 'CONNECTION_API',
-  name: 'Create a Sticky dashboard',
+  name: 'Create dashboard',
   shortName: 'API',
   color: COLOR,
   logo: cdn => `${cdn}/connections/CONNECTION_API.svg`,
