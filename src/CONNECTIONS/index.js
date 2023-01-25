@@ -8,6 +8,10 @@ const CONNECTIONS = new Map([
     require('./CONNECTION_DELIVERECT')
   ],
   [
+    'CONNECTION_URBAN_PIPER',
+    require('./CONNECTION_URBAN_PIPER')
+  ],
+  [
     'CONNECTION_UNTAPPD',
     require('./CONNECTION_UNTAPPD')
   ],
