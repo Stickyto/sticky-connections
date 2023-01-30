@@ -14,7 +14,7 @@ beforeEach(() => {
     connections: []
   }
   partner = {
-    id: '3caf5a65-12ba-4db7-aeb6-a8b4c8b37c98' // EliteParks
+    name: 'Elite Dynamics'
   }
 })
 
@@ -30,13 +30,13 @@ describe('doesnt work', () => {
 
   it('respects connection matching', async () => {
     partner = {
-      id: 'e7893791-5747-47e6-881f-bf3b3599e6f9' // Accept Cards
+      name: 'Not Elite Dynamics'
     }
     await expect(
-      go('CONNECTION_DATAVERSE', 'authenticate', { user, partner })
+      go('CONNECTION_ELITE_DYNAMICS', 'authenticate', { user, partner })
     )
       .rejects.toMatchObject({
-        message: 'Connection CONNECTION_DATAVERSE didn\'t pass isAMatch()'
+        message: 'Connection CONNECTION_ELITE_DYNAMICS didn\'t pass isAMatch()'
       })
   })
 
