@@ -14,8 +14,8 @@ class Connection {
     })
   }
 
-  isAMatch (userId, partnerId) {
-    if (!partnerId && Array.isArray(this.partnerIds)) {
+  isAMatch (userId, partnerName) {
+    if (!partnerName && Array.isArray(this.partnerNames)) {
       return false
     }
     if (!userId && this.userIds.length > 0) {
@@ -25,8 +25,8 @@ class Connection {
     if (userId && this.userIds.length > 0) {
       doesUserMatch = this.userIds.includes(userId)
     }
-    if (partnerId && Array.isArray(this.partnerIds)) {
-      doesPartnerMatch = this.partnerIds.includes(partnerId)
+    if (partnerName && Array.isArray(this.partnerNames)) {
+      doesPartnerMatch = this.partnerNames.includes(partnerName)
     }
     return (doesUserMatch && doesPartnerMatch)
   }
