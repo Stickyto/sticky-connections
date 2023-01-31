@@ -35,6 +35,7 @@ class Connection {
     return {
       id: this.id,
       name: this.name,
+      payGoToKeys: this.payGoToKeys,
       color: this.color,
       logo: this.logo(secrets.cdn),
       instructions: this.instructions,
