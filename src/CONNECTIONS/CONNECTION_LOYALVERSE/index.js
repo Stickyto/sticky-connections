@@ -385,15 +385,14 @@ module.exports = new Connection({
           global.rdic.logger.log({}, '[job-CONNECTION_LOYALVERSE] toDeletePPromises.length', toDeletePPromises.length)
           await Promise.all(toDeletePPromises)
 
-        } catch (e) {
+        } catch ({ message }) {
           const payload = {
             type: 'CONNECTION_BAD',
             userId: user.id,
-            customData: { id: 'CONNECTION_LOYALVERSE', message: e.message }
+            customData: { id: 'CONNECTION_LOYALVERSE', message }
           }
           await cronContainer.createEvent(payload)
-
-          global.rdic.logger.error({}, e.message)
+          global.rdic.logger.error({}, { message })
         }
       }
     }
