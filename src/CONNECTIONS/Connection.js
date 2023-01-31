@@ -9,14 +9,13 @@ class Connection {
     this.configPerApplicationBlock = {}
     this.eventHooks = {}
     this.userIds = []
-    this.partnerIds = []
     Object.keys(json).forEach(k => {
       this[k] = json[k]
     })
   }
 
-  isAMatch (userId, partnerId) {
-    if (!partnerId && this.partnerIds.length > 0) {
+  isAMatch (userId, partnerName) {
+    if (!partnerName && Array.isArray(this.partnerNames)) {
       return false
     }
     if (!userId && this.userIds.length > 0) {
@@ -26,8 +25,8 @@ class Connection {
     if (userId && this.userIds.length > 0) {
       doesUserMatch = this.userIds.includes(userId)
     }
-    if (partnerId && this.partnerIds.length > 0) {
-      doesPartnerMatch = this.partnerIds.includes(partnerId)
+    if (partnerName && Array.isArray(this.partnerNames)) {
+      doesPartnerMatch = this.partnerNames.includes(partnerName)
     }
     return (doesUserMatch && doesPartnerMatch)
   }

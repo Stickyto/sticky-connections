@@ -1,5 +1,10 @@
 const CONNECTIONS = new Map([
   [
+    'CONNECTION_ELITE_DYNAMICS',
+    require('./CONNECTION_ELITE_DYNAMICS')
+  ],
+
+  [
     'CONNECTION_MAILCHIMP',
     require('./CONNECTION_MAILCHIMP')
   ],
@@ -34,10 +39,6 @@ const CONNECTIONS = new Map([
   [
     'CONNECTION_DATAVERSE',
     require('./CONNECTION_DATAVERSE')
-  ],
-  [
-    'CONNECTION_ELITE_DYNAMICS',
-    require('./CONNECTION_ELITE_DYNAMICS')
   ],
   [
     'CONNECTION_API',

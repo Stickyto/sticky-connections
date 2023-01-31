@@ -1,8 +1,8 @@
 const CONNECTIONS = require('../CONNECTIONS')
 
-module.exports = (userId, partnerId) => {
+module.exports = (userId, partnerName) => {
   const allConnections = Array.from(CONNECTIONS.values())
-    .filter(c => c.isAMatch(userId, partnerId))
+    .filter(c => c.isAMatch(userId, partnerName))
   const toReturn = []
   allConnections.forEach(_ => {
     Object.keys(_.eventHooks).forEach(ek => {

@@ -6,7 +6,7 @@ module.exports = async function go (connection, method, { rdic, user, partner, b
   const foundConnection = CONNECTIONS.get(connection)
   assert(typeof foundConnection === 'object', `There isn't a connection called ${connection}!`)
 
-  assert(foundConnection.isAMatch(user && user.id, partner && partner.id), `Connection ${connection} didn't pass isAMatch()`)
+  assert(foundConnection.isAMatch(user && user.id, partner && partner.name), `Connection ${connection} didn't pass isAMatch()`)
 
   const foundMethod = await foundConnection.methods[method]
   assert(typeof foundMethod === 'object', `${foundConnection.name} doesn't have a method called ${method}!`)
@@ -22,6 +22,7 @@ module.exports = async function go (connection, method, { rdic, user, partner, b
   const connectionContainer = {
     rdic,
     user,
+    partner,
     createEvent: async function (payload, customCreatedAt) {
       const event = new Event(payload)
       if (typeof customCreatedAt === 'number') {
