@@ -3,6 +3,10 @@ const CONNECTIONS = new Map([
     'CONNECTION_ELITE_DYNAMICS',
     require('./CONNECTION_ELITE_DYNAMICS')
   ],
+  [
+    'CONNECTION_DOMCENTRAL',
+    require('./CONNECTION_DOMCENTRAL')
+  ],
 
   [
     'CONNECTION_MAILCHIMP',
