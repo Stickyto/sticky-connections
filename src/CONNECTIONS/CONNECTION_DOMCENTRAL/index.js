@@ -10,7 +10,13 @@ const HEADERS = {
 }
 
 async function makeRequest (method, url, json, headers) {
+  global.rdic.logger.log({}, '[CONNECTION_DOMCENTRAL] [makeRequest] method', method)
+  global.rdic.logger.log({}, '[CONNECTION_DOMCENTRAL] [makeRequest] url', url)
+  global.rdic.logger.log({}, '[CONNECTION_DOMCENTRAL] [makeRequest] json', json)
+  global.rdic.logger.log({}, '[CONNECTION_DOMCENTRAL] [makeRequest] headers', headers)
   const { body: bodyAsString } = await got[method](url, { headers, json })
+  global.rdic.logger.log({}, '[CONNECTION_DOMCENTRAL] [makeRequest] typeof bodyAsString', typeof bodyAsString)
+  global.rdic.logger.log({}, '[CONNECTION_DOMCENTRAL] [makeRequest] bodyAsString', bodyAsString)
   return typeof bodyAsString === 'string' && bodyAsString.length > 0 ? JSON.parse(bodyAsString) : undefined
 }
 
