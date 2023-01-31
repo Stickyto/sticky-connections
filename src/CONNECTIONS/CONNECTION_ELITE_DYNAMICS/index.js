@@ -28,7 +28,7 @@ function getBody (codeUnit, method, body = {}) {
 module.exports = new Connection({
   id: 'CONNECTION_ELITE_DYNAMICS',
   name: 'EliteParks',
-  partnerIds: ['3caf5a65-12ba-4db7-aeb6-a8b4c8b37c98'],
+  partnerNames: ['Elite Dynamics'],
   color: '#0D9277',
   logo: cdn => `${cdn}/connections/CONNECTION_ELITE_DYNAMICS.svg`,
   configNames: ['API key', 'Password', 'URL'],
