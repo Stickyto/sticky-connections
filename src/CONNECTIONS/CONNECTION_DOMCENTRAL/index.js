@@ -9,6 +9,11 @@ const HEADERS = {
   'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36'
 }
 
+const DATA = {
+  getStore: require('./data/getStore.json'),
+  getMenu: require('./data/getMenu.json')
+}
+
 async function makeRequest (method, url, json, headers) {
   global.rdic.logger.log({}, '[CONNECTION_DOMCENTRAL] [makeRequest] method', method)
   global.rdic.logger.log({}, '[CONNECTION_DOMCENTRAL] [makeRequest] url', url)
@@ -43,9 +48,7 @@ module.exports = new Connection({
         const { rdic } = cronContainer
         global.rdic.logger.log({}, '[job-CONNECTION_DOMCENTRAL] [go]', { userId: user.id })
         try {
-          const { config } = user.connections.find(c => c.id === 'CONNECTION_DOMCENTRAL')
-          let [configStoreId] = config
-          const theirData = await makeRequest('get', `https://www.dominos.co.uk/ProductCatalog/GetStoreCatalog?collectionOnly=false&menuVersion=637913119800000000&storeId=${configStoreId}&v=115.1.0.3`, undefined, getHeaders(configStoreId))
+          const theirData = DATA.getMenu
 
           const allPcsToday = await cronContainer.getProductCategories(rdic, user, 'CONNECTION_DOMCENTRAL')
           if (allPcsToday.length > 0) {
@@ -54,26 +57,36 @@ module.exports = new Connection({
           }
           for (let tdI = 0; tdI < theirData.length; tdI++) {
             const td = theirData[tdI]
-            for (let tdI2 = 0; tdI2 < td.subcategories.length; tdI2++) {
-              const td2 = td.subcategories[tdI2]
+            const subMenus = td.subcategories.filter(_ => !(_.hasHalfAndHalf || _.hasCreateYourOwn))
+            for (let tdI2 = 0; tdI2 < subMenus.length; tdI2++) {
+              const td2 = subMenus[tdI2]
               const createdPis = []
               for (let pI = 0; pI < td2.products.length; pI++) {
                 const p = td2.products[pI]
+
+                const howManySizes = p.productSkus.length
+
+                const tags = []
+                p.isVegetarian && tags.push('vegan')
+                p.isVegan && tags.push('vegetarian')
+                p.isHot && tags.push('allergy--spicy')
+                p.isGlutenFree && tags.push('gluten-free')
                 const { id: createdPId } = await cronContainer.createProduct({
+                  categories: Array.from(new Set(tags)),
                   userId: user.id,
                   theirId: p.productId,
                   createdAt: getNow() + pI,
                   connection: 'CONNECTION_DOMCENTRAL',
                   currency: user.currency,
                   name: p.name,
-                  price: 0,
+                  price: howManySizes === 1 ? Math.ceil(p.productSkus[0].price * 100, 10) : 0,
                   media: [
                     {
                       type: 'image',
                       url: p.imageUrl
                     }
                   ],
-                  questions: [
+                  questions: howManySizes === 1 ? [] : [
                     {
                       type: 'option',
                       question: 'What size?',
@@ -88,11 +101,13 @@ module.exports = new Connection({
                             type: 'image',
                             url: `https://www.dominos.co.uk${_.iconUrl}`
                           }
-                        ]
+                        ],
+                        description: typeof _.calorie === 'number' ? `${_.calorie} calories` : undefined
                       }))
                     }
                   ],
-                  description: p.description
+                  description: p.description,
+                  oneTapCheckout: p.description.length === 0
                 })
                 createdPis.push(createdPId)
               }
@@ -128,15 +143,7 @@ module.exports = new Connection({
     getStore: {
       name: 'Get store',
       logic: async ({ config }) => {
-        const [configStoreId] = config
-        return (await makeRequest('get', `https://www.dominos.co.uk/api/stores/v1/stores/${configStoreId}/details`, undefined, getHeaders(configStoreId))).data
-      }
-    },
-    getMenu: {
-      name: 'Get menu',
-      logic: async ({ config }) => {
-        const [configStoreId] = config
-        return await makeRequest('get', `https://www.dominos.co.uk/ProductCatalog/GetStoreCatalog?collectionOnly=false&menuVersion=637913119800000000&storeId=${configStoreId}&v=115.1.0.3`, undefined, getHeaders(configStoreId))
+        return DATA.getStore.data
       }
     }
   }
