@@ -47,10 +47,12 @@ module.exports = {
     try {
       assert(channelLink === configuredChannelLinkId, `[status] Channel link IDs do not match (${channelLink} vs configured ${configuredChannelLinkId})`)
       assert(statusMap.has(status), '[status] "status" body key is not valid; are you really Deliverect?')
-      assert(isUuid(channelOrderId), '[status] channelOrderId is not a uuid!')
 
-      const rawPayment = await rdic.get('datalayerRelational').readOne('payments', { user_id: user.id, id: channelOrderId })
-      assert(rawPayment, `[status] payment with channelOrderId "${channelOrderId}" not found!`)
+      const [_coThingId, coPaymentId] = channelOrderId.split('---')
+      assert(isUuid(coPaymentId), '[status] coPaymentId is not a uuid!')
+
+      const rawPayment = await rdic.get('datalayerRelational').readOne('payments', { user_id: user.id, id: coPaymentId })
+      assert(rawPayment, `[status] payment with coPaymentId "${coPaymentId}" not found!`)
       const payment = new Payment().fromDatalayerRelational(rawPayment)
       statusMap.get(status)(payment)
 

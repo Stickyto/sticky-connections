@@ -39,7 +39,7 @@ async function eventHookLogic (config, connectionContainer) {
     id: event.paymentId
   })
   const body = {
-    'channelOrderId': event.paymentId,
+    'channelOrderId': [event.thingId || 'NA', event.paymentId].join('---'),
     'channelOrderDisplayId': temporaryPayment.consumerIdentifier,
     'items': customData.cart.map(_ => {
       let subItems = []
