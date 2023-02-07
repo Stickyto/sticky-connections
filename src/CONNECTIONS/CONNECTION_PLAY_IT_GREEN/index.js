@@ -5,8 +5,8 @@ const { sum, assert } = require('openbox-node-utils')
 const Connection = require('../Connection')
 const makeRequest = require('./makeRequest')
 
-async function eventHookLogic(config, connectionContainer) {
-  const { user, application, thing, customData, createEvent } = connectionContainer
+async function eventHookLogic (config, connectionContainer) {
+  const { user, application, thing, payment, customData, createEvent } = connectionContainer
 
   const [configForestGardenId, configMustMatchProductName, configApiEndpoint, configApiToken] = config
 
@@ -20,22 +20,28 @@ async function eventHookLogic(config, connectionContainer) {
   global.rdic.logger.log({}, '[CONNECTION_PLAY_IT_GREEN]', { configForestGardenId, configMustMatchProductName, configApiEndpoint, configApiToken, howMany })
 
   if (howMany > 0) {
+    const body = {
+      quantity: howMany,
+      productCode: 'PLAY1TREEAPI',
+      referenceNo: payment.id
+    }
+    global.rdic.logger.log({}, '[CONNECTION_PLAY_IT_GREEN] howMany > 0', { body })
     try {
-      const { productInOrderId: theirId } = await makeRequest(
+      global.rdic.logger.log({}, '[CONNECTION_PLAY_IT_GREEN] exec 1')
+      const { productInOrderId: theirId1, orderId: theirId2 } = await makeRequest(
         configApiToken,
         'post',
         `${configApiEndpoint}/pig2/api/buy_trees`,
-        {
-          quantity: howMany
-        },
+        body,
         'json'
       )
+      global.rdic.logger.log({}, '[CONNECTION_PLAY_IT_GREEN] exec 2', { theirId1, theirId2 })
       createEvent({
         type: 'CONNECTION_GOOD',
         userId: user.id,
         applicationId: application ? application.id : undefined,
         thingId: thing ? thing.id : undefined,
-        customData: { id: 'CONNECTION_PLAY_IT_GREEN', theirId }
+        customData: { id: 'CONNECTION_PLAY_IT_GREEN', theirId: theirId1 }
       })
     } catch (e) {
       createEvent({
@@ -53,7 +59,7 @@ module.exports = new Connection({
   name: 'Play It Green',
   color: '#5CC239',
   logo: cdn => `${cdn}/connections/CONNECTION_PLAY_IT_GREEN.png`,
-  configNames: ['Forest Garden ID', 'Match products with a name containing', 'API endpoint', 'API token'],
+  configNames: ['(Optional) Forest Garden ID', 'Match products with a name containing', 'API endpoint', 'API token'],
   configDefaults: ['431', 'Play It Green', 'https://api.playitgreen.com', ''],
   methods: {
     getForestGarden: {
