@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "dependencies": {
     "adal-node": "^0.2.4",
-    "got": "11.8.5",
+    "got": "12.5.3",
     "html-entities": "^2.3.3",
     "httpntlm": "^1.8.2",
     "jsdom": "^21.1.0",
