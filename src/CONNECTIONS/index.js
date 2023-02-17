@@ -45,6 +45,10 @@ const CONNECTIONS = new Map([
     require('./CONNECTION_DATAVERSE')
   ],
   [
+    'CONNECTION_RINGCENTRAL',
+    require('./CONNECTION_RINGCENTRAL')
+  ],
+  [
     'CONNECTION_API',
     require('./CONNECTION_API')
   ]
