@@ -4,6 +4,10 @@ const CONNECTIONS = new Map([
     require('./CONNECTION_ELITE_DYNAMICS')
   ],
   [
+    'CONNECTION_JUSTEAT',
+    require('./CONNECTION_JUSTEAT')
+  ],
+  [
     'CONNECTION_DOMCENTRAL',
     require('./CONNECTION_DOMCENTRAL')
   ],

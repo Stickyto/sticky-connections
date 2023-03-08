@@ -1,3 +1,5 @@
+require('dotenv').config()
+
 const { User, Application, CustomData } = require('openbox-entities')
 const CONNECTION_ATREEMO = require('.')
 const configDefaults = JSON.parse(process.env.CONFIG_DEFAULTS)
