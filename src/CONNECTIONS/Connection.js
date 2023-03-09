@@ -1,7 +1,7 @@
 const secrets = require('openbox-secrets')
 
 class Connection {
-  constructor (json) {
+  constructor(json) {
     this.payGoToKeys = []
     this.crons = []
     this.instructions = []
@@ -14,7 +14,7 @@ class Connection {
     })
   }
 
-  isAMatch (userId, partnerName) {
+  isAMatch(userId, partnerName) {
     if (!partnerName && Array.isArray(this.partnerNames)) {
       return false
     }
@@ -31,17 +31,19 @@ class Connection {
     return (doesUserMatch && doesPartnerMatch)
   }
 
-  toJson () {
+  toJson() {
     return {
       id: this.id,
       name: this.name,
       payGoToKeys: this.payGoToKeys,
       color: this.color,
       logo: this.logo(secrets.cdn),
+      logoInverted: this.logoInverted ? this.logoInverted(secrets.cdn) : undefined,
       instructions: this.instructions,
       configNames: this.configNames,
       configDefaults: this.configDefaults,
-      configPerApplicationBlock: this.configPerApplicationBlock
+      configPerApplicationBlock: this.configPerApplicationBlock,
+      methods: Object.keys(this.methods).map(x => [x, this.methods[x].name])
     }
   }
 }
