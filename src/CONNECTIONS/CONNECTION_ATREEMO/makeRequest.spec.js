@@ -1,7 +1,9 @@
-const configDefaults = require('./configDefaults.json')
+require('dotenv').config()
+
+const configDefaults = JSON.parse(process.env.CONFIG_DEFAULTS)
 const makeRequest = require('./makeRequest')
 
-async function getToken () {
+async function getToken() {
   const [, configUsername, configPassword] = configDefaults
   const {
     access_token: bearerToken
