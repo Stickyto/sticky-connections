@@ -5,10 +5,12 @@
   "main": "src/index.js",
   "dependencies": {
     "adal-node": "^0.2.4",
+    "dotenv": "^16.0.3",
     "got": "11.8.5",
     "html-entities": "^2.3.3",
     "httpntlm": "^1.8.2",
     "jsdom": "^21.1.0",
+    "puppeteer": "^19.7.3",
     "safe-eval": "^0.4.1",
     "xml2json": "^0.12.0"
   },
