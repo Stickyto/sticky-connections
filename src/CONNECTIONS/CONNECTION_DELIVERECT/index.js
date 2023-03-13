@@ -20,7 +20,7 @@ async function eventHookLogic (config, connectionContainer) {
     })
   }
 
-  const [environment, channelLinkId, locationId, notBusyApplicationId, busyApplicationId, sendOrder, thingPassthrough = VALID_THING_PASSTHROUGHS[0]] = config
+  const [environment, channelLinkId, notBusyApplicationId, busyApplicationId, sendOrder, thingPassthrough = VALID_THING_PASSTHROUGHS[0]] = config
   global.rdic.logger.log({}, '[CONNECTION_DELIVERECT]', { environment, channelLinkId, sendOrder, thingPassthrough })
 
   let foundEnvironment
@@ -122,8 +122,8 @@ module.exports = new Connection({
   name: 'Deliverect',
   color: '#05CC79',
   logo: cdn => `${cdn}/connections/CONNECTION_DELIVERECT.svg`,
-  configNames: ['"Sandbox"/"Production"', 'Channel link ID', 'Location ID', '"Not busy" flow ID', '"Busy" flow ID', 'Send order (Yes/No)', `Sticker passthrough (${VALID_THING_PASSTHROUGHS.join('/')})`],
-  configDefaults: ['Sandbox', '', '', '', '', 'No', VALID_THING_PASSTHROUGHS[0]],
+  configNames: ['"Sandbox"/"Production"', 'Channel link ID', '"Not busy" flow ID', '"Busy" flow ID', 'Send order (Yes/No)', `Sticker passthrough (${VALID_THING_PASSTHROUGHS.join('/')})`],
+  configDefaults: ['Sandbox', '', '', '', 'No', VALID_THING_PASSTHROUGHS[0]],
   methods: {
     inboundMenu: require('./inboundMenu'),
     snooze: require('./snooze'),
