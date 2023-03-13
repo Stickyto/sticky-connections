@@ -1,3 +1,5 @@
+require('dotenv').config()
+
 const configDefaults = JSON.parse(process.env.CONFIG_DEFAULTS)
 const makeRequest = require('./makeRequest')
 
