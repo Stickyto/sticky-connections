@@ -8,6 +8,10 @@ const CONNECTIONS = new Map([
     require('./CONNECTION_JUSTEAT')
   ],
   [
+    'CONNECTION_CYCLR',
+    require('./CONNECTION_CYCLR')
+  ],
+  [
     'CONNECTION_DOMCENTRAL',
     require('./CONNECTION_DOMCENTRAL')
   ],
