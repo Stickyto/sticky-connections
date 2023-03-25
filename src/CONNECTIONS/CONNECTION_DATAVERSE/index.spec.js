@@ -1,6 +1,5 @@
 const { User, Application, CustomData } = require('openbox-entities')
 const CONNECTION_DATAVERSE = require('.')
-const configDefaults = require('./configDefaults.json')
 
 let user, application, customData
 
@@ -60,6 +59,6 @@ beforeEach(() => {
 })
 
 it.skip('calls createEvent elegantly', async () => {
-  await CONNECTION_DATAVERSE.eventHooks.LD_V2(configDefaults, { user, application, customData: customData.getRaw(), createEvent })
+  await CONNECTION_DATAVERSE.eventHooks.LD_V2([], { user, application, customData: customData.getRaw(), createEvent })
   expect(createEvent).toHaveBeenCalled()
 })
