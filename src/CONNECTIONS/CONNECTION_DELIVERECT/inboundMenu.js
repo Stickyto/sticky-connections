@@ -207,7 +207,7 @@ const allDeliverectProductTags = [
 ]
 
 const vatBs = new Map([
-  [0,     'vat--no'], // or vat--0
+  [0, 'vat--no'], // or vat--0
   [12500, 'vat--125'],
   [15000, 'vat--15'],
   [19000, 'vat--19'],
@@ -225,13 +225,13 @@ const dayBs = new Map([
   [7, 6]
 ])
 
-function parseTheirTime (_, user) {
+function parseTheirTime(_, user) {
   const [HH, MM] = _.split(':')
   assert([HH, MM].every(__ => typeof __ === 'string' && __.length === 2 && !isNaN(parseInt(__, 0))), 'parsed time component is not valid')
   return Math.ceil((parseInt(HH, 10) * 60) + parseInt(MM, 10) - (user.timezone / 60))
 }
 
-function getNiceAvailability (availability, user) {
+function getNiceAvailability(availability, user) {
   const day = dayBs.get(availability.dayOfWeek)
   assert(typeof day === 'number', '[inboundMenu] [getNiceAvailability] day is not correct')
   return {
@@ -241,7 +241,7 @@ function getNiceAvailability (availability, user) {
   }
 }
 
-function getPMedia (theirP) {
+function getPMedia(theirP) {
   return theirP.imageUrl ? [{ type: 'image', url: theirP.imageUrl }] : []
 }
 
@@ -284,7 +284,7 @@ const MEDIA_MAP = new Map([
   ]
 ])
 
-function getPQuestions (theirP, modifierGroups, modifiers) {
+function getPQuestions(theirP, modifierGroups, modifiers) {
   return theirP.subProducts.map(sp => {
     const foundMg = modifierGroups[sp]
     const options = foundMg.subProducts.map(sp2 => {
@@ -312,7 +312,7 @@ function getPQuestions (theirP, modifierGroups, modifiers) {
   })
 }
 
-function getPTags (theirP, caresAboutVat) {
+function getPTags(theirP, caresAboutVat) {
   const toReturn = [
     ...theirP.productTags
       .map(_ => allDeliverectProductTags.find(__ => __.allergenId === _ && __.ourTag))
