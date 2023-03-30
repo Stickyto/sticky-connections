@@ -306,8 +306,7 @@ function getPQuestions(theirP, modifierGroups, modifiers) {
       theirId: foundMg.plu,
       question: foundMgNameClean.endsWith('?') ? foundMgNameClean : `${foundMgNameClean}?`,
       answer,
-      options,
-      isOptional: ['CUSTOMISE', 'CUSTOMIZE'].some(_ => foundMgNameClean.toUpperCase().indexOf(_) !== -1)
+      options
     }
   })
 }
