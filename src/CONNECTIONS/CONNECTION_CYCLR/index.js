@@ -4,32 +4,32 @@ const Connection = require('../Connection')
 const makeRequest = require('./makeRequest.js')
 
 async function eventHookLogic (config, connectionContainer) {
-  const { user, application, thing, customData, createEvent } = connectionContainer
+  const { event, payment, user, application, thing, createEvent } = connectionContainer
 
   const [configUrl] = config
 
   const webhookPackage = {
     v2: {
-      event: {
-        type: 'SESSION_READ',
-      },
-      // payment: payment ? payment.toJsonPrivateWebhook() : undefined,
+      event: event.toJsonPrivateWebhook(),
+      payment: payment ? payment.toJsonPrivateWebhook() : undefined,
       flow: application ? application.toJsonPrivateWebhook(user) : undefined,
       sticky: thing ? thing.toJsonPrivateWebhook(user) : undefined,
       // session: dlGotSession ? dlGotSession.toJsonPrivateWebhook(user, application && application.id) : undefined
     },
-    customData: customData,
-    // payment: payment && payment.toJsonPrivateWebhook(),
+    customData: event.customData.getRaw(),
+    payment: payment && payment.toJsonPrivateWebhook(),
     application: application && application.toJsonPrivateWebhook(user),
     thing: thing && thing.toJsonPrivateWebhook(user),
     event: {
       type: 'SESSION_READ',
-      // id: event.id
+      id: event.id
     },
-    // partnerId: partner ? partner.id : undefined,
-    // federatedUserId: federatedUserId || (federatedUser && federatedUser.id),
+    partnerId: user.partnerId,
+    federatedUserId: event.federatedUserId,
     // sessionId
   }
+
+  global.rdic.logger.log({}, '[CONNECTION_CYCLR]', { configUrl, webhookPackage })
 
   try {
     await makeRequest('post', configUrl, webhookPackage)
