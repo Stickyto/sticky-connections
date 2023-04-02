@@ -1,7 +1,6 @@
-const { assert, deserialize, isEmailValid } = require('openbox-node-utils')
+const { assert, deserialize, isEmailValid, unformatPhone } = require('openbox-node-utils')
 const Connection = require('../Connection')
 const makeRequest = require('./makeRequest')
-const unformatPhone = require('./unformatPhone/unformatPhone')
 
 const NAME = 'Atreemo'
 const COLOR = '#2084f1'

@@ -43,7 +43,7 @@ class Connection {
       configNames: this.configNames,
       configDefaults: this.configDefaults,
       configPerApplicationBlock: this.configPerApplicationBlock,
-      methods: Object.keys(this.methods).map(x => [x, this.methods[x].name])
+      methods: Object.keys(this.methods).map(_ => [_, this.methods[_].name])
     }
   }
 }
