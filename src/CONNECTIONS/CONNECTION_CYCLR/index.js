@@ -57,6 +57,7 @@ module.exports = new Connection({
   logo: cdn => `${cdn}/connections/CONNECTION_CYCLR.svg`,
   configNames: ['Partner webhook URL'],
   configDefaults: ['https://connections.sticky.to/api/partnerwebhook/SSuqwe5i'],
+  userIds: ['32027163-655c-4881-9bba-780dc0243865'],
   eventHooks: {
     'SESSION_READ': eventHookLogic,
     'SESSION_CART_PAY': eventHookLogic

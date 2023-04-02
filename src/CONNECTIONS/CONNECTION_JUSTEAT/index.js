@@ -12,6 +12,7 @@ module.exports = new Connection({
   logoInverted: cdn => `${cdn}/connections/CONNECTION_JUSTEAT_WHITE.svg`,
   configNames: ['URL'],
   configDefaults: [''],
+  userIds: ['32027163-655c-4881-9bba-780dc0243865'],
   methods: {
     importMenu: {
       name: 'Import Menu',
