@@ -8,6 +8,10 @@ const CONNECTIONS = new Map([
     require('./CONNECTION_JUSTEAT')
   ],
   [
+    'CONNECTION_CYCLR',
+    require('./CONNECTION_CYCLR')
+  ],
+  [
     'CONNECTION_DOMCENTRAL',
     require('./CONNECTION_DOMCENTRAL')
   ],
@@ -47,6 +51,10 @@ const CONNECTIONS = new Map([
   [
     'CONNECTION_DATAVERSE',
     require('./CONNECTION_DATAVERSE')
+  ],
+  [
+    'CONNECTION_RINGCENTRAL',
+    require('./CONNECTION_RINGCENTRAL')
   ],
   [
     'CONNECTION_API',

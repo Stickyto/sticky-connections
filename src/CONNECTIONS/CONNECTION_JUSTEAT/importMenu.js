@@ -48,9 +48,7 @@ const importMenu = async (link) => {
     const descriptionElement = await page.$('.c-itemSelector-description')
     let description
     if (descriptionElement) {
-      description = await descriptionElement.evaluate(x => {
-        return x.innerText
-      })
+      description = await descriptionElement.evaluate(_ => _.innerText)
     }
 
     const itemLabels = await page.$('.c-itemSelector-labels')
@@ -60,10 +58,9 @@ const importMenu = async (link) => {
 
     const priceElement = await page.$('.c-itemSelector-price')
 
-    const price = priceElement ? await priceElement.evaluate(x => {
-      return parseInt(Array.from(x.childNodes).filter(child => child.nodeName === '#text')[0].wholeText.replace(/\D+/g, ''), 10)
+    const price = priceElement ? await priceElement.evaluate(_ => {
+      return parseInt(Array.from(_.childNodes).filter(child => child.nodeName === '#text')[0].wholeText.replace(/\D+/g, ''), 10)
     }) : 0
-
 
     const imageElement = await page.$('.c-itemSelector-imageContainer img')
     let imageSrc
@@ -90,8 +87,8 @@ const importMenu = async (link) => {
     const cutomOptions = await Promise.resolve(itemSelctionElements.reduce(async (acc, itemSelctionElement, i) => {
       let optionsList
       if (itemSelctionElement) {
-        optionsList = await itemSelctionElement.evaluate(x => {
-          const options = Array.from(x.querySelectorAll('.c-itemSelector-section-name')).map(singleOptionNode => {
+        optionsList = await itemSelctionElement.evaluate(_ => {
+          const options = Array.from(_.querySelectorAll('.c-itemSelector-section-name')).map(singleOptionNode => {
             const optionText = Array.from(singleOptionNode.querySelectorAll('span'))[0].innerText
 
             const priceNode = singleOptionNode.querySelector('.c-itemSelector-section-cost')
