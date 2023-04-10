@@ -1,8 +1,7 @@
 /* eslint-disable max-len */
 const Connection = require('../Connection')
-const { assert, isUuid } = require('openbox-node-utils')
+const { assert, isUuid, getSessionUrl } = require('openbox-node-utils')
 const makeRequest = require('./makeRequest')
-const getSessionUrl = require('../../../../openbox-api/src/getSessionUrl/getSessionUrl')
 
 module.exports = new Connection({
   id: 'CONNECTION_PASSKIT',
