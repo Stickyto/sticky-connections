@@ -21,7 +21,7 @@ module.exports = new Connection({
         assert(configTierId, 'You have not set a valid tier ID.')
         assert(configProgramId, 'You have not set a valid program ID.')
 
-        const { toThingId, applicationId, sessionId, sessionName } = body
+        const { toThingId, toApplicationId, sessionId, sessionName } = body
         assert(isUuid(sessionId), 'sessionId is not a UUID.')
 
         const { id: memberId } = await makeRequest(
@@ -33,7 +33,7 @@ module.exports = new Connection({
             'programId': configProgramId,
             'externalId': [sessionId, user.id].join('.').substring(0, 100),
             'metaData': {
-              'url': getSessionUrl(global.rdic, { sessionId, toThingId, applicationId })
+              'url': getSessionUrl(global.rdic, { sessionId, toThingId, toApplicationId })
             },
             'person': {
               'forename': sessionName || 'Member'
