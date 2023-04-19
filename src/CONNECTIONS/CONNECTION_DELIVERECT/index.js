@@ -122,7 +122,7 @@ module.exports = new Connection({
   name: 'Deliverect',
   color: '#05CC79',
   logo: cdn => `${cdn}/connections/CONNECTION_DELIVERECT.svg`,
-  configNames: ['"Sandbox"/"Production"', 'Channel link ID', 'Location ID', '"Not busy" flow ID', '"Busy" flow ID', 'Send order (Yes/No)', `Sticker passthrough (${VALID_THING_PASSTHROUGHS.join('/')})`],
+  configNames: ['"Sandbox"/"Production"', 'Channel link IDs (comma separated)', 'Location ID (legacy; not used)', '"Not busy" flow ID', '"Busy" flow ID', 'Send order (Yes/No)', `Sticker passthrough (${VALID_THING_PASSTHROUGHS.join('/')})`],
   configDefaults: ['Sandbox', '', '', '', '', 'No', VALID_THING_PASSTHROUGHS[0]],
   methods: {
     inboundMenu: require('./inboundMenu'),

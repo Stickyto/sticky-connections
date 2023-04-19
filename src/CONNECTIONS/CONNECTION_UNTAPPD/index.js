@@ -77,8 +77,8 @@ module.exports = new Connection({
           assert(typeof currentLocation === 'object', `Could not find a location with ID ${configLocationId}.`)
           configLocationId = parseInt(configLocationId, 10)
 
-          const allPcsToday = await cronContainer.getProductCategories(rdic, user, 'CONNECTION_UNTAPPD')
-          const allPsToday = await cronContainer.getProducts(rdic, user, 'CONNECTION_UNTAPPD')
+          const allPcsToday = await cronContainer.getProductCategories(rdic, user, { connection: 'CONNECTION_UNTAPPD' })
+          const allPsToday = await cronContainer.getProducts(rdic, user, { connection: 'CONNECTION_UNTAPPD' })
 
           const menus = await getMenus(config, currentLocation.id)
 

@@ -30,8 +30,8 @@ module.exports = async function go (connection, method, { rdic, user, partner, b
       }
       await rdic.get('datalayerRelational').create('events', event.toDatalayerRelational())
     },
-    getProducts: async (rdic, user, connection) => {
-      const rawEntities = await rdic.get('datalayerRelational').read('products', { user_id: user.id, connection })
+    getProducts: async (rdic, user, query = {}) => {
+      const rawEntities = await rdic.get('datalayerRelational').read('products', { user_id: user.id, ...query })
       return rawEntities.map(re => new Product().fromDatalayerRelational(re))
     },
     createProduct: async (...args) => {
@@ -43,8 +43,8 @@ module.exports = async function go (connection, method, { rdic, user, partner, b
       await rdic.get('datalayerRelational').updateOne('products', entity.id, entity.toDatalayerRelational(['name', 'description', 'categories', 'price', 'is_enabled', 'questions']))
     },
 
-    getProductCategories: async (rdic, user, connection) => {
-      const rawEntities = await rdic.get('datalayerRelational').read('product_categories', { user_id: user.id, connection })
+    getProductCategories: async (rdic, user, query = {}) => {
+      const rawEntities = await rdic.get('datalayerRelational').read('product_categories', { user_id: user.id, ...query })
       return rawEntities.map(re => new ProductCategory(undefined, user).fromDatalayerRelational(re))
     },
     createProductCategory: async (...args) => {

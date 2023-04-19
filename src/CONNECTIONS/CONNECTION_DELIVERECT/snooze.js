@@ -25,7 +25,7 @@ module.exports = {
       assert(channelLinkId === configuredChannelLinkId, `[snooze] Channel link IDs do not match (${channelLinkId} vs configured ${configuredChannelLinkId})`)
       assert(actionMap.has(action), '[snooze] "action" body key is not valid; are you really Deliverect?')
 
-      const allPsToday = await getProducts(rdic, user, 'CONNECTION_DELIVERECT')
+      const allPsToday = await getProducts(rdic, user, { connection: 'CONNECTION_DELIVERECT' })
       const plusAsPIds = plus
         .map(plu => allPsToday.find(_ => _.theirId === plu))
         .filter(_ => _)
