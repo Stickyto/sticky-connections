@@ -342,9 +342,11 @@ module.exports = {
     } = connectionContainer
     const { availabilities, channelLinkId, categories: theirCategories, products: theirProducts, modifierGroups, modifiers } = body[0]
 
-    let [, configuredChannelLinkId] = config
+    let [, configuredChannelLinkIds] = config
+    configuredChannelLinkIds = configuredChannelLinkIds.split(',').map(_ => _.trim())
     try {
-      assert(channelLinkId === configuredChannelLinkId, `[inboundMenu] Channel link IDs do not match (${channelLinkId} vs configured ${configuredChannelLinkId})`)
+      const foundChannelLinkId = configuredChannelLinkIds.find(_ => _ === channelLinkId)
+      assert(foundChannelLinkId, `[inboundMenu] Channel link IDs do not match (foundChannelLinkId is falsy; ${channelLinkId} provided vs one of configured ${configuredChannelLinkIds.join(' / ')})`)
 
       const allPcTimes = availabilities.map(_ => getNiceAvailability(_, user))
 
@@ -354,9 +356,10 @@ module.exports = {
         endAt: Math.max(...allPcTimes.map(_ => _.endTime))
       }
       if (allPcsTimesDelta) {
+        const query = { user_id: user.id, connection: 'CONNECTION_DELIVERECT' }
         const toSet = `days = '{${allPcsTimesDelta.days.join(', ')}}', start_at = ${allPcsTimesDelta.startAt}, end_at = ${allPcsTimesDelta.endAt}`
-        global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [inboundMenu]', { allPcTimes, allPcsTimesDelta, toSet })
-        await rdic.get('datalayerRelational').updateMany('product_categories', { user_id: user.id, connection: 'CONNECTION_DELIVERECT' }, toSet)
+        global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [inboundMenu]', { allPcTimes, allPcsTimesDelta, query, toSet })
+        await rdic.get('datalayerRelational').updateMany('product_categories', query, toSet)
       }
 
       let nextIPc = 0
@@ -364,10 +367,11 @@ module.exports = {
 
       const pLog = new Map()
 
-      global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [inboundMenu]')
+      const query = { connection: 'CONNECTION_DELIVERECT' }
+      global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [inboundMenu]', { query })
 
-      const allPcsToday = await getProductCategories(rdic, user, 'CONNECTION_DELIVERECT')
-      const allPsToday = await getProducts(rdic, user, 'CONNECTION_DELIVERECT')
+      const allPcsToday = await getProductCategories(rdic, user, query)
+      const allPsToday = await getProducts(rdic, user, query)
 
       const productsIds = Object.keys(theirProducts)
       const howManyPs = productsIds.length
