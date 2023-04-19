@@ -50,7 +50,7 @@ module.exports = new Connection({
         try {
           const theirData = DATA.getMenu
 
-          const allPcsToday = await cronContainer.getProductCategories(rdic, user, 'CONNECTION_DOMCENTRAL')
+          const allPcsToday = await cronContainer.getProductCategories(rdic, user, { connection: 'CONNECTION_DOMCENTRAL' })
           if (allPcsToday.length > 0) {
             // already configured product categories; exit early
             return

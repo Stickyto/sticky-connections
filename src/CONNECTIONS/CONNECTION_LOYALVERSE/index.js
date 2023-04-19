@@ -289,8 +289,8 @@ module.exports = new Connection({
           })
 
           const finalPList = []
-          const allPcsToday = await cronContainer.getProductCategories(rdic, user, 'CONNECTION_LOYALVERSE')
-          const allPsToday = await cronContainer.getProducts(rdic, user, 'CONNECTION_LOYALVERSE')
+          const allPcsToday = await cronContainer.getProductCategories(rdic, user, { connection: 'CONNECTION_LOYALVERSE' })
+          const allPsToday = await cronContainer.getProducts(rdic, user, { connection: 'CONNECTION_LOYALVERSE' })
 
           let handledPcs = [], handledPs = []
 
