@@ -346,7 +346,7 @@ module.exports = {
     configuredChannelLinkIds = configuredChannelLinkIds.split(',').map(_ => _.trim())
     try {
       const foundChannelLinkId = configuredChannelLinkIds.find(_ => _ === channelLinkId)
-      assert(foundChannelLinkId, `[inboundMenu] Channel link IDs do not match (foundChannelLinkId is falsy; ${channelLinkId} provided vs one of configured ${configuredChannelLinkIds.join(' / ')})`)
+      assert(foundChannelLinkId, `[CONNECTION_DELIVERECT] [inboundMenu] [1] Channel link IDs do not match (foundChannelLinkId is falsy; ${channelLinkId} provided vs one of configured ${configuredChannelLinkIds.join(' / ')})`)
 
       const allPcTimes = availabilities.map(_ => getNiceAvailability(_, user))
 
@@ -356,9 +356,9 @@ module.exports = {
         endAt: Math.max(...allPcTimes.map(_ => _.endTime))
       }
       if (allPcsTimesDelta) {
-        const query = { user_id: user.id, connection: 'CONNECTION_DELIVERECT' }
+        const query = { connection: 'CONNECTION_DELIVERECT', user_id: user.id, their_id: `startsWith:${foundChannelLinkId}---` }
         const toSet = `days = '{${allPcsTimesDelta.days.join(', ')}}', start_at = ${allPcsTimesDelta.startAt}, end_at = ${allPcsTimesDelta.endAt}`
-        global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [inboundMenu]', { allPcTimes, allPcsTimesDelta, query, toSet })
+        global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [inboundMenu] [2] allPcsTimesDelta=true', { allPcTimes, allPcsTimesDelta, query, toSet })
         await rdic.get('datalayerRelational').updateMany('product_categories', query, toSet)
       }
 
@@ -367,19 +367,19 @@ module.exports = {
 
       const pLog = new Map()
 
-      const query = { connection: 'CONNECTION_DELIVERECT' }
-      global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [inboundMenu]', { query })
+      const query = { connection: 'CONNECTION_DELIVERECT', their_id: `startsWith:${foundChannelLinkId}---` }
+      global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [inboundMenu] [3]', { query })
 
       const allPcsToday = await getProductCategories(rdic, user, query)
       const allPsToday = await getProducts(rdic, user, query)
 
-      const productsIds = Object.keys(theirProducts)
-      const howManyPs = productsIds.length
-      for (let productI = 0; productI < howManyPs; productI++) {
-        const theirP = theirProducts[productsIds[productI]]
-        let foundExistingP = allPsToday.find(maybeExistingP => maybeExistingP.theirId === theirP.plu)
+      const theirProductIds = Object.keys(theirProducts)
+      for (let productI = 0; productI < theirProductIds.length; productI++) {
+        const theirP = theirProducts[theirProductIds[productI]]
+        const finalTheirId = `${foundChannelLinkId}---${theirP.plu}`
+        let foundExistingP = allPsToday.find(maybeExistingP => maybeExistingP.theirId === finalTheirId)
 
-        global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [go]', theirP.name)
+        global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [inboundMenu] [4]', theirP.name)
         if (foundExistingP) {
           foundExistingP.name = theirP.name.trim()
           foundExistingP.description = theirP.description.trim()
@@ -395,7 +395,7 @@ module.exports = {
         } else {
           const payload = {
             userId: user.id,
-            theirId: theirP.plu,
+            theirId: finalTheirId,
             createdAt: getNow() + nextIP,
             connection: 'CONNECTION_DELIVERECT',
             currency: user.currency,
@@ -418,8 +418,9 @@ module.exports = {
 
       for (let categoryI = 0; categoryI < theirCategories.length; categoryI++) {
         const theirPc = theirCategories[categoryI]
-        let foundExistingPc = allPcsToday.find(maybeExistingPc => maybeExistingPc.theirId === theirPc._id)
-        global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [go]', theirPc.name)
+        const finalTheirId = `${foundChannelLinkId}---${theirPc._id}`
+        let foundExistingPc = allPcsToday.find(maybeExistingPc => maybeExistingPc.theirId === finalTheirId)
+        global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [inboundMenu] [5]', theirPc.name)
         const pcTimes = theirPc.availabilities.map(_ => getNiceAvailability(_, user))
         const pcTimesContainer = pcTimes.length > 0 && {
           days: Array.from(new Set(pcTimes.map(_ => _.day))),
@@ -456,7 +457,7 @@ module.exports = {
             userId: user.id,
             name: theirPc.name,
             description: theirPc.description,
-            theirId: theirPc._id,
+            theirId: finalTheirId,
             createdAt: getNow() + nextIPc,
             connection: 'CONNECTION_DELIVERECT',
             view: 'grid-name',
