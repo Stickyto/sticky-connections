@@ -10,7 +10,7 @@ module.exports = new Connection({
   logo: cdn => `${cdn}/connections/CONNECTION_PASSKIT.svg`,
   configNames: ['API key', 'Tier ID', 'Program ID'],
   configDefaults: ['', '', ''],
-  userIds: ['d7e01f55-a9a0-4b86-8a36-dd13131ee697'],
+  partnerNames: ['RoyaleResorts'],
   methods: {
     go: {
       name: 'Go',
