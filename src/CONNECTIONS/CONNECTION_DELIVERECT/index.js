@@ -8,10 +8,10 @@ const { assert } = require('openbox-node-utils')
 const CHANNEL_NAME = 'stickyconnections'
 const VALID_THING_PASSTHROUGHS = ['None', 'Your ID', 'Name', 'Number']
 
-async function eventHookLogic (config, connectionContainer) {
+async function eventHookLogic(config, connectionContainer) {
   const { user, application, thing, payment, event, customData, createEvent } = connectionContainer
 
-  function goFail (e) {
+  function goFail(e) {
     createEvent({
       type: 'CONNECTION_BAD',
       userId: user.id,
@@ -38,80 +38,100 @@ async function eventHookLogic (config, connectionContainer) {
   const temporaryPayment = new Payment({
     id: event.paymentId
   })
-  const body = {
-    'channelOrderId': [event.thingId || 'NA', event.paymentId].join('---'),
-    'channelOrderDisplayId': temporaryPayment.consumerIdentifier,
-    'items': customData.cart.map(_ => {
-      let subItems = []
-      _.questions
-        .forEach(__ => {
-          const foundOptions = Array.isArray(__.answer) ? __.options.filter(o => __.answer.includes(o.name)) : [__.options.find(o => o.name === __.answer)]
-          subItems = [
-            ...subItems,
-            ...foundOptions.map(foundOption => ({
-              plu: foundOption.theirId,
-              name: foundOption.name,
-              price: 0,
-              quantity: 1
-            }))
-          ]
-        })
-      return {
-        plu: _.productTheirId,
-        name: _.productName,
-        price: _.productPrice,
-        quantity: _.quantity,
-        subItems
+
+  const channelCarts = customData.cart.reduce((acc, cartItem) => {
+    const id = cartItem.productTheirId.split('---')[0]
+
+    return {
+      ...acc,
+      [id]: acc[id] ? {
+        cart: [...acc[id].cart, cartItem],
+        total: acc[id].total + cartItem.productPrice
+      } : {
+        cart: [cartItem],
+        total: cartItem.productPrice
       }
-    }),
-    'orderType': 3,
-    'decimalDigits': 2,
-    'orderIsAlreadyPaid': customData.gateway !== 'GATEWAY_NOOP',
-    'payment': {
-      'amount': customData.total,
-      'type': 0
-    },
-    'customer': {
-      name: typeof payment.name === 'string' && payment.name.length > 0 ? payment.name : undefined,
-      companyName: typeof payment.companyName === 'string' && payment.companyName.length > 0 ? payment.companyName : undefined,
-      phoneNumber: typeof payment.phone === 'string' && payment.phone.length > 0 ? payment.phone : undefined,
-      email: typeof payment.email === 'string' && payment.email.length > 0 ? payment.email : undefined,
-      note: payment.sessionId
-    },
-    'note': typeof payment.extra === 'string' && payment.extra.length > 0 ? payment.extra : undefined,
-    'table': (() => {
-      if (!thing) {
+    }
+  }, {})
+
+  for (const channel in channelCarts) {
+    channelCarts[channel].body = {
+      'channelOrderId': [event.thingId || 'NA', channel, event.paymentId].join('---'),
+      'channelOrderDisplayId': temporaryPayment.consumerIdentifier,
+      'items': channelCarts[channel].cart.map(_ => {
+        let subItems = []
+        _.questions
+          .forEach(__ => {
+            const foundOptions = Array.isArray(__.answer) ? __.options.filter(o => __.answer.includes(o.name)) : [__.options.find(o => o.name === __.answer)]
+            subItems = [
+              ...subItems,
+              ...foundOptions.map(foundOption => ({
+                plu: foundOption.theirId,
+                name: foundOption.name,
+                price: 0,
+                quantity: 1
+              }))
+            ]
+          })
+        return {
+          plu: _.productTheirId.split('---')[1],
+          name: _.productName,
+          price: _.productPrice,
+          quantity: _.quantity,
+          subItems
+        }
+      }),
+      'orderType': 3,
+      'decimalDigits': 2,
+      'orderIsAlreadyPaid': customData.gateway !== 'GATEWAY_NOOP',
+      'payment': {
+        'amount': channelCarts[channel].total,
+        'type': 0
+      },
+      'customer': {
+        name: typeof payment.name === 'string' && payment.name.length > 0 ? payment.name : undefined,
+        companyName: typeof payment.companyName === 'string' && payment.companyName.length > 0 ? payment.companyName : undefined,
+        phoneNumber: typeof payment.phone === 'string' && payment.phone.length > 0 ? payment.phone : undefined,
+        email: typeof payment.email === 'string' && payment.email.length > 0 ? payment.email : undefined,
+        note: payment.sessionId
+      },
+      'note': typeof payment.extra === 'string' && payment.extra.length > 0 ? payment.extra : undefined,
+      'table': (() => {
+        if (!thing) {
+          return undefined
+        }
+        if (thingPassthrough === 'None') {
+          return undefined
+        }
+        if (thingPassthrough === 'Your ID') {
+          return thing.theirId || undefined
+        }
+        if (thingPassthrough === 'Name') {
+          return thing.name
+        }
+        if (thingPassthrough === 'Number') {
+          return thing.name.split('').filter(_ => ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'].includes(_)).join('')
+        }
         return undefined
-      }
-      if (thingPassthrough === 'None') {
-        return undefined
-      }
-      if (thingPassthrough === 'Your ID') {
-        return thing.theirId || undefined
-      }
-      if (thingPassthrough === 'Name') {
-        return thing.name
-      }
-      if (thingPassthrough === 'Number') {
-        return thing.name.split('').filter(_ => ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'].includes(_)).join('')
-      }
-      return undefined
-    })()
+      })()
+    }
   }
 
   global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] customData', JSON.stringify(customData, null, 2))
-  global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] body', JSON.stringify(body, null, 2))
+  global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] body', JSON.stringify(channelCarts, null, 2))
 
   try {
     const token = await getToken(config)
     global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] token', token)
-    const r = await makeRequest(
-      token,
-      'post',
-      `${foundEnvironment.apiUrl}/${CHANNEL_NAME}/order/${channelLinkId}`,
-      body
-    )
-    global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] r', r)
+    for (const channel in channelCarts) {
+      const r = await makeRequest(
+        token,
+        'post',
+        `${foundEnvironment.apiUrl}/${CHANNEL_NAME}/order/${channel}`,
+        channelCarts[channel].body
+      )
+      global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] r', r)
+    }
   } catch (e) {
     goFail(e)
   }
