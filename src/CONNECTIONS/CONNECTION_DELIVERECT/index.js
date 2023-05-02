@@ -6,7 +6,7 @@ const makeRequest = require('./lib/makeRequest')
 const { assert } = require('openbox-node-utils')
 
 const CHANNEL_NAME = 'stickyconnections'
-const VALID_THING_PASSTHROUGHS = ['None', 'Your ID', 'Name', 'Number']
+const VALID_THING_PASSTHROUGHS = ['None', 'Your ID', 'Name', 'Number', 'Note']
 
 async function eventHookLogic(config, connectionContainer) {
   const { user, application, thing, payment, event, customData, createEvent } = connectionContainer
@@ -95,7 +95,15 @@ async function eventHookLogic(config, connectionContainer) {
         email: typeof payment.email === 'string' && payment.email.length > 0 ? payment.email : undefined,
         note: payment.sessionId
       },
-      'note': typeof payment.extra === 'string' && payment.extra.length > 0 ? payment.extra : undefined,
+      'note': (() => {
+        if (thingPassthrough === 'Note') {
+          return thing.name
+        }
+        if (typeof payment.extra === 'string' && payment.extra.length > 0) {
+          return payment.extra
+        }
+        return undefined
+      })(),
       'table': (() => {
         if (!thing) {
           return undefined
