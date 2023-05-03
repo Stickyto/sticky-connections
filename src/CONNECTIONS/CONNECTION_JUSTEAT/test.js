@@ -8,7 +8,8 @@ async function justEat() {
   console.log('danesh 0')
   const browser = await puppeteer.launch({
     headless: true,
-    executablePath: executablePath()
+    executablePath: executablePath(),
+    args: ['--no-sandbox', '--disable-setuid-sandbox']
   })
   console.log('danesh 1', browser)
   const page = await browser.newPage()

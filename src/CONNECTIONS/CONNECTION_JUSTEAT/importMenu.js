@@ -5,7 +5,7 @@ puppeteer.use(StealthPlugin())
 const { executablePath } = require('puppeteer')
 
 const importMenu = async (link) => {
-  const browser = await puppeteer.launch({ headless: true, executablePath: executablePath() })
+  const browser = await puppeteer.launch({ headless: true, executablePath: executablePath(), args: ['--no-sandbox', '--disable-setuid-sandbox'] })
   const page = await browser.newPage()
   const wait = async (time) => await new Promise(r => setTimeout(r, time))
 
