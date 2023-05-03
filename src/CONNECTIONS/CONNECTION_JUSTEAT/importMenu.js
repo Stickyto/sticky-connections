@@ -5,6 +5,7 @@ puppeteer.use(StealthPlugin())
 const { executablePath } = require('puppeteer')
 
 const importMenu = async (link) => {
+  console.log('Danesh 0, link: ', link)
   const browser = await puppeteer.launch({ headless: true, executablePath: executablePath(), args: ['--no-sandbox', '--disable-setuid-sandbox'] })
   const page = await browser.newPage()
   const wait = async (time) => await new Promise(r => setTimeout(r, time))
@@ -12,6 +13,7 @@ const importMenu = async (link) => {
   await page.setViewport({ width: 1080, height: 1024 })
 
   await page.goto(link)
+  console.log('Danesh 1, page: ', page)
 
   const accept = await page.$('button[data-test-id="accept-all-cookies-button"]')
   if (accept) {
@@ -19,10 +21,11 @@ const importMenu = async (link) => {
   }
 
   const buttons = await page.$$('.c-menuItems-item')
-
+  console.log('Danesh 2, buttons: ', buttons)
   const menu = []
 
   for (let i = 0; i < buttons.length; i++) {
+    console.log('Danesh 3 LOOP i: ', i)
     const isUnavailable = await buttons[i].evaluate(b => {
       b.click()
       return b.querySelector('.c-menuItems-price--offline')
@@ -43,6 +46,8 @@ const importMenu = async (link) => {
       await orderForLater.click()
       await wait(500)
     }
+
+    console.log('Danesh 4 LOOP MODAL: ', preOrderModal)
 
     const itemElement = await page.$('.c-modal-titleContainer')
     const item = await itemElement.evaluate(y => {
@@ -127,9 +132,14 @@ const importMenu = async (link) => {
     })
 
     await page.click('[data-test-id=\'close-modal\']')
+
+    console.log('Danesh 5 END-LOOP i: ', i)
   }
 
   browser.close()
+
+
+  console.log('Danesh 6, menu: ', menu)
   return menu
 }
 
