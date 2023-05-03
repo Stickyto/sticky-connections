@@ -4,22 +4,32 @@ puppeteer.use(StealthPlugin())
 
 const { executablePath } = require('puppeteer')
 
-const importMenu = async (link) => {
-  const browser = await puppeteer.launch({ headless: true, executablePath: executablePath() })
+async function justEat() {
+  console.log('danesh 0')
+  const browser = await puppeteer.launch({
+    headless: true,
+    executablePath: executablePath()
+  })
+  console.log('danesh 1', browser)
   const page = await browser.newPage()
+  console.log('danesh 2', page)
   const wait = async (time) => await new Promise(r => setTimeout(r, time))
 
   await page.setViewport({ width: 1080, height: 1024 })
 
-  await page.goto(link)
+  await page.goto('https://www.just-eat.co.uk/restaurants-cheatmeals-west-hampstead/menu')
 
   const accept = await page.$('button[data-test-id="accept-all-cookies-button"]')
+
+  const extractedText = await page.$eval('*', (el) => el.innerText)
+  console.log('danesh 2.5 ', extractedText)
   if (accept) {
     await accept.click()
   }
 
+  console.log('danesh 3', page)
   const buttons = await page.$$('.c-menuItems-item')
-
+  console.log('danesh 4', buttons)
   const menu = []
 
   for (let i = 0; i < buttons.length; i++) {
@@ -130,7 +140,8 @@ const importMenu = async (link) => {
   }
 
   browser.close()
+  console.log('Danesh menu: ', menu)
   return menu
 }
 
-module.exports = importMenu
+justEat()
