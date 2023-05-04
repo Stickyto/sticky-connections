@@ -96,13 +96,10 @@ async function eventHookLogic(config, connectionContainer) {
         note: payment.sessionId
       },
       'note': (() => {
-        if (thingPassthrough === 'Note') {
-          return thing.name
-        }
-        if (typeof payment.extra === 'string' && payment.extra.length > 0) {
-          return payment.extra
-        }
-        return undefined
+        const parts = []
+        thingPassthrough === 'Note' && parts.push(`[${thing.name.toUpperCase()}]`)
+        typeof payment.extra === 'string' && payment.extra.length > 0 && parts.push(payment.extra)
+        return parts.length > 0 ? parts.join(' ') : undefined
       })(),
       'table': (() => {
         if (!thing) {
