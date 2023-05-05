@@ -5,15 +5,15 @@ puppeteer.use(StealthPlugin())
 const { executablePath } = require('puppeteer')
 
 const importMenu = async (link) => {
-  console.log('danesh 0')
+  global.rdic.logger.log({}, '[CONNECTION_JUSTEAT] [importMenuScraper] startingScraper')
   const browser = await puppeteer.launch({
     headless: true,
     executablePath: executablePath(),
     args: ['--no-sandbox', '--disable-setuid-sandbox']
   })
-  console.log('danesh 1', browser)
+
   const page = await browser.newPage()
-  console.log('danesh 2', page)
+
   const wait = async (time) => await new Promise(r => setTimeout(r, time))
 
   await page.setViewport({ width: 1080, height: 1024 })
@@ -22,18 +22,17 @@ const importMenu = async (link) => {
 
   const accept = await page.$('button[data-test-id="accept-all-cookies-button"]')
 
-  const extractedText = await page.$eval('*', (el) => el.innerText)
-  console.log('danesh 2.5 ', extractedText)
+  await page.$eval('*', (el) => el.innerText)
+
   if (accept) {
     await accept.click()
   }
 
-  //start with sections here - array of object key name of cateogry array of products 
   const sections = await page.$$('.c-menuItems-category')
   const menu = []
 
   for (let i = 0; i < sections.length; i++) {
-    console.log('danesh 3', page)
+    global.rdic.logger.log({}, `[CONNECTION_JUSTEAT] [importMenuScraper] progress ${i + 1}/${sections.length}`)
 
     const categoryNameElement = await sections[i].$('h2[data-test-id="menu-category-heading"]')
     const categoryName = await categoryNameElement.evaluate(y => {
@@ -41,14 +40,13 @@ const importMenu = async (link) => {
     })
 
     const buttons = await sections[i].$$('.c-menuItems-item')
-    // console.log('danesh 4', buttons)
+
     const category = {
       category: categoryName,
       products: []
     }
 
     for (let i = 0; i < buttons.length; i++) {
-      console.log('Danesh LOOP 1')
       const isUnavailable = await buttons[i].evaluate(b => {
         b.click()
         return b.querySelector('.c-menuItems-price--offline')
@@ -153,16 +151,13 @@ const importMenu = async (link) => {
       })
 
       await page.click('[data-test-id=\'close-modal\']')
-      console.log('Danesh LOOP 2')
     }
 
     menu.push(category)
   }
 
-
-
   browser.close()
-  console.log('Danesh menu: ', JSON.stringify(menu, null, 2))
+
   return menu
 }
 

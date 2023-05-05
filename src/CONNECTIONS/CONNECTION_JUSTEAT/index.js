@@ -18,14 +18,12 @@ module.exports = new Connection({
     importMenu: {
       name: 'Import Menu',
       logic: async ({ connectionContainer, config }) => {
-        console.log('Danesh connectionContainer: ', connectionContainer)
         const {
           rdic,
           user,
           createEvent
         } = connectionContainer
         const [url] = config
-        console.log('danesh config: ', config)
 
         assert(isUrl(url), "Please provide your Just Eat menu URL.")
 
@@ -37,13 +35,13 @@ module.exports = new Connection({
           })
         }
 
-        // const menu = await importMenu(url)
         importMenu(url)
           .then((res) => {
             (async () => {
+              global.rdic.logger.log({}, '[CONNECTION_JUSTEAT] [importMenu] scraped menu', res)
+
               try {
                 for (let i = 0; i < res.length; i++) {
-                  console.log('danesh res[i].products: ', res[i].products)
                   const productsToWrite = res[i].products.map(product => new Product(
                     {
                       name: product.item,
@@ -59,7 +57,8 @@ module.exports = new Connection({
                   })
                   await Promise.all(promises)
 
-                  console.log('Danesh toWrite: ', productsToWrite)
+                  global.rdic.logger.log({}, '[CONNECTION_JUSTEAT] [importMenu] productsToWrite written', productsToWrite)
+
                   const entity = new ProductCategory(
                     {
                       name: res[i].category,
@@ -68,22 +67,25 @@ module.exports = new Connection({
                     },
                     user
                   )
-                  await rdic.get('datalayerRelational').create('product_categories', entity.toDatalayerRelational())
 
-                  createEvent({
-                    type: 'CONNECTION_GOOD',
-                    userId: user.id,
-                    customData: { id: 'CONNECTION_JUSTEAT', message: 'MENU IMPORTED' }
-                  })
+                  await rdic.get('datalayerRelational').create('product_categories', entity.toDatalayerRelational())
+                  global.rdic.logger.log({}, '[CONNECTION_JUSTEAT] [importMenu] products written to category', entity)
                 }
+
+                global.rdic.logger.log({}, '[CONNECTION_JUSTEAT] [importMenu] success')
+                createEvent({
+                  type: 'CONNECTION_GOOD',
+                  userId: user.id,
+                  customData: { id: 'CONNECTION_JUSTEAT', message: 'MENU IMPORTED' }
+                })
               } catch (err) {
-                console.log('justeat importmenu product write err: ', err)
+                global.rdic.logger.log({}, '[CONNECTION_JUSTEAT] [importMenu] product creation err', err)
                 badConnection(err)
               }
             })()
           })
           .catch((err) => {
-            console.log('justeat importmenu err: ', err)
+            global.rdic.logger.log({}, '[CONNECTION_JUSTEAT] [importMenu] err', err)
             badConnection(err)
           })
 
