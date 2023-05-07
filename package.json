@@ -11,6 +11,8 @@
     "httpntlm": "^1.8.2",
     "jsdom": "^21.1.0",
     "puppeteer": "^19.7.3",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
     "safe-eval": "^0.4.1",
     "xml2json": "^0.12.0"
   },
