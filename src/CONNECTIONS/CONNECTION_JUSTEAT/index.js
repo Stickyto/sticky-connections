@@ -63,7 +63,8 @@ module.exports = new Connection({
                     {
                       name: res[i].category,
                       products: productsToWrite.map(product => product.id),
-                      userId: user.id
+                      userId: user.id,
+                      view: 'list'
                     },
                     user
                   )
