@@ -15,6 +15,7 @@ module.exports = new Connection({
     itemInventory: {
       name: 'itemInventory',
       logic: async ({ connectionContainer, config, body }) => ({ method: 'itemInventory' })
+      // {"publicKey":"public-41b5b3d3-6ef3-4500-bd69-d78e909ff8de","body":{"add_ons":[],"in_stock":true,"variants":[],"location_ref_id":"42615","items":["4427109"]},"connection":"CONNECTION_URBAN_PIPER","method":"itemInventory"}
     },
     orderStatusExchange: {
       name: 'orderStatusExchange',
@@ -23,6 +24,7 @@ module.exports = new Connection({
     storeToggle: {
       name: 'storeToggle',
       logic: async ({ connectionContainer, config, body }) => ({ method: 'storeToggle' })
+      // {"publicKey":"public-41b5b3d3-6ef3-4500-bd69-d78e909ff8de","body":{"ordering_enabled":false,"location_ref_id":"42638"},"connection":"CONNECTION_URBAN_PIPER","method":"storeToggle"}
     }
   },
   instructions: [
