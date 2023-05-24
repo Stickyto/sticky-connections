@@ -356,7 +356,7 @@ module.exports = {
         endAt: Math.max(...allPcTimes.map(_ => _.endTime))
       }
       if (allPcsTimesDelta) {
-        const query = { connection: 'CONNECTION_DELIVERECT', user_id: user.id, their_id: `startsWith::${foundChannelLinkId}---` }
+        const query = { connection: 'CONNECTION_DELIVERECT', user_id: user.id, their_id: `startsWith:${foundChannelLinkId}---` }
         const toSet = `days = '{${allPcsTimesDelta.days.join(', ')}}', start_at = ${allPcsTimesDelta.startAt}, end_at = ${allPcsTimesDelta.endAt}`
         global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [inboundMenu] [2] allPcsTimesDelta=true', { allPcTimes, allPcsTimesDelta, query, toSet })
         await rdic.get('datalayerRelational').updateMany('product_categories', query, toSet)
@@ -367,7 +367,7 @@ module.exports = {
 
       const pLog = new Map()
 
-      const query = { connection: 'CONNECTION_DELIVERECT', their_id: `startsWith::${foundChannelLinkId}---` }
+      const query = { connection: 'CONNECTION_DELIVERECT', their_id: `startsWith:${foundChannelLinkId}---` }
       global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [inboundMenu] [3]', { query })
 
       const allPcsToday = await getProductCategories(rdic, user, query)
