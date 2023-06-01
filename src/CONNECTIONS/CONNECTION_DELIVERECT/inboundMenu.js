@@ -2,6 +2,10 @@
 const { assert, getNow } = require('openbox-node-utils')
 const { Question } = require('openbox-entities')
 
+const wait = (time) => {
+  return new Promise(resolve => setTimeout(resolve, time))
+}
+
 const allDeliverectProductTags = [
   {
     'name': 'Alcohol',
@@ -415,6 +419,7 @@ module.exports = {
           })).id
           pLog.set(theirP._id, createdId)
         }
+        await wait(5)
         nextIP++
       }
 
@@ -453,7 +458,6 @@ module.exports = {
             foundExistingPc.endAt = pcTimesContainer.endAt
           }
           await updateProductCategory(foundExistingPc)
-
         } else {
           let payload = {
             userId: user.id,
@@ -483,6 +487,7 @@ module.exports = {
           foundExistingPc = await createProductCategory(payload, user)
           nextIPc++
         }
+        await wait(5)
       }
 
     } catch (e) {
