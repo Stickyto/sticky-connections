@@ -301,8 +301,10 @@ function getPQuestions(theirP, modifierGroups, modifiers) {
     })
     const answer = options.length > 0 ? options[0].name : ''
     const foundMgNameClean = foundMg.name.trim()
+    const willDoTypeOptions = (foundMg.min === 0 || foundMg.max > 1)
     return {
-      type: foundMg.max > 1 ? 'options' : 'option',
+      type: willDoTypeOptions ? 'options' : 'option',
+      checklistMaximum: willDoTypeOptions ? foundMg.max : undefined,
       theirId: foundMg.plu,
       question: foundMgNameClean.endsWith('?') ? foundMgNameClean : `${foundMgNameClean}?`,
       answer,
