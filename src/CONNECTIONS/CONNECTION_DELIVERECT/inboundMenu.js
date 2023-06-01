@@ -304,7 +304,7 @@ function getPQuestions(theirP, modifierGroups, modifiers) {
     const willDoTypeOptions = (foundMg.min === 0 || foundMg.max > 1)
     return {
       type: willDoTypeOptions ? 'options' : 'option',
-      checklistMaximum: willDoTypeOptions ? foundMg.max : undefined,
+      checklistMaximum: (willDoTypeOptions && foundMg.max > 0 ? foundMg.max : undefined),
       theirId: foundMg.plu,
       question: foundMgNameClean.endsWith('?') ? foundMgNameClean : `${foundMgNameClean}?`,
       answer,
