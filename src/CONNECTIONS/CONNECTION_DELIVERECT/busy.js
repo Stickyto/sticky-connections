@@ -1,4 +1,4 @@
-const { assert, isUuid } = require('openbox-node-utils')
+const { assert } = require('openbox-node-utils')
 
 module.exports = {
   name: 'Busy',
@@ -10,23 +10,22 @@ module.exports = {
     } = connectionContainer
 
     const { channelLinkId, status } = body
-    let [, configuredChannelLinkId, notBusyApplicationId, busyApplicationId] = config
+    let [, configuredChannelLinkIds] = config
+    configuredChannelLinkIds = configuredChannelLinkIds.split(',').map(_ => _.trim())
 
     const statusMap = new Map([
-      ['PAUSED', busyApplicationId],
-      ['ONLINE', notBusyApplicationId]
+      ['PAUSED', false],
+      ['ONLINE', true]
     ])
 
     try {
-      assert(channelLinkId === configuredChannelLinkId, `[busy] Channel link IDs do not match (${channelLinkId} vs configured ${configuredChannelLinkId})`)
-      assert([notBusyApplicationId, busyApplicationId].every(isUuid), '[busy] One of notBusyApplicationId/busyApplicationId is not a uuid; please check your configuration!')
-      assert(statusMap.has(status), '[busy] "status" body key is not valid; are you really Deliverect?')
+      const foundChannelLinkId = configuredChannelLinkIds.find(_ => _ === channelLinkId)
+      assert(foundChannelLinkId, `[CONNECTION_DELIVERECT] [busy] [1] Channel link IDs do not match (foundChannelLinkId is falsy; ${channelLinkId} provided vs one of configured ${configuredChannelLinkIds.join(' / ')})`)
 
-      const query = { user_id: user.id, application_id: [notBusyApplicationId, busyApplicationId] }
-      const toSet = `application_id = '${statusMap.get(status)}'`
+      const theStatus = statusMap.get(status)
+      assert(typeof theStatus === 'boolean', '[busy] "status" is not valid; are you really Deliverect?')
 
-      global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [busy]', { query, toSet })
-      await rdic.get('datalayerRelational').updateMany('things', query, toSet)
+      await rdic.get('datalayerRelational').updateMany('product_categories', { user_id: user.id, their_id: `startsWith:${foundChannelLinkId}---`, connection: 'CONNECTION_DELIVERECT' }, `is_enabled = ${theStatus}`)
     } catch (e) {
       createEvent({
         type: 'CONNECTION_BAD',
