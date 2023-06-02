@@ -1,9 +1,10 @@
+/* eslint-disable quotes */
 const { Payment } = require('openbox-entities')
 const Connection = require('../Connection')
 const getToken = require('./lib/getToken')
 const getEnvironment = require('./lib/getEnvironment')
 const makeRequest = require('./lib/makeRequest')
-const { assert } = require('openbox-node-utils')
+const { assert, getNow } = require('openbox-node-utils')
 
 const CHANNEL_NAME = 'stickyconnections'
 const VALID_THING_PASSTHROUGHS = ['None', 'Your ID', 'Name', 'Number', 'Note']
@@ -20,13 +21,13 @@ async function eventHookLogic(config, connectionContainer) {
     })
   }
 
-  const [environment, channelLinkId, locationId, notBusyApplicationId, busyApplicationId, sendOrder, thingPassthrough = VALID_THING_PASSTHROUGHS[0]] = config
+  const [environment, channelLinkId, sendOrder, thingPassthrough = VALID_THING_PASSTHROUGHS[0]] = config
   global.rdic.logger.log({}, '[CONNECTION_DELIVERECT]', { environment, channelLinkId, sendOrder, thingPassthrough })
 
   let foundEnvironment
   try {
     assert(application, 'There is no flow.')
-    assert(application.id === notBusyApplicationId, `Flow ID ${application.id} doesn't match "Not busy" flow ID ${notBusyApplicationId}. This probably doesn't matter.`)
+    assert(customData.cart.length > 0, 'Bag is empty. This is probably fine.')
     assert(sendOrder === 'Yes', 'Send order (Yes/No) is not set to "Yes".')
     assert(VALID_THING_PASSTHROUGHS.includes(thingPassthrough), `Sticker passthrough is not one of (${VALID_THING_PASSTHROUGHS.join('/')})`)
     foundEnvironment = getEnvironment(environment)
@@ -40,7 +41,7 @@ async function eventHookLogic(config, connectionContainer) {
   })
 
   const channelCarts = customData.cart.reduce((acc, cartItem) => {
-    const id = cartItem.productTheirId.split('---')[0]
+    const [id] = cartItem.productTheirId.split('---')
 
     return {
       ...acc,
@@ -56,7 +57,7 @@ async function eventHookLogic(config, connectionContainer) {
 
   for (const channel in channelCarts) {
     channelCarts[channel].body = {
-      'channelOrderId': [event.thingId || 'NA', channel, event.paymentId].join('---'),
+      'channelOrderId': [event.thingId || 'NA', channel, event.paymentId, getNow()].join('---'),
       'channelOrderDisplayId': temporaryPayment.consumerIdentifier,
       'items': channelCarts[channel].cart.map(_ => {
         let subItems = []
@@ -129,13 +130,15 @@ async function eventHookLogic(config, connectionContainer) {
     const token = await getToken(config)
     global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] token', token)
     for (const channel in channelCarts) {
+      const theBody = channelCarts[channel].body
+      global.rdic.logger.log({}, '[CONNECTION_DELIVERECT]', { theBody })
       const r = await makeRequest(
         token,
         'post',
         `${foundEnvironment.apiUrl}/${CHANNEL_NAME}/order/${channel}`,
-        channelCarts[channel].body
+        theBody
       )
-      global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] r', r)
+      global.rdic.logger.log({}, '[CONNECTION_DELIVERECT]', { r })
     }
   } catch (e) {
     goFail(e)
@@ -147,8 +150,8 @@ module.exports = new Connection({
   name: 'Deliverect',
   color: '#05CC79',
   logo: cdn => `${cdn}/connections/CONNECTION_DELIVERECT.svg`,
-  configNames: ['"Sandbox"/"Production"', 'Channel link IDs (comma separated)', 'Location ID (legacy; not used)', '"Not busy" flow ID', '"Busy" flow ID', 'Send order (Yes/No)', `Sticker passthrough (${VALID_THING_PASSTHROUGHS.join('/')})`],
-  configDefaults: ['Sandbox', '', '', '', '', 'No', VALID_THING_PASSTHROUGHS[0]],
+  configNames: ['"Sandbox"/"Production"', 'Channel link IDs (comma separated)', 'Send order (Yes/No)', `Sticker passthrough (${VALID_THING_PASSTHROUGHS.join('/')})`],
+  configDefaults: ['Sandbox', '', 'No', VALID_THING_PASSTHROUGHS[0]],
   methods: {
     inboundMenu: require('./inboundMenu'),
     snooze: require('./snooze'),

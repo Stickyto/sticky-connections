@@ -11,7 +11,8 @@ module.exports = {
     } = connectionContainer
 
     const { channelLink, status, reason, channelOrderId } = body
-    let [, configuredChannelLinkId] = config
+    let [, configuredChannelLinkIds] = config
+    configuredChannelLinkIds = configuredChannelLinkIds.split(',').map(_ => _.trim())
     const realReason = reason || 'Deliverect didn\'t provide a reason'
     const borkedStatusRs = p => {
       p.sessionPaidAt = undefined
@@ -45,14 +46,15 @@ module.exports = {
     }
 
     try {
-      assert(channelLink === configuredChannelLinkId, `[status] Channel link IDs do not match (${channelLink} vs configured ${configuredChannelLinkId})`)
-      assert(statusMap.has(status), '[status] "status" body key is not valid; are you really Deliverect?')
+      const foundChannelLinkId = configuredChannelLinkIds.find(_ => _ === channelLink)
+      assert(foundChannelLinkId, `[CONNECTION_DELIVERECT] [busy] [1] Channel link IDs do not match (foundChannelLinkId is falsy; ${channelLink} provided vs one of configured ${configuredChannelLinkIds.join(' / ')})`)
 
-      const [_coThingId, coPaymentId] = channelOrderId.split('---')
-      assert(isUuid(coPaymentId), '[status] coPaymentId is not a uuid!')
+      const [_thingId, _channel, coPaymentId, _now] = channelOrderId.split('---')
+      assert(_channel === foundChannelLinkId, '[status] _channel does not match foundChannelLinkId; we have really screwed up.')
+      assert(isUuid(coPaymentId), '[status] coPaymentId is not a uuid; we have really screwed up.')
 
       const rawPayment = await rdic.get('datalayerRelational').readOne('payments', { user_id: user.id, id: coPaymentId })
-      assert(rawPayment, `[status] payment with coPaymentId "${coPaymentId}" not found!`)
+      assert(rawPayment, `[status] payment with coPaymentId "${coPaymentId}" not found; we have really screwed up.`)
       const payment = new Payment().fromDatalayerRelational(rawPayment)
       statusMap.get(status)(payment)
 
