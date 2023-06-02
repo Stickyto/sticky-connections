@@ -2,6 +2,10 @@
 const { assert, getNow } = require('openbox-node-utils')
 const { Question } = require('openbox-entities')
 
+const wait = (time) => {
+  return new Promise(resolve => setTimeout(resolve, time))
+}
+
 const allDeliverectProductTags = [
   {
     'name': 'Alcohol',
@@ -301,8 +305,10 @@ function getPQuestions(theirP, modifierGroups, modifiers) {
     })
     const answer = options.length > 0 ? options[0].name : ''
     const foundMgNameClean = foundMg.name.trim()
+    const willDoTypeOptions = (foundMg.min === 0 || foundMg.max > 1)
     return {
-      type: foundMg.max > 1 ? 'options' : 'option',
+      type: willDoTypeOptions ? 'options' : 'option',
+      checklistMaximum: (willDoTypeOptions && foundMg.max > 0 ? foundMg.max : undefined),
       theirId: foundMg.plu,
       question: foundMgNameClean.endsWith('?') ? foundMgNameClean : `${foundMgNameClean}?`,
       answer,
@@ -413,6 +419,7 @@ module.exports = {
           })).id
           pLog.set(theirP._id, createdId)
         }
+        await wait(50)
         nextIP++
       }
 
@@ -451,7 +458,6 @@ module.exports = {
             foundExistingPc.endAt = pcTimesContainer.endAt
           }
           await updateProductCategory(foundExistingPc)
-
         } else {
           let payload = {
             userId: user.id,
@@ -481,6 +487,7 @@ module.exports = {
           foundExistingPc = await createProductCategory(payload, user)
           nextIPc++
         }
+        await wait(50)
       }
 
     } catch (e) {

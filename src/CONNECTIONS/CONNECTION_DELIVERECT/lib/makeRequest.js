@@ -37,10 +37,9 @@ module.exports = async function makeRequest (token, method, url, json) {
 
   assert([201, 200].includes(response.statusCode), JSON.stringify(finalToReturn, null, 2))
 
-  global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [makeRequest] bodyAsString', bodyAsString)
-  global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [makeRequest] bodyAsString', bodyAsString)
-  global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [makeRequest] finalToReturn', finalToReturn)
-  global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [makeRequest] bodyAsString.length', bodyAsString.length)
+  global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [makeRequest] 1 bodyAsString', bodyAsString)
+  global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [makeRequest] 2 finalToReturn', finalToReturn)
+  global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [makeRequest] 3 bodyAsString.length', bodyAsString.length)
 
   return finalToReturn
 }
