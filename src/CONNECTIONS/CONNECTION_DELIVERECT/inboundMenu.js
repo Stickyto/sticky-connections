@@ -419,7 +419,7 @@ module.exports = {
           })).id
           pLog.set(theirP._id, createdId)
         }
-        await wait(5)
+        await wait(50)
         nextIP++
       }
 
@@ -487,7 +487,7 @@ module.exports = {
           foundExistingPc = await createProductCategory(payload, user)
           nextIPc++
         }
-        await wait(5)
+        await wait(50)
       }
 
     } catch (e) {
