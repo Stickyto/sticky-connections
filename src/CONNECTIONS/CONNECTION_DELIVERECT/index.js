@@ -41,6 +41,11 @@ async function eventHookLogic(config, connectionContainer) {
   })
 
   const channelCarts = customData.cart.reduce((acc, cartItem) => {
+    if (!cartItem.productTheirId) {
+      return {
+        ...acc
+      }
+    }
     const [id] = cartItem.productTheirId.split('---')
 
     return {
