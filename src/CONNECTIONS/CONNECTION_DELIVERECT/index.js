@@ -60,6 +60,7 @@ async function eventHookLogic(config, connectionContainer) {
     }
   }, {})
 
+  const howMany = Object.keys(channelCarts).length
   for (const channel in channelCarts) {
     channelCarts[channel].body = {
       'channelOrderId': [event.thingId || 'NA', channel, event.paymentId, getNow()].join('---'),
@@ -91,7 +92,7 @@ async function eventHookLogic(config, connectionContainer) {
       'decimalDigits': 2,
       'orderIsAlreadyPaid': true, // customData.gateway !== 'GATEWAY_NOOP'
       'payment': {
-        'amount': channelCarts[channel].total,
+        'amount': channelCarts[channel].total - Math.floor(payment.discount * (1 / howMany)),
         'type': 0
       },
       'customer': {
