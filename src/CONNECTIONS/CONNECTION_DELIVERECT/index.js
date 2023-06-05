@@ -84,7 +84,7 @@ async function eventHookLogic(config, connectionContainer) {
       }),
       'orderType': 3,
       'decimalDigits': 2,
-      'orderIsAlreadyPaid': customData.gateway !== 'GATEWAY_NOOP',
+      'orderIsAlreadyPaid': true, // customData.gateway !== 'GATEWAY_NOOP'
       'payment': {
         'amount': channelCarts[channel].total,
         'type': 0
