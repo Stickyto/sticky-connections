@@ -5,6 +5,7 @@ const getToken = require('./lib/getToken')
 const getEnvironment = require('./lib/getEnvironment')
 const makeRequest = require('./lib/makeRequest')
 const { assert, getNow } = require('openbox-node-utils')
+const { aggregateCartsByProduct } = require('./lib/aggregateCartsByProduct')
 
 const CHANNEL_NAME = 'stickyconnections'
 const VALID_THING_PASSTHROUGHS = ['None', 'Your ID', 'Name', 'Number', 'Note']
@@ -40,25 +41,7 @@ async function eventHookLogic(config, connectionContainer) {
     id: event.paymentId
   })
 
-  const channelCarts = customData.cart.reduce((acc, cartItem) => {
-    if (!cartItem.productTheirId) {
-      return {
-        ...acc
-      }
-    }
-    const [id] = cartItem.productTheirId.split('---')
-
-    return {
-      ...acc,
-      [id]: acc[id] ? {
-        cart: [...acc[id].cart, cartItem],
-        total: acc[id].total + cartItem.productPrice
-      } : {
-        cart: [cartItem],
-        total: cartItem.productPrice
-      }
-    }
-  }, {})
+  const channelCarts = aggregateCartsByProduct(customData)
 
   const howMany = Object.keys(channelCarts).length
   for (const channel in channelCarts) {
