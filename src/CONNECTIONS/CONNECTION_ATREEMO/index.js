@@ -1,4 +1,4 @@
-const { assert, deserialize, isEmailValid, unformatPhone } = require('openbox-node-utils')
+const { assert, deserialize, isEmailValid, unformatPhone } = require('@stickyto/openbox-node-utils')
 const Connection = require('../Connection')
 const makeRequest = require('./makeRequest')
 
@@ -70,6 +70,8 @@ async function eventHookLogic (config, connectionContainer) {
       theirResponse
     }
   } catch (e) {
+    console.log(e)
+
     createEvent({
       type: 'CONNECTION_BAD',
       userId: user.id,

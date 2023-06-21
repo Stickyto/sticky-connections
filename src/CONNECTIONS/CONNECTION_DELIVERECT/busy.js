@@ -1,4 +1,4 @@
-const { assert } = require('openbox-node-utils')
+const { assert } = require('@stickyto/openbox-node-utils')
 
 module.exports = {
   name: 'Busy',

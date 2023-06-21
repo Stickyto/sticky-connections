@@ -1,6 +1,6 @@
 const Connection = require('../Connection')
 const makeRequest = require('./makeRequest')
-const { deserialize } = require('openbox-node-utils')
+const { deserialize } = require('@stickyto/openbox-node-utils')
 
 const COLOR = '#322CBE'
 

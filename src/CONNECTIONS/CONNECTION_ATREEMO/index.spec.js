@@ -1,12 +1,16 @@
-require('dotenv').config()
-
-const { User, Application, CustomData } = require('openbox-entities')
+const { User, Application } = require('openbox-entities')
 const CONNECTION_ATREEMO = require('.')
-const configDefaults = JSON.parse(process.env.CONFIG_DEFAULTS)
 
-let user, application, customData
+const configDefaults = ['', 'username@email.com', 'password']
+
+let user, application
 
 const createEvent = jest.fn()
+const mockMakeRequest = jest.fn()
+
+jest.mock('./makeRequest', () => {
+  return () => mockMakeRequest()
+})
 
 beforeEach(() => {
   user = new User({})
@@ -49,15 +53,14 @@ beforeEach(() => {
       ]
     }
   })
-  customData = new CustomData({
-    'Name': 'Joe Bloggs',
-    'Email': 'joe@bloggs.com',
-    'Do you consent?': 'form--switch--TRUE'
-  })
 })
 
 it('calls createEvent elegantly', async () => {
-  const r = await CONNECTION_ATREEMO.eventHooks.LD_V2(configDefaults, { user, application, customData: customData.getRaw(), createEvent })
-  expect(r.theirId).toBe(110429)
-  expect(r.theirResponse.FirstName).toBe('Joe Bloggs')
+  mockMakeRequest.mockResolvedValueOnce({access_token: ''})
+  mockMakeRequest.mockResolvedValueOnce({CtcID: 110429, FirstName: 'Joe Bloggs'})
+
+  const response = await CONNECTION_ATREEMO.eventHooks.LD_V2(configDefaults, { user, application, customData: {}, createEvent })
+
+  expect(response.theirId).toBe(110429)
+  expect(response.theirResponse.FirstName).toBe('Joe Bloggs')
 })

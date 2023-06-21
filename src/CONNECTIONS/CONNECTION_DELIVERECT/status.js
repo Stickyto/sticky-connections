@@ -1,4 +1,4 @@
-const { assert, getNow, isUuid } = require('openbox-node-utils')
+const { assert, getNow, isUuid } = require('@stickyto/openbox-node-utils')
 const { Payment } = require('openbox-entities')
 
 module.exports = {

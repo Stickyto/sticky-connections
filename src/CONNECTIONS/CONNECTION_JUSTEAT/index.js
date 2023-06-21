@@ -2,7 +2,7 @@
 /* eslint-disable quotes */
 const Connection = require('../Connection')
 const importMenu = require('./importMenu')
-const { assert, isUrl } = require('openbox-node-utils')
+const { assert, isUrl } = require('@stickyto/openbox-node-utils')
 const { Product, ProductCategory } = require('openbox-entities')
 
 module.exports = new Connection({
