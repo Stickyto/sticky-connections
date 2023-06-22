@@ -1,4 +1,4 @@
-const { assert, deserialize, isEmailValid, unformatPhone } = require('openbox-node-utils')
+const { assert, deserialize, isEmailValid, unformatPhone } = require('@stickyto/openbox-node-utils')
 const Connection = require('../Connection')
 const makeRequest = require('./makeRequest')
 

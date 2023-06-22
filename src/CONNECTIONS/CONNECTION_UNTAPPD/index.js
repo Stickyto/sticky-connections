@@ -1,5 +1,5 @@
 const got = require('got')
-const { assert, isEmailValid, getNow } = require('openbox-node-utils')
+const { assert, isEmailValid, getNow } = require('@stickyto/openbox-node-utils')
 const Connection = require('../Connection')
 
 const COLOR = '#FFBD00'

@@ -4,9 +4,8 @@ const Connection = require('../Connection')
 const getToken = require('./lib/getToken')
 const getEnvironment = require('./lib/getEnvironment')
 const makeRequest = require('./lib/makeRequest')
-const { assert, getNow } = require('openbox-node-utils')
+const { assert, getNow } = require('@stickyto/openbox-node-utils')
 const { aggregateCartsByProduct } = require('./lib/aggregateCartsByProduct')
-
 const CHANNEL_NAME = 'stickyconnections'
 const VALID_THING_PASSTHROUGHS = ['None', 'Your ID', 'Name', 'Number', 'Note']
 

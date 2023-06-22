@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 const got = require('got')
-const { assert } = require('openbox-node-utils')
+const { assert } = require('@stickyto/openbox-node-utils')
 
 const MIME_DECODERS = new Map([
   // when they don't return a content-type header, it could be anything (usually a body-less HTTP 201)

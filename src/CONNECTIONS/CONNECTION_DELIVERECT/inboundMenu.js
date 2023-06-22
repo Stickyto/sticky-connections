@@ -1,5 +1,5 @@
 /* eslint-disable max-len */
-const { assert, getNow } = require('openbox-node-utils')
+const { assert, getNow } = require('@stickyto/openbox-node-utils')
 const { Question } = require('openbox-entities')
 
 const wait = (time) => {
