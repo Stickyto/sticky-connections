@@ -1,35 +1,85 @@
-require('dotenv').config()
-
-const configDefaults = JSON.parse(process.env.CONFIG_DEFAULTS)
 const makeRequest = require('./makeRequest')
 
-async function getToken() {
-  const [, configUsername, configPassword] = configDefaults
-  const {
-    access_token: bearerToken
-  } = await makeRequest(
-    configDefaults,
-    'post',
-    'token',
-    {
-      grant_type: 'password',
-      username: configUsername,
-      password: configPassword
-    },
-    'application/x-www-form-urlencoded'
-  )
-  return bearerToken
-}
+const configDefaults = [
+  '',
+  'username',
+  'password'
+]
 
-it('works', async () => {
-  const token = await getToken()
-  const r = await makeRequest(
-    configDefaults,
-    'get',
-    'api/Contact/Get/110428',
-    undefined,
-    undefined,
-    token
-  )
-  expect(r.FirstName).toBe('Ultimate Test Contact')
+const mockGet = jest.fn()
+const mockPost = jest.fn()
+
+jest.mock('got', () => {
+  return {
+    __esModule: true,
+    'get': (...args) => mockGet(...args),
+    'post': (...args) => mockPost(...args),
+  }
+})
+
+global.rdic = { logger: { log: jest.fn() } }
+
+describe('makeRequest', () => {
+  beforeEach(() => {
+    mockGet.mockClear()
+    mockPost.mockClear()
+    global.rdic.logger.log.mockClear()
+  })
+
+  it('should handle a GET request correctly', async () => {
+    mockGet.mockResolvedValue({ body: '{"FirstName": "Ultimate Test Contact"}'})
+
+    const response = await makeRequest(
+      configDefaults,
+      'get',
+      'api/Contact/Get/110428',
+    )
+
+    expect(response.FirstName).toBe('Ultimate Test Contact')
+    expect(mockGet).toHaveBeenCalledWith(
+      `${configDefaults[0]}/api/Contact/Get/110428`,
+      {
+        headers: {},
+        body: undefined
+      }
+    )
+  })
+
+  it('should handle a POST request correctly', async () => {
+    mockPost.mockResolvedValue({ body: '{"FirstName": "Ultimate Test Contact"}'})
+
+    const response = await makeRequest(
+      configDefaults,
+      'post',
+      'api/Contact/Post/110428',
+      { someKey: 'someValue' },
+      'application/json',
+      'sampleBearerToken'
+    )
+
+    expect(response.FirstName).toBe('Ultimate Test Contact')
+    expect(mockPost).toHaveBeenCalledWith(
+      `${configDefaults[0]}/api/Contact/Post/110428`,
+      {
+        headers: {
+          'authorization': 'Bearer sampleBearerToken',
+          'content-type': 'application/json'
+        },
+        body: '{"someKey":"someValue"}'
+      }
+    )
+  })
+
+  it('should handle error in request', async () => {
+    mockGet.mockRejectedValue(new Error('Network error'))
+
+    await expect(
+      makeRequest(
+        configDefaults,
+        'get',
+        'api/Contact/Get/110428',
+      )
+    ).rejects.toThrow('Network error')
+  })
+
 })

@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
 /* eslint-disable quotes */
 const safeEval = require('safe-eval')
-const { sum, assert } = require('openbox-node-utils')
+const { sum, assert } = require('@stickyto/openbox-node-utils')
 const Connection = require('../Connection')
 const makeRequest = require('./makeRequest')
 

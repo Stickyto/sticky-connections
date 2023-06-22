@@ -1,4 +1,4 @@
-const { assert, isEmailValid } = require('openbox-node-utils')
+const { assert, isEmailValid } = require('@stickyto/openbox-node-utils')
 const Connection = require('../Connection')
 const makeRequest = require('./makeRequest')
 

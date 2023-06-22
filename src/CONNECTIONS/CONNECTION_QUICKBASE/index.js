@@ -1,4 +1,4 @@
-const { assert, isUuid } = require('openbox-node-utils')
+const { assert, isUuid } = require('@stickyto/openbox-node-utils')
 const { Thing } = require('openbox-entities')
 const Connection = require('../Connection')
 
