@@ -70,8 +70,6 @@ async function eventHookLogic (config, connectionContainer) {
       theirResponse
     }
   } catch (e) {
-    console.log(e)
-
     createEvent({
       type: 'CONNECTION_BAD',
       userId: user.id,
