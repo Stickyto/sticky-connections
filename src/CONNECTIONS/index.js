@@ -8,8 +8,6 @@ const CONNECTIONS = new Map([
     require('./CONNECTION_JUSTEAT')
   ],
   [
-<<<<<<< Updated upstream
-=======
     'CONNECTION_QUICKBASE',
     require('./CONNECTION_QUICKBASE')
   ],
@@ -18,7 +16,6 @@ const CONNECTIONS = new Map([
     require('./CONNECTION_EML')
   ],
   [
->>>>>>> Stashed changes
     'CONNECTION_PASSKIT',
     require('./CONNECTION_PASSKIT')
   ],
