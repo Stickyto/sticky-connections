@@ -4,7 +4,7 @@
   "description": "",
   "main": "src/index.js",
   "dependencies": {
-    "@stickyto/openbox-node-utils": "^7.1.3",
+    "@stickyto/openbox-node-utils": "7.2.1",
     "adal-node": "^0.2.4",
     "dotenv": "^16.0.3",
     "got": "11.8.5",
