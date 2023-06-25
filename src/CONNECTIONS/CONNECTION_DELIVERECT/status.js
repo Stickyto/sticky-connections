@@ -1,4 +1,4 @@
-const { assert, getNow, isUuid } = require('@stickyto/openbox-node-utils')
+const { assert, isUuid } = require('@stickyto/openbox-node-utils')
 const { Payment } = require('openbox-entities')
 
 module.exports = {
@@ -15,11 +15,8 @@ module.exports = {
     configuredChannelLinkIds = configuredChannelLinkIds.split(',').map(_ => _.trim())
     const realReason = reason || 'Deliverect didn\'t provide a reason'
     const borkedStatusRs = p => {
-      p.sessionPaidAt = undefined
-      p.sessionFailedAt = getNow()
       p.paymentGatewayExtra = realReason
-      p.onUpdatedAt()
-
+      p.onSessionFail(rdic, user)
       createEvent({
         type: 'TO_DO',
         userId: user.id,
@@ -27,10 +24,9 @@ module.exports = {
         applicationId: p.applicationId,
         thingId: p.thingId,
         customData: {
-          what: `Deliverect said the order failed (${realReason}).`,
+          what: `Deliverect failed: ${realReason}`,
           colour: '#ff3838',
-          foregroundColor: '#ffffff',
-          specialEffect: 'Bounce'
+          foregroundColor: '#ffffff'
         }
       })
     }
