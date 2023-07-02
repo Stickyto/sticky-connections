@@ -13,10 +13,10 @@ module.exports = {
     const { channelLink, status, reason, channelOrderId } = body
     let [, configuredChannelLinkIds] = config
     configuredChannelLinkIds = configuredChannelLinkIds.split(',').map(_ => _.trim())
-    const realReason = reason || 'Deliverect didn\'t provide a reason'
+    const realReason = reason || 'We\'re sorry but we don\'t know any more.'
     const borkedStatusRs = p => {
       p.paymentGatewayExtra = realReason
-      p.onSessionFail(rdic, user)
+      p.onSessionFail(rdic, user, {}, realReason)
       createEvent({
         type: 'TO_DO',
         userId: user.id,
