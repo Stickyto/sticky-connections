@@ -1,8 +1,7 @@
-const parseResponse = require('./parseResponse/parseResponse')
 const got = require('got')
-
-// step 1: oauth
-// step 2: use native fetch / whatever we do to make a http request
+const parseResponse = require('./parseResponse/parseResponse')
+const { decode: fixXml } = require('html-entities')
+const parser = require('xml2json')
 
 function getFormHttpBody(params) {
   return Object.keys(params)
@@ -12,46 +11,38 @@ function getFormHttpBody(params) {
     }).join('&')
 }
 
-module.exports = async (requestXMLBody, config) => {
+module.exports = async (requestXmlBody, config, codeUnit) => {
   const [clientId, clientSecret, scope, oAuthUrl, XMLUrl] = config
-  const payload = getFormHttpBody({
+  const oauthBody = getFormHttpBody({
     'client_id': clientId,
     'client_secret': clientSecret,
     'grant_type': 'client_credentials',
     scope
   })
-  console.warn('xxx payload', payload)
-  // return {}
-
-  const headers = {
-    'Content-Type': 'application/x-www-form-urlencoded'
-  }
+  global.rdic.logger.log({}, '[CONNECTION_ELITE_DYNAMICS] [makeRequest]', { oauthBody })
 
   const { body: bodyAsString } = await got.post(
     oAuthUrl,
     {
-      headers,
-      body: payload
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: oauthBody
     }
   )
 
-  const { access_token } = JSON.parse(bodyAsString)
-
-  console.log('DANESH bodyJSON: ', access_token)
-
-  const headersBusinessCentral = {
-    'Authorization': `Bearer ${access_token}`,
-    'Content-Type': 'text/xml',
-    'SOAPAction': 'GetSetup'
-  }
-
-  console.log('Danesh requestXMLBody: ', requestXMLBody)
+  const { access_token: xmlAccessToken } = JSON.parse(bodyAsString)
+  global.rdic.logger.log({}, '[CONNECTION_ELITE_DYNAMICS] [makeRequest]', { xmlAccessToken, requestXmlBody })
 
   const response = await got.post(
-    XMLUrl,
+    `${XMLUrl}/${codeUnit}`,
     {
-      headers: headersBusinessCentral,
-      body: requestXMLBody,
+      headers: {
+        'Authorization': `Bearer ${xmlAccessToken}`,
+        'Content-Type': 'text/xml',
+        'SOAPAction': 'GetSetup'
+      },
+      body: requestXmlBody,
       throwHttpErrors: false
     }
   )
@@ -60,8 +51,12 @@ module.exports = async (requestXMLBody, config) => {
     const rejection = response.body ? await parseResponse(response.body, '//faultstring/text()') : `HTTP ${response.statusCode}.`
     throw new Error(rejection)
   }
-  const resolution = await parseResponse(response.body, '//*[local-name()=\'return_value\']/text()')
+  const brokenXml = await parseResponse(response.body, '//*[local-name()=\'return_value\']/text()')
+  const fixedXml = fixXml(brokenXml)
 
-  console.log('Danesh resolution: ', resolution)
-  return resolution
+  const asJson = parser.toJson(fixedXml, { object: true })
+
+  global.rdic.logger.log({}, '[CONNECTION_ELITE_DYNAMICS] [makeRequest]', { brokenXml, fixedXml, asJson })
+
+  return asJson
 }

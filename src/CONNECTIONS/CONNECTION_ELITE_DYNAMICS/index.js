@@ -1,5 +1,3 @@
-const { decode: readBorkedXml } = require('html-entities')
-const parser = require('xml2json')
 const makeRequest = require('./makeRequest')
 
 const dateStringToUtc = require('./dateStringToUtc/dateStringToUtc')
@@ -31,29 +29,23 @@ module.exports = new Connection({
   partnerNames: ['Elite Dynamics'],
   color: '#0D9277',
   logo: cdn => `${cdn}/connections/CONNECTION_ELITE_DYNAMICS.svg`,
-  configNames: ['Client ID', 'Client Secret', 'Scope', 'oAuth URL', 'XML URL'],
-  configDefaults: ['', '', 'https://api.businesscentral.dynamics.com/.default', '', ''],
+  configNames: ['Client ID', 'Client Secret', 'Scope', 'OAuth URL', 'Code unit URL'],
+  configDefaults: ['', '', 'https://api.businesscentral.dynamics.com/.default', 'https://login.microsoftonline.com/---/oauth2/v2.0/token', 'https://api.businesscentral.dynamics.com/v2.0/---/Sandbox/WS/Customer-Name/Codeunit'],
   methods: {
     bookingAuthenticate: {
       name: 'Booking > Authenticate',
       logic: async ({ config }) => {
         const body = getBody('BookingAPI', 'GetSetup', {})
-        const outerResponse = await makeRequest(body, config)
-        return outerResponse
-        // const innerResponse = readBorkedXml(outerResponse)
-        // const asJson = parser.toJson(innerResponse)
-        // return JSON.parse(asJson).GetSetup
+        const xmlResponse = await makeRequest(body, config, 'BookingAPI')
+        return xmlResponse.GetSetup
       }
     },
     bookingCreate: {
       name: 'Booking > Create',
       logic: async ({ config }) => {
         const body = getBody('BookingAPI', 'CreateBooking', {})
-        const outerResponse = await makeRequest(body, config)
-        const innerResponse = readBorkedXml(outerResponse)
-        const asJsonString = parser.toJson(innerResponse)
-        const asJsonObject = JSON.parse(asJsonString)
-        const { booking_no: id } = asJsonObject.CreateBooking
+        const xmlResponse = await makeRequest(body, config, 'BookingAPI')
+        const { booking_no: id } = xmlResponse.CreateBooking
         return {
           id
         }
@@ -63,7 +55,7 @@ module.exports = new Connection({
       name: 'Booking > Update',
       logic: async ({ config, body }) => {
         const reqBody = getBody('BookingAPI', 'UpdateNotes', { 'booking_no': body.bookingId, notes: body.text })
-        await makeRequest(reqBody, config)
+        await makeRequest(reqBody, config, 'BookingAPI')
         return {}
       }
     },
@@ -72,10 +64,8 @@ module.exports = new Connection({
       logic: async ({ connectionContainer, config, body }) => {
         const { user } = connectionContainer
         const reqBody = getBody('BookingAPI', 'GetBooking', { 'booking_no': body.bookingId })
-        const outerResponse = await makeRequest(reqBody, config)
-        const innerResponse = readBorkedXml(outerResponse)
-        const asJsonString = parser.toJson(innerResponse)
-        const asJsonObject = JSON.parse(asJsonString).GetBooking
+        const xmlResponse = await makeRequest(reqBody, config, 'BookingAPI')
+        const asJsonObject = xmlResponse.GetBooking
         let {
           booking_no: id,
           no_of_adults: countAdults,
@@ -137,7 +127,7 @@ module.exports = new Connection({
       name: 'Booking > Check in',
       logic: async ({ config, body }) => {
         const reqBody = getBody('BookingAPI', 'CheckInBooking', { 'booking_no': body.bookingId })
-        await makeRequest(reqBody, config)
+        await makeRequest(reqBody, config, 'BookingAPI')
         return {}
       }
     },
@@ -145,7 +135,7 @@ module.exports = new Connection({
       name: 'Booking > Check out',
       logic: async ({ config, body }) => {
         const reqBody = getBody('BookingAPI', 'CheckOutBooking', { 'booking_no': body.bookingId })
-        await makeRequest(reqBody, config)
+        await makeRequest(reqBody, config, 'BookingAPI')
         return {}
       }
     },
@@ -153,7 +143,7 @@ module.exports = new Connection({
       name: 'Booking > Pay start',
       logic: async ({ config, body }) => {
         const reqBody = getBody('BookingAPI', 'TagBooking', { 'booking_no': body.bookingId })
-        await makeRequest(reqBody, config)
+        await makeRequest(reqBody, config, 'BookingAPI')
         return {}
       }
     },
@@ -161,11 +151,8 @@ module.exports = new Connection({
       name: 'Booking > Pay good',
       logic: async ({ config, body }) => {
         const reqBody1 = getBody('BookingAPI', 'MakePayment', { 'booking_no': body.bookingId, reference: body.paymentId.substring(0, 30), amount: (body.total / 100).toFixed(2) })
-        const outerResponse = await makeRequest(reqBody1, config)
-        const innerResponse = readBorkedXml(outerResponse)
-        const asJsonString = parser.toJson(innerResponse)
-        const asJsonObject = JSON.parse(asJsonString)
-        let { receipt_no: paymentGatewayId } = asJsonObject.MakePayment
+        const xmlResponse = await makeRequest(reqBody1, config, 'BookingAPI')
+        let { receipt_no: paymentGatewayId } = xmlResponse.MakePayment
         if (body.doConfirm) {
           const reqBody2 = getBody('BookingAPI', 'ConfirmBooking', { 'booking_no': body.bookingId })
           await makeRequest(reqBody2, config)
@@ -178,9 +165,8 @@ module.exports = new Connection({
     bookingPayBad: {
       name: 'Booking > Pay bad',
       logic: async ({ config, body }) => {
-        const [configUsername, configPassword, configUrl] = config
         const reqBody = getBody('BookingAPI', 'UntagBooking', { 'booking_no': body.bookingId })
-        await makeRequest(reqBody, configUsername, configPassword)
+        await makeRequest(reqBody, config, 'BookingAPI')
         return {}
       }
     }
