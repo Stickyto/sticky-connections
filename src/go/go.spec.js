@@ -3,7 +3,13 @@ const go = require('./go')
 const VALID_USER = {
   connections: [{
     id: 'CONNECTION_ELITE_DYNAMICS',
-    config: ['sticky@elitedynamics.co.uk', '', '']
+    config: [
+      '---',
+      '---',
+      'https://api.businesscentral.dynamics.com/.default',
+      'https://login.microsoftonline.com/---/oauth2/v2.0/token',
+      'https://api.businesscentral.dynamics.com/v2.0/---/Sandbox/WS/Customer-Name/Codeunit'
+    ]
   }]
 }
 
@@ -40,21 +46,39 @@ describe('doesnt work', () => {
       })
   })
 
-  it.skip('respects method', async () => {
+  it('respects method', async () => {
+    partner = {
+      name: 'Elite Dynamics'
+    }
+
     await expect(
-      go('CONNECTION_ELITE_DYNAMICS', 'doesntExist', { user })
+      go('CONNECTION_ELITE_DYNAMICS', 'doesntExist', { user, partner })
     )
       .rejects.toMatchObject({
         message: 'EliteParks doesn\'t have a method called doesntExist!',
       })
   })
 
-  it.skip('respects configuration', async () => {
+  it('respects configuration', async () => {
+    partner = {
+      name: 'Elite Dynamics'
+    }
+
     await expect(
-      go('CONNECTION_ELITE_DYNAMICS', 'bookingAuthenticate', { user })
+      go('CONNECTION_ELITE_DYNAMICS', 'bookingAuthenticate', { user, partner })
     )
       .rejects.toMatchObject({
         message: 'EliteParks isn\'t configured!',
       })
+  })
+
+  it('works', async () => {
+    partner = {
+      name: 'Elite Dynamics'
+    }
+
+    const r = await go('CONNECTION_ELITE_DYNAMICS', 'bookingGet', { user: VALID_USER, partner, body: { bookingId: 'BK123' } })
+    expect(r.id).toBe('BK123')
+    expect(r.total).toBe(19900)
   })
 })
