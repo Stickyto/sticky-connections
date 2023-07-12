@@ -31,8 +31,8 @@ module.exports = new Connection({
   partnerNames: ['Elite Dynamics'],
   color: '#0D9277',
   logo: cdn => `${cdn}/connections/CONNECTION_ELITE_DYNAMICS.svg`,
-  configNames: ['Client ID', 'Client Secret', 'Scope'],
-  configDefaults: ['', '', 'https://api.businesscentral.dynamics.com/.default'],
+  configNames: ['Client ID', 'Client Secret', 'Scope', 'oAuth URL', 'XML URL'],
+  configDefaults: ['', '', 'https://api.businesscentral.dynamics.com/.default', '', ''],
   methods: {
     bookingAuthenticate: {
       name: 'Booking > Authenticate',
