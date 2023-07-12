@@ -6,7 +6,7 @@ const dateStringToUtc = require('./dateStringToUtc/dateStringToUtc')
 const timeStringToSeconds = require('./timeStringToSeconds/timeStringToSeconds')
 const Connection = require('../Connection')
 
-function getBody (codeUnit, method, body = {}) {
+function getBody(codeUnit, method, body = {}) {
   const bodyAttributes = Object.keys(body)
     .map(bk => `${bk}="${body[bk]}"`)
     .join(' ')
@@ -31,8 +31,8 @@ module.exports = new Connection({
   partnerNames: ['Elite Dynamics'],
   color: '#0D9277',
   logo: cdn => `${cdn}/connections/CONNECTION_ELITE_DYNAMICS.svg`,
-  configNames: ['API key', 'Password', 'URL'],
-  configDefaults: ['you@elitedynamics.co.uk', '', 'https://xyz.dynamicstocloud.com:8080/LiveWS_01/WS/XYZ/CodeUnit/BookingAPI'],
+  configNames: ['Client ID', 'Client Secret', 'Scope'],
+  configDefaults: ['', '', 'https://api.businesscentral.dynamics.com/.default'],
   methods: {
     bookingAuthenticate: {
       name: 'Booking > Authenticate',
