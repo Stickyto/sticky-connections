@@ -19,6 +19,7 @@ module.exports = {
       ['unsnooze', true]
     ])
 
+    let messages = []
     try {
       const foundChannelLinkId = configuredChannelLinkIds.find(_ => _ === channelLinkId)
       assert(foundChannelLinkId, `[CONNECTION_DELIVERECT] [snooze] [1] Channel link IDs do not match (foundChannelLinkId is falsy; ${channelLinkId} provided vs one of configured ${configuredChannelLinkIds.join(' / ')})`)
@@ -27,16 +28,40 @@ module.exports = {
       const theAction = actionMap.get(action)
       assert(typeof theAction === 'boolean', '[snooze] "action" body key is not valid; are you really Deliverect?')
 
-      const plus = body.operations[0].data.items.map(_ => `${foundChannelLinkId}---${_.plu}`)
+      const plusWithoutChannelLinks = body.operations[0].data.items.map(_ => _.plu)
+      const plusWithChannelLinks = plusWithoutChannelLinks.map(_ => `${foundChannelLinkId}---${_}`)
 
       const allPsToday = await getProducts(rdic, user, { connection: 'CONNECTION_DELIVERECT', their_id: `startsWith:${foundChannelLinkId}---` })
-      const plusAsPIds = plus
+
+      const plusMappedToProducts = plusWithChannelLinks
         .map(plu => allPsToday.find(_ => _.theirId === plu))
+      const plusMappedToProductsFilteredAndAsPlusAgain = plusMappedToProducts
         .filter(_ => _)
+        .map(_ => _.theirId)
 
-      assert(plus.length === plusAsPIds.length, `[snooze] plus.length is ${plus.length} but plusAsPIds.length is ${plusAsPIds.length}; are you trying to snooze a non-product?`)
+      messages.push(`Found level products (${plusMappedToProductsFilteredAndAsPlusAgain.length} updated of ${plusMappedToProducts.length} matched of ${allPsToday.length} total in channel link ${foundChannelLinkId})`)
 
-      await rdic.get('datalayerRelational').updateMany('products', { user_id: user.id, their_id: plus, connection: 'CONNECTION_DELIVERECT' }, `is_enabled = ${theAction}`)
+      for (let allPi = 0; allPi < allPsToday.length; allPi++) {
+        const eachProduct = allPsToday[allPi]
+        let mustUpdateProduct = false
+        eachProduct.questions.forEach(q => {
+          q.options.forEach(o => {
+            if (plusWithoutChannelLinks.includes(o.theirId)) {
+              o.forSale = theAction
+              mustUpdateProduct = eachProduct
+            }
+          })
+        })
+        if (mustUpdateProduct) {
+          const asDlr = mustUpdateProduct.toDatalayerRelational(['questions'])
+          await rdic.get('datalayerRelational').updateOne('products', mustUpdateProduct.id, asDlr)
+          messages.push(`Question-option product ${mustUpdateProduct.id} -> ${mustUpdateProduct.name}`)
+        }
+      }
+
+      const query = { user_id: user.id, their_id: plusWithChannelLinks, connection: 'CONNECTION_DELIVERECT' }
+      global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [snooze]', { plusWithoutChannelLinks, plusWithChannelLinks, plusMappedToProductsFilteredAndAsPlusAgain, query })
+      await rdic.get('datalayerRelational').updateMany('products', query, `is_enabled = ${theAction}`)
     } catch (e) {
       createEvent({
         type: 'CONNECTION_BAD',
@@ -45,6 +70,9 @@ module.exports = {
       })
       throw e
     }
-    return {}
+    global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [snooze]', { messages })
+    return {
+      message: messages.join(' / ')
+    }
   }
 }

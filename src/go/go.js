@@ -31,7 +31,7 @@ module.exports = async function go (connection, method, { rdic, user, partner, b
       await rdic.get('datalayerRelational').create('events', event.toDatalayerRelational())
     },
     getProducts: async (rdic, user, query = {}) => {
-      const rawEntities = await rdic.get('datalayerRelational').read('products', { user_id: user.id, ...query })
+      const rawEntities = await rdic.get('datalayerRelational').read('products', { user_id: user.id, ...query }, 'created_at ASC')
       return rawEntities.map(re => new Product().fromDatalayerRelational(re))
     },
     createProduct: async (...args) => {
