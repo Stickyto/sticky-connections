@@ -1,6 +1,6 @@
 const { decode: readBorkedXml } = require('html-entities')
 const parser = require('xml2json')
-const ntlm = require('./ntlm')
+const makeRequest = require('./makeRequest')
 
 const dateStringToUtc = require('./dateStringToUtc/dateStringToUtc')
 const timeStringToSeconds = require('./timeStringToSeconds/timeStringToSeconds')
@@ -37,20 +37,19 @@ module.exports = new Connection({
     bookingAuthenticate: {
       name: 'Booking > Authenticate',
       logic: async ({ config }) => {
-        const [configUsername, configPassword, configUrl] = config
         const body = getBody('BookingAPI', 'GetSetup', {})
-        const outerResponse = await ntlm(configUrl, body, configUsername, configPassword)
-        const innerResponse = readBorkedXml(outerResponse)
-        const asJson = parser.toJson(innerResponse)
-        return JSON.parse(asJson).GetSetup
+        const outerResponse = await makeRequest(body, config)
+        return outerResponse
+        // const innerResponse = readBorkedXml(outerResponse)
+        // const asJson = parser.toJson(innerResponse)
+        // return JSON.parse(asJson).GetSetup
       }
     },
     bookingCreate: {
       name: 'Booking > Create',
       logic: async ({ config }) => {
-        const [configUsername, configPassword, configUrl] = config
         const body = getBody('BookingAPI', 'CreateBooking', {})
-        const outerResponse = await ntlm(configUrl, body, configUsername, configPassword)
+        const outerResponse = await makeRequest(body, config)
         const innerResponse = readBorkedXml(outerResponse)
         const asJsonString = parser.toJson(innerResponse)
         const asJsonObject = JSON.parse(asJsonString)
@@ -63,9 +62,8 @@ module.exports = new Connection({
     bookingUpdate: {
       name: 'Booking > Update',
       logic: async ({ config, body }) => {
-        const [configUsername, configPassword, configUrl] = config
         const reqBody = getBody('BookingAPI', 'UpdateNotes', { 'booking_no': body.bookingId, notes: body.text })
-        await ntlm(configUrl, reqBody, configUsername, configPassword)
+        await makeRequest(reqBody, config)
         return {}
       }
     },
@@ -73,9 +71,8 @@ module.exports = new Connection({
       name: 'Booking > Get',
       logic: async ({ connectionContainer, config, body }) => {
         const { user } = connectionContainer
-        const [configUsername, configPassword, configUrl] = config
         const reqBody = getBody('BookingAPI', 'GetBooking', { 'booking_no': body.bookingId })
-        const outerResponse = await ntlm(configUrl, reqBody, configUsername, configPassword)
+        const outerResponse = await makeRequest(reqBody, config)
         const innerResponse = readBorkedXml(outerResponse)
         const asJsonString = parser.toJson(innerResponse)
         const asJsonObject = JSON.parse(asJsonString).GetBooking
@@ -139,43 +136,39 @@ module.exports = new Connection({
     bookingCheckIn: {
       name: 'Booking > Check in',
       logic: async ({ config, body }) => {
-        const [configUsername, configPassword, configUrl] = config
         const reqBody = getBody('BookingAPI', 'CheckInBooking', { 'booking_no': body.bookingId })
-        await ntlm(configUrl, reqBody, configUsername, configPassword)
+        await makeRequest(reqBody, config)
         return {}
       }
     },
     bookingCheckOut: {
       name: 'Booking > Check out',
       logic: async ({ config, body }) => {
-        const [configUsername, configPassword, configUrl] = config
         const reqBody = getBody('BookingAPI', 'CheckOutBooking', { 'booking_no': body.bookingId })
-        await ntlm(configUrl, reqBody, configUsername, configPassword)
+        await makeRequest(reqBody, config)
         return {}
       }
     },
     bookingPayStart: {
       name: 'Booking > Pay start',
       logic: async ({ config, body }) => {
-        const [configUsername, configPassword, configUrl] = config
         const reqBody = getBody('BookingAPI', 'TagBooking', { 'booking_no': body.bookingId })
-        await ntlm(configUrl, reqBody, configUsername, configPassword)
+        await makeRequest(reqBody, config)
         return {}
       }
     },
     bookingPayGood: {
       name: 'Booking > Pay good',
       logic: async ({ config, body }) => {
-        const [configUsername, configPassword, configUrl] = config
         const reqBody1 = getBody('BookingAPI', 'MakePayment', { 'booking_no': body.bookingId, reference: body.paymentId.substring(0, 30), amount: (body.total / 100).toFixed(2) })
-        const outerResponse = await ntlm(configUrl, reqBody1, configUsername, configPassword)
+        const outerResponse = await makeRequest(reqBody1, config)
         const innerResponse = readBorkedXml(outerResponse)
         const asJsonString = parser.toJson(innerResponse)
         const asJsonObject = JSON.parse(asJsonString)
         let { receipt_no: paymentGatewayId } = asJsonObject.MakePayment
         if (body.doConfirm) {
           const reqBody2 = getBody('BookingAPI', 'ConfirmBooking', { 'booking_no': body.bookingId })
-          await ntlm(configUrl, reqBody2, configUsername, configPassword)
+          await makeRequest(reqBody2, config)
         }
         return {
           paymentGatewayId
@@ -187,7 +180,7 @@ module.exports = new Connection({
       logic: async ({ config, body }) => {
         const [configUsername, configPassword, configUrl] = config
         const reqBody = getBody('BookingAPI', 'UntagBooking', { 'booking_no': body.bookingId })
-        await ntlm(configUrl, reqBody, configUsername, configPassword)
+        await makeRequest(reqBody, configUsername, configPassword)
         return {}
       }
     }
