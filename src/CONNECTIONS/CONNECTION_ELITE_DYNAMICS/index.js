@@ -33,10 +33,11 @@ module.exports = new Connection({
   configNames: ['Client ID', 'Client Secret', 'Scope', 'OAuth URL', 'Code unit URL'],
   configDefaults: ['', '', 'https://api.businesscentral.dynamics.com/.default', 'https://login.microsoftonline.com/---/oauth2/v2.0/token', 'https://api.businesscentral.dynamics.com/v2.0/---/Sandbox/WS/Customer-Name/Codeunit'],
   methods: {
-    ownerGet: {
-      name: 'Owner > Get',
+    ownerAuthenticate: {
+      name: 'Owner > Authenticate',
       logic: async ({ connectionContainer, config, body }) => {
-        let { ownerId, ownerEmail = '' } = body
+        let { ownerId = '', ownerEmail = '' } = body
+        ownerId = ownerId.trim().toUpperCase()
         ownerEmail = ownerEmail.toLowerCase()
         const { GetOwner: ownerJson } = await makeRequest(getBody('OwnerAPI', 'GetOwner', { 'customer_no': ownerId }), config, 'OwnerAPI')
         ownerJson.email && assert(ownerJson.email.toLowerCase() === ownerEmail, `We found someone with ID ${ownerId} but the email wasn't ${ownerEmail}.`)
@@ -61,7 +62,8 @@ module.exports = new Connection({
     bookingAuthenticate: {
       name: 'Booking > Authenticate',
       logic: async ({ connectionContainer, config, body }) => {
-        let { bookingId, bookingEmail = '' } = body
+        let { bookingId = '', bookingEmail = '' } = body
+        bookingId = bookingId.trim().toUpperCase()
         bookingEmail = bookingEmail.toLowerCase()
         const { GetBooking: bookingJson } = await makeRequest(getBody('BookingAPI', 'GetBooking', { 'booking_no': bookingId }), config, 'BookingAPI')
         bookingJson.email && assert(bookingJson.email.toLowerCase() === bookingEmail, `Booking ${bookingId} was found but it doesn't belong to ${bookingEmail}.`)
