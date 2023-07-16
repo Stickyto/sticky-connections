@@ -1,3 +1,4 @@
+const { assert } = require('@stickyto/openbox-node-utils')
 const makeRequest = require('./makeRequest')
 
 const dateStringToUtc = require('./dateStringToUtc/dateStringToUtc')
@@ -32,13 +33,52 @@ module.exports = new Connection({
   configNames: ['Client ID', 'Client Secret', 'Scope', 'OAuth URL', 'Code unit URL'],
   configDefaults: ['', '', 'https://api.businesscentral.dynamics.com/.default', 'https://login.microsoftonline.com/---/oauth2/v2.0/token', 'https://api.businesscentral.dynamics.com/v2.0/---/Sandbox/WS/Customer-Name/Codeunit'],
   methods: {
+    ownerGet: {
+      name: 'Owner > Get',
+      logic: async ({ connectionContainer, config, body }) => {
+        let { ownerId, ownerEmail = '' } = body
+        ownerEmail = ownerEmail.toLowerCase()
+        const { GetOwner: ownerJson } = await makeRequest(getBody('OwnerAPI', 'GetOwner', { 'customer_no': ownerId }), config, 'OwnerAPI')
+        ownerJson.email && assert(ownerJson.email.toLowerCase() === ownerEmail, `We found someone with ID ${ownerId} but the email wasn't ${ownerEmail}.`)
+
+        let dealJson
+        try {
+          ({ GetDeal: dealJson } = await makeRequest(getBody('OwnerAPI', 'GetDeal', { 'deal_no': ownerJson.current_deal_no }), config, 'OwnerAPI'))
+        } catch (e) {
+          throw new Error(`We found ${ownerId} but you don't have a current deal.`)
+        }
+
+        return {
+          id: ownerJson.customer_no,
+          dealId: ownerJson.current_deal_no,
+          email: ownerJson.email,
+          parkId: dealJson.park_code,
+          plotId: dealJson.plot_no,
+          unitId: dealJson.unit_no
+        }
+      }
+    },
+    bookingAuthenticate: {
+      name: 'Booking > Authenticate',
+      logic: async ({ connectionContainer, config, body }) => {
+        let { bookingId, bookingEmail = '' } = body
+        bookingEmail = bookingEmail.toLowerCase()
+        const { GetBooking: bookingJson } = await makeRequest(getBody('BookingAPI', 'GetBooking', { 'booking_no': bookingId }), config, 'BookingAPI')
+        bookingJson.email && assert(bookingJson.email.toLowerCase() === bookingEmail, `Booking ${bookingId} was found but it doesn't belong to ${bookingEmail}.`)
+        let {
+          booking_no: id,
+        } = bookingJson
+        return {
+          id
+        }
+      }
+    },
     bookingGet: {
       name: 'Booking > Get',
       logic: async ({ connectionContainer, config, body }) => {
         const { user } = connectionContainer
-        const reqBody = getBody('BookingAPI', 'GetBooking', { 'booking_no': body.bookingId })
-        const xmlResponse = await makeRequest(reqBody, config, 'BookingAPI')
-        const asJsonObject = xmlResponse.GetBooking
+        let { bookingId } = body
+        const { GetBooking: bookingJson } = await makeRequest(getBody('BookingAPI', 'GetBooking', { 'booking_no': bookingId }), config, 'BookingAPI')
         let {
           booking_no: id,
           no_of_adults: countAdults,
@@ -47,41 +87,41 @@ module.exports = new Connection({
           total_price: total,
           // amount_paid: total,
           // outstanding_amount: total
-        } = asJsonObject
+        } = bookingJson
         total = Math.trunc(parseFloat(total) * 100)
         countAdults = parseInt(countAdults, 10)
         countChildren = parseInt(countChildren, 10)
         return {
           id,
           dates: {
-            create: dateStringToUtc(asJsonObject.added_date),
-            start: dateStringToUtc(asJsonObject.arrival_date),
-            end: dateStringToUtc(asJsonObject.departure_date),
-            // start: 1644192000 || dateStringToUtc(asJsonObject.arrival_date),
-            // end: 1644537600 || dateStringToUtc(asJsonObject.departure_date)
+            create: dateStringToUtc(bookingJson.added_date),
+            start: dateStringToUtc(bookingJson.arrival_date),
+            end: dateStringToUtc(bookingJson.departure_date),
+            // start: 1644192000 || dateStringToUtc(bookingJson.arrival_date),
+            // end: 1644537600 || dateStringToUtc(bookingJson.departure_date)
           },
           times: {
-            checkIn: dateStringToUtc(asJsonObject.arrival_date) + timeStringToSeconds(asJsonObject.check_in_time) - user.timezone,
-            checkOut: dateStringToUtc(asJsonObject.departure_date) + timeStringToSeconds(asJsonObject.check_out_time) - user.timezone
+            checkIn: dateStringToUtc(bookingJson.arrival_date) + timeStringToSeconds(bookingJson.check_in_time) - user.timezone,
+            checkOut: dateStringToUtc(bookingJson.departure_date) + timeStringToSeconds(bookingJson.check_out_time) - user.timezone
           },
           properties: {
-            checkedIn: asJsonObject.arrived !== 'false',
-            checkedOut: asJsonObject.departed !== 'false',
-            cancelled: asJsonObject.cancelled !== 'false'
+            checkedIn: bookingJson.arrived !== 'false',
+            checkedOut: bookingJson.departed !== 'false',
+            cancelled: bookingJson.cancelled !== 'false'
           },
           permissions: {
-            checkIn: asJsonObject.can_check_in !== 'false',
-            checkOut: asJsonObject.can_check_out !== 'false'
+            checkIn: bookingJson.can_check_in !== 'false',
+            checkOut: bookingJson.can_check_out !== 'false'
           },
           crossUserSector: {
-            name: [asJsonObject.first_name, asJsonObject.middle_name, asJsonObject.surname]
+            name: [bookingJson.first_name, bookingJson.middle_name, bookingJson.surname]
               .filter(e => e)
               .join(' ') || undefined,
-            email: asJsonObject.email || undefined,
-            phone: asJsonObject.contact_no || asJsonObject.mobile_phone_no || asJsonObject.phone_no || undefined,
+            email: bookingJson.email || undefined,
+            phone: bookingJson.contact_no || bookingJson.mobile_phone_no || bookingJson.phone_no || undefined,
           },
           metadata: {
-            firstName: asJsonObject.first_name || undefined
+            firstName: bookingJson.first_name || undefined
           },
           counts: {
             people: {
