@@ -38,7 +38,7 @@ module.exports = new Connection({
       logic: async ({ connectionContainer, config, body }) => {
         let { ownerId = '', ownerEmail = '' } = body
         ownerId = ownerId.trim().toUpperCase()
-        ownerEmail = ownerEmail.toLowerCase()
+        ownerEmail = ownerEmail.trim().toLowerCase()
         const { GetOwner: ownerJson } = await makeRequest(getBody('OwnerAPI', 'GetOwner', { 'customer_no': ownerId }), config, 'OwnerAPI')
         ownerJson.email && assert(ownerJson.email.toLowerCase() === ownerEmail, `We found someone with ID ${ownerId} but the email wasn't ${ownerEmail}.`)
 
@@ -64,7 +64,7 @@ module.exports = new Connection({
       logic: async ({ connectionContainer, config, body }) => {
         let { bookingId = '', bookingEmail = '' } = body
         bookingId = bookingId.trim().toUpperCase()
-        bookingEmail = bookingEmail.toLowerCase()
+        bookingEmail = bookingEmail.trim().toLowerCase()
         const { GetBooking: bookingJson } = await makeRequest(getBody('BookingAPI', 'GetBooking', { 'booking_no': bookingId }), config, 'BookingAPI')
         bookingJson.email && assert(bookingJson.email.toLowerCase() === bookingEmail, `We found ${bookingId} but it doesn't belong to ${bookingEmail}.`)
         let {
