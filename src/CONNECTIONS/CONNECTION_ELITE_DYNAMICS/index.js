@@ -66,7 +66,7 @@ module.exports = new Connection({
         bookingId = bookingId.trim().toUpperCase()
         bookingEmail = bookingEmail.toLowerCase()
         const { GetBooking: bookingJson } = await makeRequest(getBody('BookingAPI', 'GetBooking', { 'booking_no': bookingId }), config, 'BookingAPI')
-        bookingJson.email && assert(bookingJson.email.toLowerCase() === bookingEmail, `Booking ${bookingId} was found but it doesn't belong to ${bookingEmail}.`)
+        bookingJson.email && assert(bookingJson.email.toLowerCase() === bookingEmail, `We found ${bookingId} but it doesn't belong to ${bookingEmail}.`)
         let {
           booking_no: id,
         } = bookingJson
