@@ -13,6 +13,8 @@ const VALID_USER = {
   }]
 }
 
+const BOOKING_ID = 'BK123'
+
 let user, partner
 beforeEach(() => {
   user = {
@@ -65,7 +67,7 @@ describe('doesnt work', () => {
     }
 
     await expect(
-      go('CONNECTION_ELITE_DYNAMICS', 'bookingAuthenticate', { user, partner })
+      go('CONNECTION_ELITE_DYNAMICS', 'bookingGet', { user, partner })
     )
       .rejects.toMatchObject({
         message: 'EliteParks isn\'t configured!',
@@ -77,8 +79,8 @@ describe('doesnt work', () => {
       name: 'Elite Dynamics'
     }
 
-    const r = await go('CONNECTION_ELITE_DYNAMICS', 'bookingGet', { user: VALID_USER, partner, body: { bookingId: 'BK123' } })
-    expect(r.id).toBe('BK123')
-    expect(r.total).toBe(19900)
+    const r = await go('CONNECTION_ELITE_DYNAMICS', 'bookingGet', { user: VALID_USER, partner, body: { bookingId: BOOKING_ID } })
+    expect(r.id).toBe(BOOKING_ID)
+    expect(r.total).toBe(8000)
   })
 })
