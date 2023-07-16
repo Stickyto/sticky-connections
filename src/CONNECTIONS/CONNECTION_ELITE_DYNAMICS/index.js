@@ -105,9 +105,9 @@ module.exports = new Connection({
             checkOut: dateStringToUtc(bookingJson.departure_date) + timeStringToSeconds(bookingJson.check_out_time) - user.timezone
           },
           properties: {
-            checkedIn: bookingJson.arrived !== 'false',
-            checkedOut: bookingJson.departed !== 'false',
-            cancelled: bookingJson.cancelled !== 'false'
+            checkedIn: bookingJson.arrived !== 'false' || undefined,
+            checkedOut: bookingJson.departed !== 'false' || undefined,
+            cancelled: bookingJson.cancelled !== 'false' || undefined
           },
           permissions: {
             checkIn: bookingJson.can_check_in !== 'false',
