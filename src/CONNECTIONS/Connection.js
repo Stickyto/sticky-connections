@@ -1,4 +1,4 @@
-const secrets = require('@stickyto/openbox-secrets')
+const { default: secrets } = require('@stickyto/openbox-secrets')
 
 class Connection {
   constructor(json) {

@@ -1,4 +1,4 @@
-const secrets = require('@stickyto/openbox-secrets')
+const { default: secrets } = require('@stickyto/openbox-secrets')
 const { assert } = require('@stickyto/openbox-node-utils')
 
 const ENVIRONMENTS = new Map([
