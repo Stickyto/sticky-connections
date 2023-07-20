@@ -59,6 +59,38 @@ module.exports = new Connection({
         }
       }
     },
+    invoicesGet: {
+      name: 'Invoices > Get',
+      logic: async ({ connectionContainer, config, body }) => {
+        let { ownerId = '' } = body
+        ownerId = ownerId.trim().toUpperCase()
+        const { GetCustomerLedgerEntries: response } = await makeRequest(getBody('OwnerAPI', 'GetCustomerLedgerEntries', { 'customer_no': ownerId, 'open': false, 'document_type': 'Invoice' }), config, 'OwnerAPI')
+
+        const {
+          customer_balance: balance,
+          CustomerLedgerEntry: customerLedgerEntries
+        } = response
+
+        const invoices = customerLedgerEntries.map(invoice => {
+          const {
+            document_no: documentNo,
+            description,
+            due_date: dueDate,
+            open,
+            amount_lcy: totalAmount,
+            remaining_amount_lcy: remainingAmount,
+            reason_code: reasonCode
+          } = invoice
+
+          return { documentNo, description, dueDate: dateStringToUtc(dueDate), open, totalAmount, remainingAmount, reasonCode }
+        })
+
+        return {
+          balance: Math.trunc(parseFloat(balance.replace(/,/g, '')) * 100),
+          invoices
+        }
+      }
+    },
     bookingAuthenticate: {
       name: 'Booking > Authenticate',
       logic: async ({ connectionContainer, config, body }) => {
