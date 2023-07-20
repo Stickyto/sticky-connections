@@ -1,4 +1,4 @@
-const { default: secrets } = require('@stickyto/openbox-secrets')
+const { env } = require('@stickyto/openbox-node-utils')
 
 class Connection {
   constructor(json) {
@@ -37,8 +37,8 @@ class Connection {
       name: this.name,
       payGoToKeys: this.payGoToKeys,
       color: this.color,
-      logo: this.logo(secrets.cdn),
-      logoInverted: this.logoInverted ? this.logoInverted(secrets.cdn) : undefined,
+      logo: this.logo( env.get('CDN') ),
+      logoInverted: this.logoInverted ? this.logoInverted( env.get('CDN') ) : undefined,
       instructions: this.instructions,
       configNames: this.configNames,
       configDefaults: this.configDefaults,
