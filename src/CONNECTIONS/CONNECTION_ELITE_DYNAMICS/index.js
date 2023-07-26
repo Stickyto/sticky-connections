@@ -91,6 +91,56 @@ module.exports = new Connection({
         }
       }
     },
+    // maintenanceJobTypes: {
+    //   name: 'Maintenance Job Types > Get',
+    //   logic: async ({ connectionContainer, config }) => {
+    //     const response = await makeRequest(getBody('OwnerAPI', 'GetMaintenanceJobTypes'), config, 'OwnerAPI')
+
+    //     console.log('Danesh GetMaintenanceJobTypes response: ', response)
+
+    //     return response
+    //   }
+    // },
+    maintenanceJobsGet: {
+      name: 'Maintenance Jobs > Get',
+      logic: async ({ connectionContainer, config, body }) => {
+        let { ownerId = '' } = body
+        ownerId = ownerId.trim().toUpperCase()
+        const { GetCustomerMaintenanceJobs: { MaintenanceJob: response } } = await makeRequest(getBody('OwnerAPI', 'GetCustomerMaintenanceJobs', { 'customer_no': ownerId }), config, 'OwnerAPI')
+
+        const formattedResponse = response.map(job => ({
+          maintenanceJobNumber: job.no,
+          description: job.description,
+          status: job.status,
+          addedDate: job.added_date,
+          completedDate: job.completed_date
+        }))
+
+        return formattedResponse
+      }
+    },
+    maintenanceJobsCreate: {
+      name: 'Maintenance Jobs > Create',
+      logic: async ({ connectionContainer, config, body }) => {
+        let { ownerId = '', reportedBy, description, type, permissionToEnterUnit } = body
+        ownerId = ownerId.trim().toUpperCase()
+        const { GetCustomerMaintenanceJobs: response } = await makeRequest(
+          getBody(
+            'OwnerAPI',
+            'CreateMaintenanceJob',
+            {
+              'customer_no': ownerId,
+              'reported_by': reportedBy,
+              'description': description,
+              'type_code': type,
+              'permission_to_enter_unit': permissionToEnterUnit
+            }
+          ),
+          config, 'OwnerAPI')
+
+        return response
+      }
+    },
     bookingAuthenticate: {
       name: 'Booking > Authenticate',
       logic: async ({ connectionContainer, config, body }) => {
