@@ -62,6 +62,12 @@ module.exports = {
       const query = { user_id: user.id, their_id: plusWithChannelLinks, connection: 'CONNECTION_DELIVERECT' }
       global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [snooze]', { plusWithoutChannelLinks, plusWithChannelLinks, plusMappedToProductsFilteredAndAsPlusAgain, query })
       await rdic.get('datalayerRelational').updateMany('products', query, `is_enabled = ${theAction}`)
+
+      createEvent({
+        type: 'CONNECTION_GOOD',
+        userId: user.id,
+        customData: { id: 'CONNECTION_DELIVERECT', theirId: 'Snooze', originalBody: body }
+      })
     } catch (e) {
       createEvent({
         type: 'CONNECTION_BAD',

@@ -420,6 +420,11 @@ module.exports = {
         }
         await wait(50)
       }
+      createEvent({
+        type: 'CONNECTION_GOOD',
+        userId: user.id,
+        customData: { id: 'CONNECTION_DELIVERECT', theirId: 'Inbound menu', originalBody: body }
+      })
 
     } catch (e) {
       createEvent({
