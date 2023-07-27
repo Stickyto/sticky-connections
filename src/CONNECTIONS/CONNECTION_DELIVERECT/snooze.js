@@ -72,7 +72,8 @@ module.exports = {
     }
     global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [snooze]', { messages })
     return {
-      message: messages.join(' / ')
+      message: messages.join(' / '),
+      originalBody: body
     }
   }
 }

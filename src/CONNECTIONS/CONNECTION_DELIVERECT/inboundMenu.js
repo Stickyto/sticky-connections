@@ -429,6 +429,8 @@ module.exports = {
       })
       throw e
     }
-    return {}
+    return {
+      originalBody: body
+    }
   }
 }
