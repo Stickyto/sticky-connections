@@ -107,9 +107,12 @@ module.exports = new Connection({
       logic: async ({ connectionContainer, config, body }) => {
         let { ownerId = '' } = body
         ownerId = ownerId.trim().toUpperCase()
-        const { GetCustomerMaintenanceJobs: { MaintenanceJob: response } } = await makeRequest(getBody('OwnerAPI', 'GetCustomerMaintenanceJobs', { 'customer_no': ownerId }), config, 'OwnerAPI')
-
-        const formattedResponse = response.map(job => ({
+        const fromEp = await makeRequest(getBody('OwnerAPI', 'GetCustomerMaintenanceJobs', { 'customer_no': ownerId }), config, 'OwnerAPI')
+        let { GetCustomerMaintenanceJobs: { MaintenanceJob: response } } = fromEp
+        if (typeof response === 'object' && !Array.isArray(response)) {
+          response = [response]
+        }
+        const formattedResponse = (response || []).map(job => ({
           maintenanceJobNumber: job.no,
           description: job.description,
           status: job.status,
@@ -137,7 +140,9 @@ module.exports = new Connection({
               'permission_to_enter_unit': permissionToEnterUnit
             }
           ),
-          config, 'OwnerAPI')
+          config,
+          'OwnerAPI'
+        )
 
         return response
       }
@@ -219,14 +224,6 @@ module.exports = new Connection({
         }
       }
     },
-    // bookingAuthenticate: {
-    //   name: 'Booking > Authenticate',
-    //   logic: async ({ config }) => {
-    //     const body = getBody('BookingAPI', 'GetSetup', {})
-    //     const xmlResponse = await makeRequest(body, config, 'BookingAPI')
-    //     return xmlResponse.GetSetup
-    //   }
-    // },
     // bookingCreate: {
     //   name: 'Booking > Create',
     //   logic: async ({ config }) => {
