@@ -279,7 +279,14 @@ function getPQuestions(theirP, modifierGroups, modifiers) {
     })
     const answer = options.length > 0 ? options[0].name : ''
     const foundMgNameClean = foundMg.name.trim()
-    const willDoTypeOptions = (foundMg.min === 0 || foundMg.max > 1)
+    // TEST CASE: Blend Family
+    let willDoTypeOptions = (foundMg.min === 0 || foundMg.max > 1)
+    // TEST CASE: Nonna Said
+    if (foundMg.min === 0 && foundMg.max === 1) {
+      willDoTypeOptions = false
+    }
+    global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [inboundMenu] [getPQuestions]', { theirPId: theirP._id, foundMgNameClean, willDoTypeOptions, fmgMin: foundMg.min, fmgMax: foundMg.max })
+
     return {
       type: willDoTypeOptions ? 'options' : 'option',
       checklistMaximum: (willDoTypeOptions && foundMg.max > 0 ? foundMg.max : undefined),
