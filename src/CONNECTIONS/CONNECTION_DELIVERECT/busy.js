@@ -26,6 +26,11 @@ module.exports = {
       assert(typeof theStatus === 'boolean', '[busy] "status" is not valid; are you really Deliverect?')
 
       await rdic.get('datalayerRelational').updateMany('product_categories', { user_id: user.id, their_id: `startsWith:${foundChannelLinkId}---`, connection: 'CONNECTION_DELIVERECT' }, `is_enabled = ${theStatus}`)
+      createEvent({
+        type: 'CONNECTION_GOOD',
+        userId: user.id,
+        customData: { id: 'CONNECTION_DELIVERECT', theirId: 'Busy', originalBody: body }
+      })
     } catch (e) {
       createEvent({
         type: 'CONNECTION_BAD',
@@ -35,7 +40,8 @@ module.exports = {
       throw e
     }
     return {
-      status
+      status,
+      originalBody: body
     }
   }
 }

@@ -16,7 +16,7 @@ module.exports = {
     const realReason = reason || 'We\'re sorry but we don\'t know any more.'
     const borkedStatusRs = p => {
       p.paymentGatewayExtra = realReason
-      p.onSessionFail(rdic, user, {}, { customSubject: '⚠️ Your {name} order was not successful', customMessage: '<p>We are sorry but your {name} order was not successful.</p>' })
+      p.onSessionFail(rdic, user, { whichConnection: 'CONNECTION_DELIVERECT' }, { customSubject: '⚠️ Your {name} order was not successful', customMessage: '<p>We are sorry but your {name} order was not successful.</p>' })
       createEvent({
         type: 'TO_DO',
         userId: user.id,
