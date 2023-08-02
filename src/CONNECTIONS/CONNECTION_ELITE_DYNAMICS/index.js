@@ -91,16 +91,17 @@ module.exports = new Connection({
         }
       }
     },
-    // maintenanceJobTypes: {
-    //   name: 'Maintenance Job Types > Get',
-    //   logic: async ({ connectionContainer, config }) => {
-    //     const response = await makeRequest(getBody('OwnerAPI', 'GetMaintenanceJobTypes'), config, 'OwnerAPI')
+    maintenanceJobTypes: {
+      name: 'Maintenance Job Types > Get',
+      logic: async ({ connectionContainer, config }) => {
+        const { GetMaintenanceJobTypes: { MaintenanceJobType: response } } = await makeRequest(getBody('OwnerAPI', 'GetMaintenanceJobTypes'), config, 'OwnerAPI')
 
-    //     console.log('Danesh GetMaintenanceJobTypes response: ', response)
-
-    //     return response
-    //   }
-    // },
+        return response.map(type => ({
+          id: type.code,
+          name: type.description
+        }))
+      }
+    },
     maintenanceJobsGet: {
       name: 'Maintenance Jobs > Get',
       logic: async ({ connectionContainer, config, body }) => {
