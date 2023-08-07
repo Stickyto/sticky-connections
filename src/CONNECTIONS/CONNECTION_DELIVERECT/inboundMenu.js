@@ -274,18 +274,13 @@ function getPQuestions(theirP, modifierGroups, modifiers) {
         media: MEDIA_MAP.get(finalName.toUpperCase()) || [],
         description: foundM.description.trim(),
         theirId: foundM.plu,
-        tags: getPTags(foundM, false)
+        tags: getPTags(foundM, false),
+        forSale: !foundM.snoozed
       }
     })
     const answer = options.length > 0 ? options[0].name : ''
     const foundMgNameClean = foundMg.name.trim()
-    // TEST CASE: Blend Family
     let willDoTypeOptions = (foundMg.min === 0 || foundMg.max > 1)
-    // TEST CASE: ---
-    // this is wrong; the customer needs to set up their menu correctly
-    // if (foundMg.min === 0 && foundMg.max === 1) {
-    //   willDoTypeOptions = false
-    // }
     global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [inboundMenu] [getPQuestions]', { theirPId: theirP._id, foundMgNameClean, willDoTypeOptions, fmgMin: foundMg.min, fmgMax: foundMg.max })
 
     return {
