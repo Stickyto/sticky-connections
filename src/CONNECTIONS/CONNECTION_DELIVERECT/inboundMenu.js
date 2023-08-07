@@ -281,10 +281,11 @@ function getPQuestions(theirP, modifierGroups, modifiers) {
     const foundMgNameClean = foundMg.name.trim()
     // TEST CASE: Blend Family
     let willDoTypeOptions = (foundMg.min === 0 || foundMg.max > 1)
-    // TEST CASE: Nonna Said
-    if (foundMg.min === 0 && foundMg.max === 1) {
-      willDoTypeOptions = false
-    }
+    // TEST CASE: ---
+    // this is wrong; the customer needs to set up their menu correctly
+    // if (foundMg.min === 0 && foundMg.max === 1) {
+    //   willDoTypeOptions = false
+    // }
     global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [inboundMenu] [getPQuestions]', { theirPId: theirP._id, foundMgNameClean, willDoTypeOptions, fmgMin: foundMg.min, fmgMax: foundMg.max })
 
     return {
