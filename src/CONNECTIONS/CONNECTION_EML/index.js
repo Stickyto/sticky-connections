@@ -9,7 +9,7 @@ module.exports = new Connection({
   logo: cdn => `${cdn}/connections/CONNECTION_EML.svg`,
   configNames: ['Username', 'Password', 'Program', 'Merchant group'],
   configDefaults: ['', '', '', ''],
-  userIds: ['5583505a-c36f-464f-8822-793974ddaf53'],
+  userIds: ['1a486e88-07c5-4135-8017-372d48a03137'],
   methods: {
     validateCard: {
       name: 'Validate card',
