@@ -1,6 +1,10 @@
 /* eslint-disable max-len */
-const { assert, getNow } = require('openbox-node-utils')
+const { assert, getNow } = require('@stickyto/openbox-node-utils')
 const { Question } = require('openbox-entities')
+
+const wait = (time) => {
+  return new Promise(resolve => setTimeout(resolve, time))
+}
 
 const allDeliverectProductTags = [
   {
@@ -215,32 +219,6 @@ const vatBs = new Map([
   [21000, 'vat--21']
 ])
 
-const dayBs = new Map([
-  [1, 0],
-  [2, 1],
-  [3, 2],
-  [4, 3],
-  [5, 4],
-  [6, 5],
-  [7, 6]
-])
-
-function parseTheirTime(_, user) {
-  const [HH, MM] = _.split(':')
-  assert([HH, MM].every(__ => typeof __ === 'string' && __.length === 2 && !isNaN(parseInt(__, 0))), 'parsed time component is not valid')
-  return Math.ceil((parseInt(HH, 10) * 60) + parseInt(MM, 10) - (user.timezone / 60))
-}
-
-function getNiceAvailability(availability, user) {
-  const day = dayBs.get(availability.dayOfWeek)
-  assert(typeof day === 'number', '[inboundMenu] [getNiceAvailability] day is not correct')
-  return {
-    day: dayBs.get(availability.dayOfWeek),
-    startTime: parseTheirTime(availability.startTime, user),
-    endTime: parseTheirTime(availability.endTime, user)
-  }
-}
-
 function getPMedia(theirP) {
   return theirP.imageUrl ? [{ type: 'image', url: theirP.imageUrl }] : []
 }
@@ -296,13 +274,18 @@ function getPQuestions(theirP, modifierGroups, modifiers) {
         media: MEDIA_MAP.get(finalName.toUpperCase()) || [],
         description: foundM.description.trim(),
         theirId: foundM.plu,
-        tags: getPTags(foundM, false)
+        tags: getPTags(foundM, false),
+        forSale: !foundM.snoozed
       }
     })
     const answer = options.length > 0 ? options[0].name : ''
     const foundMgNameClean = foundMg.name.trim()
+    let willDoTypeOptions = (foundMg.min === 0 || foundMg.max > 1)
+    global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [inboundMenu] [getPQuestions]', { theirPId: theirP._id, foundMgNameClean, willDoTypeOptions, fmgMin: foundMg.min, fmgMax: foundMg.max })
+
     return {
-      type: foundMg.max > 1 ? 'options' : 'option',
+      type: willDoTypeOptions ? 'options' : 'option',
+      checklistMaximum: (willDoTypeOptions && foundMg.max > 0 ? foundMg.max : undefined),
       theirId: foundMg.plu,
       question: foundMgNameClean.endsWith('?') ? foundMgNameClean : `${foundMgNameClean}?`,
       answer,
@@ -340,7 +323,7 @@ module.exports = {
       createProductCategory,
       createProduct
     } = connectionContainer
-    const { availabilities, channelLinkId, categories: theirCategories, products: theirProducts, modifierGroups, modifiers } = body[0]
+    const { channelLinkId, categories: theirCategories, products: theirProducts, modifierGroups, modifiers } = body[0]
 
     let [, configuredChannelLinkIds] = config
     configuredChannelLinkIds = configuredChannelLinkIds.split(',').map(_ => _.trim())
@@ -348,26 +331,12 @@ module.exports = {
       const foundChannelLinkId = configuredChannelLinkIds.find(_ => _ === channelLinkId)
       assert(foundChannelLinkId, `[CONNECTION_DELIVERECT] [inboundMenu] [1] Channel link IDs do not match (foundChannelLinkId is falsy; ${channelLinkId} provided vs one of configured ${configuredChannelLinkIds.join(' / ')})`)
 
-      const allPcTimes = availabilities.map(_ => getNiceAvailability(_, user))
-
-      const allPcsTimesDelta = allPcTimes.length > 0 && {
-        days: Array.from(new Set(allPcTimes.map(_ => _.day))),
-        startAt: Math.min(...allPcTimes.map(_ => _.startTime)),
-        endAt: Math.max(...allPcTimes.map(_ => _.endTime))
-      }
-      if (allPcsTimesDelta) {
-        const query = { connection: 'CONNECTION_DELIVERECT', user_id: user.id, their_id: `startsWith::${foundChannelLinkId}---` }
-        const toSet = `days = '{${allPcsTimesDelta.days.join(', ')}}', start_at = ${allPcsTimesDelta.startAt}, end_at = ${allPcsTimesDelta.endAt}`
-        global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [inboundMenu] [2] allPcsTimesDelta=true', { allPcTimes, allPcsTimesDelta, query, toSet })
-        await rdic.get('datalayerRelational').updateMany('product_categories', query, toSet)
-      }
-
       let nextIPc = 0
       let nextIP = 0
 
       const pLog = new Map()
 
-      const query = { connection: 'CONNECTION_DELIVERECT', their_id: `startsWith::${foundChannelLinkId}---` }
+      const query = { connection: 'CONNECTION_DELIVERECT', their_id: `startsWith:${foundChannelLinkId}---` }
       global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [inboundMenu] [3]', { query })
 
       const allPcsToday = await getProductCategories(rdic, user, query)
@@ -413,6 +382,7 @@ module.exports = {
           })).id
           pLog.set(theirP._id, createdId)
         }
+        await wait(50)
         nextIP++
       }
 
@@ -421,12 +391,6 @@ module.exports = {
         const finalTheirId = `${foundChannelLinkId}---${theirPc._id}`
         let foundExistingPc = allPcsToday.find(maybeExistingPc => maybeExistingPc.theirId === finalTheirId)
         global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [inboundMenu] [5]', theirPc.name)
-        const pcTimes = theirPc.availabilities.map(_ => getNiceAvailability(_, user))
-        const pcTimesContainer = pcTimes.length > 0 && {
-          days: Array.from(new Set(pcTimes.map(_ => _.day))),
-          startAt: Math.min(...pcTimes.map(_ => _.startTime)),
-          endAt: Math.max(...pcTimes.map(_ => _.endTime))
-        }
 
         if (foundExistingPc) {
           foundExistingPc.name = theirPc.name.trim()
@@ -439,19 +403,7 @@ module.exports = {
             .forEach(p => {
               foundExistingPc.products.add(p)
             })
-          foundExistingPc.alwaysAt = false
-          if (allPcsTimesDelta) {
-            foundExistingPc.days = allPcsTimesDelta.days
-            foundExistingPc.startAt = allPcsTimesDelta.startAt
-            foundExistingPc.endAt = allPcsTimesDelta.endAt
-          }
-          if (pcTimesContainer) {
-            foundExistingPc.days = pcTimesContainer.days
-            foundExistingPc.startAt = pcTimesContainer.startAt
-            foundExistingPc.endAt = pcTimesContainer.endAt
-          }
           await updateProductCategory(foundExistingPc)
-
         } else {
           let payload = {
             userId: user.id,
@@ -461,27 +413,21 @@ module.exports = {
             createdAt: getNow() + nextIPc,
             connection: 'CONNECTION_DELIVERECT',
             view: 'grid-name',
-            alwaysAt: false,
+            alwaysAt: true,
             products: theirPc.products
               .map(p => pLog.get(p))
               .filter(_ => _)
           }
-          if (allPcsTimesDelta) {
-            payload = {
-              ...payload,
-              ...allPcsTimesDelta
-            }
-          }
-          if (pcTimesContainer) {
-            payload = {
-              ...payload,
-              ...pcTimesContainer
-            }
-          }
           foundExistingPc = await createProductCategory(payload, user)
           nextIPc++
         }
+        await wait(50)
       }
+      createEvent({
+        type: 'CONNECTION_GOOD',
+        userId: user.id,
+        customData: { id: 'CONNECTION_DELIVERECT', theirId: 'Inbound menu', originalBody: body }
+      })
 
     } catch (e) {
       createEvent({
@@ -491,6 +437,8 @@ module.exports = {
       })
       throw e
     }
-    return {}
+    return {
+      originalBody: body
+    }
   }
 }

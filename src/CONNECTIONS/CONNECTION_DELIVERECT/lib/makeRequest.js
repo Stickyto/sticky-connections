@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 const got = require('got')
-const { assert } = require('openbox-node-utils')
+const { assert } = require('@stickyto/openbox-node-utils')
 
 const MIME_DECODERS = new Map([
   // when they don't return a content-type header, it could be anything (usually a body-less HTTP 201)
@@ -37,10 +37,9 @@ module.exports = async function makeRequest (token, method, url, json) {
 
   assert([201, 200].includes(response.statusCode), JSON.stringify(finalToReturn, null, 2))
 
-  global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [makeRequest] bodyAsString', bodyAsString)
-  global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [makeRequest] bodyAsString', bodyAsString)
-  global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [makeRequest] finalToReturn', finalToReturn)
-  global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [makeRequest] bodyAsString.length', bodyAsString.length)
+  global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [makeRequest] 1 bodyAsString', bodyAsString)
+  global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [makeRequest] 2 finalToReturn', finalToReturn)
+  global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [makeRequest] 3 bodyAsString.length', bodyAsString.length)
 
   return finalToReturn
 }

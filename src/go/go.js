@@ -1,4 +1,4 @@
-const { assert } = require('openbox-node-utils')
+const { assert } = require('@stickyto/openbox-node-utils')
 const { Event, Product, ProductCategory } = require('openbox-entities')
 const CONNECTIONS = require('../CONNECTIONS')
 
@@ -31,7 +31,7 @@ module.exports = async function go (connection, method, { rdic, user, partner, b
       await rdic.get('datalayerRelational').create('events', event.toDatalayerRelational())
     },
     getProducts: async (rdic, user, query = {}) => {
-      const rawEntities = await rdic.get('datalayerRelational').read('products', { user_id: user.id, ...query })
+      const rawEntities = await rdic.get('datalayerRelational').read('products', { user_id: user.id, ...query }, 'created_at ASC')
       return rawEntities.map(re => new Product().fromDatalayerRelational(re))
     },
     createProduct: async (...args) => {
@@ -40,11 +40,11 @@ module.exports = async function go (connection, method, { rdic, user, partner, b
       return toWrite
     },
     updateProduct: async entity => {
-      await rdic.get('datalayerRelational').updateOne('products', entity.id, entity.toDatalayerRelational(['name', 'description', 'categories', 'price', 'is_enabled', 'questions']))
+      await rdic.get('datalayerRelational').updateOne('products', entity.id, entity.toDatalayerRelational(['name', 'description', 'categories', 'price', 'is_enabled', 'questions', 'media']))
     },
 
     getProductCategories: async (rdic, user, query = {}) => {
-      const rawEntities = await rdic.get('datalayerRelational').read('product_categories', { user_id: user.id, ...query })
+      const rawEntities = await rdic.get('datalayerRelational').read('product_categories', { user_id: user.id, ...query }, 'created_at ASC')
       return rawEntities.map(re => new ProductCategory(undefined, user).fromDatalayerRelational(re))
     },
     createProductCategory: async (...args) => {

@@ -1,7 +1,7 @@
 /* eslint-disable quotes */
 /* eslint-disable max-len */
 const got = require('got')
-const { getNow } = require('openbox-node-utils')
+const { getNow } = require('@stickyto/openbox-node-utils')
 const Connection = require('../Connection')
 
 const HEADERS = {

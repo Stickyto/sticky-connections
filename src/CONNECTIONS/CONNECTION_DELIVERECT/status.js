@@ -1,4 +1,4 @@
-const { assert, getNow, isUuid } = require('openbox-node-utils')
+const { assert, isUuid } = require('@stickyto/openbox-node-utils')
 const { Payment } = require('openbox-entities')
 
 module.exports = {
@@ -11,14 +11,12 @@ module.exports = {
     } = connectionContainer
 
     const { channelLink, status, reason, channelOrderId } = body
-    let [, configuredChannelLinkId] = config
-    const realReason = reason || 'Deliverect didn\'t provide a reason'
+    let [, configuredChannelLinkIds] = config
+    configuredChannelLinkIds = configuredChannelLinkIds.split(',').map(_ => _.trim())
+    const realReason = reason || 'We\'re sorry but we don\'t know any more.'
     const borkedStatusRs = p => {
-      p.sessionPaidAt = undefined
-      p.sessionFailedAt = getNow()
       p.paymentGatewayExtra = realReason
-      p.onUpdatedAt()
-
+      p.onSessionFail(rdic, user, { whichConnection: 'CONNECTION_DELIVERECT' }, { customSubject: '⚠️ Your {name} order was not successful', customMessage: '<p>We are sorry but your {name} order was not successful.</p>' })
       createEvent({
         type: 'TO_DO',
         userId: user.id,
@@ -26,10 +24,9 @@ module.exports = {
         applicationId: p.applicationId,
         thingId: p.thingId,
         customData: {
-          what: `Deliverect said the order failed (${realReason}).`,
+          what: `Deliverect failed: ${realReason}`,
           colour: '#ff3838',
-          foregroundColor: '#ffffff',
-          specialEffect: 'Bounce'
+          foregroundColor: '#ffffff'
         }
       })
     }
@@ -45,14 +42,15 @@ module.exports = {
     }
 
     try {
-      assert(channelLink === configuredChannelLinkId, `[status] Channel link IDs do not match (${channelLink} vs configured ${configuredChannelLinkId})`)
-      assert(statusMap.has(status), '[status] "status" body key is not valid; are you really Deliverect?')
+      const foundChannelLinkId = configuredChannelLinkIds.find(_ => _ === channelLink)
+      assert(foundChannelLinkId, `[CONNECTION_DELIVERECT] [busy] [1] Channel link IDs do not match (foundChannelLinkId is falsy; ${channelLink} provided vs one of configured ${configuredChannelLinkIds.join(' / ')})`)
 
-      const [_coThingId, coPaymentId] = channelOrderId.split('---')
-      assert(isUuid(coPaymentId), '[status] coPaymentId is not a uuid!')
+      const [_thingId, _channel, coPaymentId, _now] = channelOrderId.split('---')
+      assert(_channel === foundChannelLinkId, '[status] _channel does not match foundChannelLinkId; we have really screwed up.')
+      assert(isUuid(coPaymentId), '[status] coPaymentId is not a uuid; we have really screwed up.')
 
       const rawPayment = await rdic.get('datalayerRelational').readOne('payments', { user_id: user.id, id: coPaymentId })
-      assert(rawPayment, `[status] payment with coPaymentId "${coPaymentId}" not found!`)
+      assert(rawPayment, `[status] payment with coPaymentId "${coPaymentId}" not found; we have really screwed up.`)
       const payment = new Payment().fromDatalayerRelational(rawPayment)
       statusMap.get(status)(payment)
 

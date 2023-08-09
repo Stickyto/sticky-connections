@@ -1,4 +1,4 @@
-const { assert } = require('openbox-node-utils')
+const { assert } = require('@stickyto/openbox-node-utils')
 const getEnvironment = require('./getEnvironment')
 const makeRequest = require('./makeRequest')
 

@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 const Connection = require('../Connection')
-const { assert, isUuid, getSessionUrl } = require('openbox-node-utils')
+const { assert, isUuid, getSessionUrl } = require('@stickyto/openbox-node-utils')
 const makeRequest = require('./makeRequest')
 
 module.exports = new Connection({

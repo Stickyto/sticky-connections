@@ -1,6 +1,6 @@
 /* eslint-disable quotes */
 const got = require('got')
-const { assert, sanitize, getNow } = require('openbox-node-utils')
+const { assert, sanitize, getNow } = require('@stickyto/openbox-node-utils')
 const Connection = require('../Connection')
 
 const COLOR = '#00A1E4'
