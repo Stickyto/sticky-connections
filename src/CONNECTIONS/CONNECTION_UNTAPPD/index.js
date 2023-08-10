@@ -1,35 +1,22 @@
-const got = require('got')
 const { assert, isEmailValid, getNow } = require('@stickyto/openbox-node-utils')
 const Connection = require('../Connection')
+const makeRequest = require('./makeRequest')
 
 const COLOR = '#FFBD00'
 
-async function makeRequest (config, url) {
-  const [apiKey, email] = config
-  const { body: bodyAsString } = await got(
-    `https://business.untappd.com/api/${url}`,
-    {
-      headers: {
-        'Authorization': 'Basic ' + Buffer.from(`${email}:${apiKey}`).toString('base64')
-      }
-    }
-  )
-  return JSON.parse(bodyAsString)
-}
-
-async function getLocations (config) {
+async function getLocations(config) {
   global.rdic.logger.log({}, '[job-CONNECTION_UNTAPPD] [getLocations]')
   const data = await makeRequest(config, 'v1/locations')
   return data.locations
 }
 
-async function getMenus (config, locationId) {
+async function getMenus(config, locationId) {
   global.rdic.logger.log({}, '[job-CONNECTION_UNTAPPD] [getMenus]', { locationId })
   const data = await makeRequest(config, `v1/locations/${locationId}/menus`)
   return data.menus
 }
 
-async function getMenu (config, menuId) {
+async function getMenu(config, menuId) {
   global.rdic.logger.log({}, '[job-CONNECTION_UNTAPPD] [getMenu]', { menuId })
   const data = await makeRequest(config, `v1/menus/${menuId}?full=true`)
   return data.menu
