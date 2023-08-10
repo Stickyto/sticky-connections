@@ -1,12 +1,5 @@
 /* eslint-disable max-len */
-const got = require('got')
-
-const MIME_TYPES = new Map([
-  ['text', _ => _],
-  ['json', _ => JSON.parse(_)]
-])
-
-module.exports = async function makeRequest (apiToken, method, url, json, mimeType) {
+module.exports = async function makeRequest(apiToken, method, url, json, mimeType) {
   global.rdic.logger.log({}, '[CONNECTION_PLAY_IT_GREEN] [makeRequest] apiToken', { apiToken })
   global.rdic.logger.log({}, '[CONNECTION_PLAY_IT_GREEN] [makeRequest] method', { method })
   global.rdic.logger.log({}, '[CONNECTION_PLAY_IT_GREEN] [makeRequest] url', { url })
@@ -15,19 +8,33 @@ module.exports = async function makeRequest (apiToken, method, url, json, mimeTy
   const headers = apiToken ? {
     'Authorization': `Bearer ${apiToken}`
   } : {}
-  const { body: bodyAsString } = await got[method](
-    url,
+
+  const response = await fetch(url,
     {
+      method,
       headers,
       json
     }
   )
 
-  global.rdic.logger.log({}, '[CONNECTION_PLAY_IT_GREEN] [makeRequest] typeof bodyAsString', typeof bodyAsString)
-  global.rdic.logger.log({}, '[CONNECTION_PLAY_IT_GREEN] [makeRequest] bodyAsString.length', bodyAsString.length)
+  let body
 
-  const toReturn = typeof bodyAsString === 'string' && bodyAsString.length > 0 ? MIME_TYPES.get(mimeType)(bodyAsString) : undefined
-  global.rdic.logger.log({}, '[CONNECTION_PLAY_IT_GREEN] toReturn', toReturn)
+  try {
+    body = await response.json()
+  } catch (e) {
+    global.rdic.logger.log({}, '[CONNECTION_PLAY_IT_GREEN] [makeRequest] error', e)
 
-  return toReturn
+    return undefined
+  }
+
+  if (mimeType === 'text') {
+    body = JSON.stringify(body, null, 0)
+
+    global.rdic.logger.log({}, '[CONNECTION_PLAY_IT_GREEN] [makeRequest] typeof bodyAsString', typeof body)
+    global.rdic.logger.log({}, '[CONNECTION_PLAY_IT_GREEN] [makeRequest] bodyAsString.length', body.length)
+  }
+
+  global.rdic.logger.log({}, '[CONNECTION_PLAY_IT_GREEN] body', body)
+
+  return body
 }
