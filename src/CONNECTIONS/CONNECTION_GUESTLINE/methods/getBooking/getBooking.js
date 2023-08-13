@@ -14,7 +14,13 @@ function mapGuest (guest) {
   }
 }
 
-module.exports = async function getBooking (sessionId, { bookingReference }) {
+module.exports = async function getBooking (sessionId, { bookingName, roomName }) {
+  // ${bookingReference ? `<BookRef>${bookingReference.trim()}</BookRef>` : ''}
+  assert([
+    typeof bookingName === 'string' && bookingName.length > 0,
+    typeof roomName === 'string' && roomName.length > 0
+  ].every(_ => _), 'You have not provided enough information.')
+
   const soapAction = 'http://tempuri.org/RLXSOAP19/RLXSOAP19/pmsbkg_BookingSearch'
   const xml = `<?xml version="1.0" encoding="utf-8"?>
   <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
@@ -22,7 +28,8 @@ module.exports = async function getBooking (sessionId, { bookingReference }) {
       <pmsbkg_BookingSearch xmlns="http://tempuri.org/RLXSOAP19/RLXSOAP19">
         <SessionID>${sessionId}</SessionID>
         <Filters>
-          <BookRef>${bookingReference}</BookRef>
+          ${bookingName ? `<Surname>${bookingName.trim().toUpperCase()}</Surname>` : ''}
+          ${roomName ? `<RoomID>${roomName.trim()}</RoomID>` : ''}
         </Filters>
       </pmsbkg_BookingSearch>
     </soap:Body>
@@ -31,11 +38,16 @@ module.exports = async function getBooking (sessionId, { bookingReference }) {
   const r = await makeRequest(soapAction, xml)
   assert(r.pmsbkg_BookingSearchResponse.pmsbkg_BookingSearchResult.ExceptionCode === '0', r.pmsbkg_BookingSearchResponse.pmsbkg_BookingSearchResult.ExceptionDescription)
   global.rdic.logger.log({}, '[CONNECTION_GUESTLINE] [method->getBooking]', { r })
+  const forForcedArray = r.pmsbkg_BookingSearchResponse.SearchResults.Reservations.Reservation
+  assert(forForcedArray, `Sorry; we couldn't find a reservation in ${roomName} with surname ${bookingName}.`)
+  const forcedArray = forceArray(forForcedArray)
+  assert(forcedArray.length === 1, 'Sorry; you can only use reservations that have one room.')
 
-  return forceArray(r.pmsbkg_BookingSearchResponse.SearchResults.Reservations.Reservation)
+  return forcedArray
     .map(_ => ({
       id: _.BookRef,
       roomId: _.RoomId,
+      roomIndex: _.RoomPickId,
       dates: {
         start: remoteDateToEpoch(_.Arrival),
         end: remoteDateToEpoch(_.Departure)
