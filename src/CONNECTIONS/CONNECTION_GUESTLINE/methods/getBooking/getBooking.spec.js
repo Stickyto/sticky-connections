@@ -4,7 +4,7 @@ const getConfiguration = require('../../getConfiguration')
 
 it('gets a booking', async () => {
   const remoteSessionId = await logIn(getConfiguration())
-  const r = await getBooking(remoteSessionId, { bookingReference: 'BK005801' })
+  const r = await getBooking(remoteSessionId, { roomName: 'TEST_101', bookingName: 'Smith' })
   expect(r).toMatchObject([
     {
       id: 'BK005801',
