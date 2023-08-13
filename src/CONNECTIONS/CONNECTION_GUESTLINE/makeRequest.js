@@ -16,7 +16,9 @@ module.exports = async function makeRequest (soapAction, xml) {
       throwHttpErrors: false
     }
   )
+  global.rdic.logger.log({}, '[CONNECTION_GUESTLINE] [makeRequest] -> doing', { soapAction, xml, statusCode: responseObject.statusCode })
   assert(responseObject.statusCode === 200, responseObject.statusMessage)
   const asJson = parser.toJson(responseObject.body, { object: true })
+  global.rdic.logger.log({}, '[CONNECTION_GUESTLINE] [makeRequest] -> done', { soapAction, asJson })
   return asJson['soap:Envelope']['soap:Body']
 }

@@ -3,9 +3,9 @@ const somethingSold = require('./somethingSold')
 const getConfiguration = require('../../getConfiguration')
 
 it('sells something', async () => {
-  const sessionId = await logIn(getConfiguration())
+  const remoteSessionId = await logIn(getConfiguration())
   const r = await somethingSold(
-    sessionId,
+    remoteSessionId,
     {
       bookingReference: 'BK005801',
       roomIndex: 1,

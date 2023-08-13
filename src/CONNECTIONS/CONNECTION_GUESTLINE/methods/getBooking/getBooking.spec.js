@@ -3,8 +3,8 @@ const getBooking = require('./getBooking')
 const getConfiguration = require('../../getConfiguration')
 
 it('gets a booking', async () => {
-  const sessionId = await logIn(getConfiguration())
-  const r = await getBooking(sessionId, { bookingReference: 'BK005801' })
+  const remoteSessionId = await logIn(getConfiguration())
+  const r = await getBooking(remoteSessionId, { bookingReference: 'BK005801' })
   expect(r).toMatchObject([
     {
       id: 'BK005801',
