@@ -2,9 +2,9 @@ const logIn = require('../logIn/logIn')
 const getBooking = require('./getBooking')
 const getConfiguration = require('../getConfiguration')
 
-it('logs in with valid configuration', async () => {
+it('gets a booking', async () => {
   const sessionId = await logIn(getConfiguration())
-  const r = await getBooking(sessionId, 'BK005801')
+  const r = await getBooking(sessionId, { bookingReference: 'BK005801' })
   expect(r).toMatchObject([
     {
       id: 'BK005801',

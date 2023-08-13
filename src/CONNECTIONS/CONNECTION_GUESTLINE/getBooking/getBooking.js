@@ -14,8 +14,8 @@ function mapGuest (guest) {
   }
 }
 
-module.exports = async function getBooking (sessionId, bookingReference) {
-  const soapAction = ' http://tempuri.org/RLXSOAP19/RLXSOAP19/pmsbkg_BookingSearch'
+module.exports = async function getBooking (sessionId, { bookingReference }) {
+  const soapAction = 'http://tempuri.org/RLXSOAP19/RLXSOAP19/pmsbkg_BookingSearch'
   const xml = `<?xml version="1.0" encoding="utf-8"?>
   <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
     <soap:Body>
@@ -30,7 +30,7 @@ module.exports = async function getBooking (sessionId, bookingReference) {
 `
   const r = await makeRequest(soapAction, xml)
   assert(r.pmsbkg_BookingSearchResponse.pmsbkg_BookingSearchResult.ExceptionCode === '0', r.pmsbkg_BookingSearchResponse.pmsbkg_BookingSearchResult.ExceptionDescription)
-  global.rdic.logger.log({}, '[CONNECTION_GUESTLINE]', { r })
+  global.rdic.logger.log({}, '[CONNECTION_GUESTLINE] [method->getBooking]', { r })
 
   return forceArray(r.pmsbkg_BookingSearchResponse.SearchResults.Reservations.Reservation)
     .map(_ => ({
