@@ -2,6 +2,7 @@ const { assert, formatPrice } = require('@stickyto/openbox-node-utils')
 const Connection = require('../Connection')
 const logIn = require('./logIn/logIn')
 const getBooking = require('./methods/getBooking/getBooking')
+const checkIn = require('./methods/checkIn/checkIn')
 const makePayment = require('./methods/makePayment/makePayment')
 const somethingSold = require('./methods/somethingSold/somethingSold')
 
@@ -106,6 +107,13 @@ module.exports = new Connection({
       logic: async ({ config, body }) => {
         const remoteSessionId = await logIn(config)
         return getBooking(remoteSessionId, body)
+      }
+    },
+    checkIn: {
+      name: 'Check in',
+      logic: async ({ config, body }) => {
+        const remoteSessionId = await logIn(config)
+        return checkIn(remoteSessionId, body)
       }
     }
   },

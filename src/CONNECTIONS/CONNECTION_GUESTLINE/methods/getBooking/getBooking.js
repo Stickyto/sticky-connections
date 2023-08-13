@@ -43,7 +43,7 @@ module.exports = async function getBooking (sessionId, { bookingReference, booki
   assert(r.pmsbkg_BookingSearchResponse.pmsbkg_BookingSearchResult.ExceptionCode === '0', r.pmsbkg_BookingSearchResponse.pmsbkg_BookingSearchResult.ExceptionDescription)
   global.rdic.logger.log({}, '[CONNECTION_GUESTLINE] [method->getBooking]', { r })
   const forForcedArray = r.pmsbkg_BookingSearchResponse.SearchResults.Reservations.Reservation
-  assert(forForcedArray, `Sorry; we couldn't find a reservation in ${roomName} with surname ${bookingName}.`)
+  assert(forForcedArray, `Sorry; we couldn't find a reservation with surname ${bookingName}.`)
   const forcedArray = forceArray(forForcedArray)
   assert(forcedArray.length === 1, 'Sorry; you can only use reservations that have one room.')
 
