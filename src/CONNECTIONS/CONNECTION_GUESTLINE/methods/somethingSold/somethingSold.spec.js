@@ -1,16 +1,17 @@
 const logIn = require('../../logIn/logIn')
-const makePayment = require('./makePayment')
+const somethingSold = require('./somethingSold')
 const getConfiguration = require('../../getConfiguration')
 
-it('makes a payment', async () => {
+it('sells something', async () => {
   const sessionId = await logIn(getConfiguration())
-  const r = await makePayment(
+  const r = await somethingSold(
     sessionId,
     {
       bookingReference: 'BK005801',
-      userIdInThisBooking: 1,
-      paymentCode: 'BACS',
-      total: 123
+      roomIndex: 1,
+      productCode: 'BISCUITS',
+      total: 50,
+      quantity: 5
     }
   )
   expect(r).toBe(true)

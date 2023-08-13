@@ -1,9 +1,9 @@
 /* eslint-disable max-len */
 const { assert } = require('@stickyto/openbox-node-utils')
-const makeRequest = require('../makeRequest')
+const makeRequest = require('../../makeRequest')
 
 module.exports = async function makePayment (sessionId, { bookingReference, userIdInThisBooking, paymentCode, total, description = 'Payment from Sticky', billSplitId }) {
-  const soapAction = ' http://tempuri.org/RLXSOAP19/RLXSOAP19/pmschg_PostPaymentToRoom'
+  const soapAction = 'http://tempuri.org/RLXSOAP19/RLXSOAP19/pmschg_PostPaymentToRoom'
   const xml = `<?xml version="1.0" encoding="utf-8"?>
   <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
     <soap:Body>
