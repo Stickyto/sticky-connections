@@ -14,12 +14,19 @@ function mapGuest (guest) {
   }
 }
 
-module.exports = async function getBooking (sessionId, { bookingName, roomName }) {
-  // ${bookingReference ? `<BookRef>${bookingReference.trim()}</BookRef>` : ''}
-  assert([
-    typeof bookingName === 'string' && bookingName.length > 0,
-    typeof roomName === 'string' && roomName.length > 0
-  ].every(_ => _), 'You have not provided enough information.')
+module.exports = async function getBooking (sessionId, { bookingReference, bookingName, roomName }) {
+  bookingReference = typeof bookingReference === 'string' ? bookingReference.trim() : undefined
+  bookingName = typeof bookingName === 'string' ? bookingName.trim() : undefined
+  roomName = typeof roomName === 'string' ? roomName.trim() : undefined
+
+  let filters
+  if (typeof bookingName === 'string' && bookingName.length > 0 && typeof bookingReference === 'string' && bookingReference.length > 0) {
+    filters = `<Surname>${bookingName}</Surname><BookRef>${bookingReference}</BookRef>`
+  }
+  if (typeof bookingName === 'string' && bookingName.length > 0 && typeof roomName === 'string' && roomName.length > 0) {
+    filters = `<Surname>${bookingName}</Surname><RoomID>${roomName}</RoomID>`
+  }
+  assert(typeof filters === 'string', 'You have not provided enough information.')
 
   const soapAction = 'http://tempuri.org/RLXSOAP19/RLXSOAP19/pmsbkg_BookingSearch'
   const xml = `<?xml version="1.0" encoding="utf-8"?>
@@ -27,10 +34,7 @@ module.exports = async function getBooking (sessionId, { bookingName, roomName }
     <soap:Body>
       <pmsbkg_BookingSearch xmlns="http://tempuri.org/RLXSOAP19/RLXSOAP19">
         <SessionID>${sessionId}</SessionID>
-        <Filters>
-          ${bookingName ? `<Surname>${bookingName.trim().toUpperCase()}</Surname>` : ''}
-          ${roomName ? `<RoomID>${roomName.trim()}</RoomID>` : ''}
-        </Filters>
+        <Filters>${filters}</Filters>
       </pmsbkg_BookingSearch>
     </soap:Body>
   </soap:Envelope>
