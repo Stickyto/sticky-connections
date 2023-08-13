@@ -1,8 +1,8 @@
 /* eslint-disable max-len */
 const { assert } = require('@stickyto/openbox-node-utils')
-const makeRequest = require('../makeRequest')
-const remoteDateToEpoch = require('../remoteDateToEpoch/remoteDateToEpoch')
-const forceArray = require('../forceArray/forceArray')
+const makeRequest = require('../../makeRequest')
+const remoteDateToEpoch = require('../../remoteDateToEpoch/remoteDateToEpoch')
+const forceArray = require('../../forceArray/forceArray')
 
 function mapGuest (guest) {
   return{

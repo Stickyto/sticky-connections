@@ -1,6 +1,6 @@
-const logIn = require('../logIn/logIn')
+const logIn = require('../../logIn/logIn')
 const getBooking = require('./getBooking')
-const getConfiguration = require('../getConfiguration')
+const getConfiguration = require('../../getConfiguration')
 
 it('gets a booking', async () => {
   const sessionId = await logIn(getConfiguration())
