@@ -5,7 +5,7 @@ module.exports = new Connection({
   name: 'Guestline',
   color: '#1f1c4d',
   logo: cdn => `${cdn}/connections/CONNECTION_GUESTLINE.svg`,
-  configNames: ['One'],
-  configDefaults: ['Two'],
+  configNames: ['Site ID', 'Interface ID', 'Operator code', 'Password'],
+  configDefaults: ['', '808', 'STICKY', ''],
   methods: {}
 })
