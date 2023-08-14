@@ -1,24 +1,22 @@
 /* eslint-disable max-len */
-const got = require('got')
-
-module.exports = async function makeRequest (method, url, json) {
+module.exports = async function makeRequest(method, url, json) {
   global.rdic.logger.log({}, '[CONNECTION_CYCLR] [makeRequest] method', { method })
   global.rdic.logger.log({}, '[CONNECTION_CYCLR] [makeRequest] url', { url })
   global.rdic.logger.log({}, '[CONNECTION_CYCLR] [makeRequest] json/mimeType', { json })
 
-  const { body: bodyAsString } = await got[method](
-    url,
+  const response = await fetch(url,
     {
-      json
+      method,
+      body: JSON.stringify(json)
     }
   )
 
-  global.rdic.logger.log({}, '[CONNECTION_CYCLR] [makeRequest] bodyAsString', bodyAsString)
-  global.rdic.logger.log({}, '[CONNECTION_CYCLR] [makeRequest] typeof bodyAsString', typeof bodyAsString)
-  global.rdic.logger.log({}, '[CONNECTION_CYCLR] [makeRequest] bodyAsString.length', bodyAsString.length)
+  try {
+    const body = await response.json()
+    global.rdic.logger.log({}, '[CONNECTION_CYCLR] [makeRequest] body', body)
 
-  const toReturn = typeof bodyAsString === 'string' && bodyAsString.length > 0 ? JSON.parse(bodyAsString) : undefined
-  global.rdic.logger.log({}, '[CONNECTION_CYCLR] toReturn', toReturn)
-
-  return toReturn
+    return body
+  } catch (e) {
+    return undefined
+  }
 }
