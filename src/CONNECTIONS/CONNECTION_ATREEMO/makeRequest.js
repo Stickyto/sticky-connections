@@ -1,7 +1,5 @@
 /* eslint-disable max-len */
-const got = require('got')
-
-function getFormHttpBody (params) {
+function getFormHttpBody(params) {
   return Object.keys(params)
     .filter(key => typeof params[key] === 'string' || typeof params[key] === 'number')
     .map(key => {
@@ -20,7 +18,7 @@ const CONTENT_TYPES = new Map([
   ]
 ])
 
-module.exports = async function makeRequest (config, method, url, json, contentType = 'application/json', bearerToken) {
+module.exports = async function makeRequest(config, method, url, json, contentType = 'application/json', bearerToken) {
   const [configEndpoint] = config
 
   const headers = bearerToken ?
@@ -41,20 +39,23 @@ module.exports = async function makeRequest (config, method, url, json, contentT
   global.rdic.logger.log({}, '[CONNECTION_ATREEMO] [makeRequest] headers', headers)
   global.rdic.logger.log({}, '[CONNECTION_ATREEMO] [makeRequest] body', body)
 
-  const { body: bodyAsString } = await got[method](
+  const response = await fetch(
     `${configEndpoint}/${url}`,
     {
+      method,
       headers,
       body
     }
   )
 
-  global.rdic.logger.log({}, '[CONNECTION_ATREEMO] [makeRequest] bodyAsString', bodyAsString)
-  global.rdic.logger.log({}, '[CONNECTION_ATREEMO] [makeRequest] typeof bodyAsString', typeof bodyAsString)
-  global.rdic.logger.log({}, '[CONNECTION_ATREEMO] [makeRequest] bodyAsString.length', bodyAsString.length)
+  try {
+    const body = await response.json()
+    global.rdic.logger.log({}, '[CONNECTION_ATREEMO] body', body)
 
-  const toReturn = typeof bodyAsString === 'string' && bodyAsString.length > 0 ? JSON.parse(bodyAsString) : undefined
-  global.rdic.logger.log({}, '[CONNECTION_ATREEMO] toReturn', toReturn)
+    return body
+  } catch (e) {
 
-  return toReturn
+    global.rdic.logger.log({}, '[CONNECTION_ATREEMO] error', e.message)
+    return undefined
+  }
 }
