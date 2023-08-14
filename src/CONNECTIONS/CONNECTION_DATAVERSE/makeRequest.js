@@ -1,8 +1,7 @@
 /* eslint-disable max-len */
-const got = require('got')
 const { AuthenticationContext } = require('adal-node')
 
-module.exports = async function makeRequest (config, method, url, json) {
+module.exports = async function makeRequest(config, method, url, json) {
   const [configInstance, configTokenUrl, configClientId, configClientSecret, configVersion] = config
   const context = new AuthenticationContext(configTokenUrl)
 
@@ -13,13 +12,13 @@ module.exports = async function makeRequest (config, method, url, json) {
     })
   })
 
-  const { body: bodyAsString } = await got[method](
-    `${configInstance}/api/data/v${configVersion}/${url}`,
+  const response = await fetch(`${configInstance}/api/data/v${configVersion}/${url}`,
     {
+      method,
       headers: {
         'Authorization': `Bearer ${token}`
       },
-      json
+      body: JSON.stringify(json)
     }
   )
 
@@ -27,12 +26,15 @@ module.exports = async function makeRequest (config, method, url, json) {
   global.rdic.logger.log({}, '[CONNECTION_DATAVERSE] [makeRequest] method', method)
   global.rdic.logger.log({}, '[CONNECTION_DATAVERSE] [makeRequest] url', url)
   global.rdic.logger.log({}, '[CONNECTION_DATAVERSE] [makeRequest] json', json)
-  global.rdic.logger.log({}, '[CONNECTION_DATAVERSE] [makeRequest] bodyAsString', bodyAsString)
-  global.rdic.logger.log({}, '[CONNECTION_DATAVERSE] [makeRequest] typeof bodyAsString', typeof bodyAsString)
-  global.rdic.logger.log({}, '[CONNECTION_DATAVERSE] [makeRequest] bodyAsString.length', bodyAsString.length)
 
-  const toReturn = typeof bodyAsString === 'string' && bodyAsString.length > 0 ? JSON.parse(bodyAsString) : undefined
-  global.rdic.logger.log({}, '[CONNECTION_DATAVERSE] toReturn', toReturn)
+  try {
+    const body = await response.json()
+    global.rdic.logger.log({}, '[CONNECTION_DATAVERSE] [makeRequest] body', body)
 
-  return toReturn
+    return body
+  } catch (e) {
+    global.rdic.logger.log({}, '[CONNECTION_DATAVERSE] [makeRequest] body', e.message)
+
+    return undefined
+  }
 }
