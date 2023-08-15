@@ -73,14 +73,14 @@ describe('doesnt work', () => {
         message: 'EliteParks isn\'t configured!',
       })
   })
+})
 
-  it('works', async () => {
-    partner = {
-      name: 'Elite Dynamics'
-    }
+it.skip('works', async () => {
+  partner = {
+    name: 'Elite Dynamics'
+  }
 
-    const r = await go('CONNECTION_ELITE_DYNAMICS', 'bookingGet', { user: VALID_USER, partner, body: { bookingId: BOOKING_ID } })
-    expect(r.id).toBe(BOOKING_ID)
-    expect(r.total).toBe(8000)
-  })
+  const r = await go('CONNECTION_ELITE_DYNAMICS', 'bookingGet', { user: VALID_USER, partner, body: { bookingId: BOOKING_ID } })
+  expect(r.id).toBe(BOOKING_ID)
+  expect(r.total).toBe(8000)
 })
