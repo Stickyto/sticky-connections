@@ -1,4 +1,3 @@
-const got = require('got')
 const parseResponse = require('./parseResponse/parseResponse')
 const { decode: fixXml } = require('html-entities')
 const parser = require('xml2json')
@@ -21,9 +20,9 @@ module.exports = async (requestXmlBody, config, codeUnit) => {
   })
   global.rdic.logger.log({}, '[CONNECTION_ELITE_DYNAMICS] [makeRequest]', { oauthBody })
 
-  const { body: bodyAsString } = await got.post(
-    oAuthUrl,
+  const xmlAccessTokenresponse = await fetch(oAuthUrl,
     {
+      method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
       },
@@ -31,27 +30,42 @@ module.exports = async (requestXmlBody, config, codeUnit) => {
     }
   )
 
-  const { access_token: xmlAccessToken } = JSON.parse(bodyAsString)
+  let xmlAccessToken
+
+  try {
+    xmlAccessToken = await xmlAccessTokenresponse.json()
+  } catch (e) {
+    throw new Error(e.message)
+  }
+
   global.rdic.logger.log({}, '[CONNECTION_ELITE_DYNAMICS] [makeRequest]', { xmlAccessToken, requestXmlBody })
 
-  const response = await got.post(
+  const xmlBodyResponse = await fetch(
     `${XMLUrl}/${codeUnit}`,
     {
+      method: 'POST',
       headers: {
         'Authorization': `Bearer ${xmlAccessToken}`,
         'Content-Type': 'text/xml',
         'SOAPAction': 'GetSetup'
       },
       body: requestXmlBody,
-      throwHttpErrors: false
     }
   )
 
-  if (response.statusCode !== 200) {
-    const rejection = response.body ? await parseResponse(response.body, '//faultstring/text()') : `HTTP ${response.statusCode}.`
+  if (!xmlBodyResponse.ok) {
+    let rejection
+
+    try {
+      xmlBodyResponse.text()
+      rejection = await parseResponse(await xmlBodyResponse.text(), '//faultstring/text()')
+    } catch (e) {
+      throw new Error(`HTTP ${xmlBodyResponse.status}.`)
+    }
     throw new Error(rejection)
   }
-  const brokenXml = await parseResponse(response.body, '//*[local-name()=\'return_value\']/text()')
+
+  const brokenXml = await parseResponse(await xmlBodyResponse.text(), '//*[local-name()=\'return_value\']/text()')
   const fixedXml = fixXml(brokenXml)
 
   const asJson = parser.toJson(fixedXml, { object: true })
