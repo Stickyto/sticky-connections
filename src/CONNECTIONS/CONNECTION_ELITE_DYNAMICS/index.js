@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 const { assert } = require('@stickyto/openbox-node-utils')
 const makeRequest = require('./makeRequest')
 const makeRequestV2 = require('./makeRequestV2')
@@ -37,13 +38,14 @@ module.exports = new Connection({
     setUp: {
       name: 'Set up',
       logic: async ({ connectionContainer, config, body }) => {
-        const { GetSetup: { Park, BookingAttribute } } = await makeRequestV2(getBody('BookingAPI', 'GetSetup'), config, 'BookingAPI')
+        const { GetSetup: { Park, BookingAttribute, BookingSeasonDatePeriod } } = await makeRequestV2(getBody('BookingAPI', 'GetSetup'), config, 'BookingAPI')
         return {
           parks: Park.map(_ => ({
             id: _.code,
             name: _.name,
             canBookPlot: _.available_for_plot_booking === 'true',
-            canBookUnit: _.available_for_unit_booking === 'true'
+            canBookUnit: _.available_for_unit_booking === 'true',
+            // _datePeriods: BookingSeasonDatePeriod.filter(bsdp => bsdp.park_code === _.code).map(bsdp => ({ type: bsdp.booking_type, dateStart: dateStringToUtc(bsdp.start_date), dateEnd: dateStringToUtc(bsdp.end_date), nights: parseInt(bsdp.no_of_nights, 10) }))
           })),
           attributes: BookingAttribute.map(_ => ({
             index: _.index,
@@ -102,11 +104,11 @@ module.exports = new Connection({
             reason_code: reasonCode
           } = invoice
 
-          return { documentNo, description, dueDate: dateStringToUtc(dueDate), open, totalAmount, remainingAmount, reasonCode }
+          return { documentNo, description, dueDate: dateStringToUtc(dueDate), open, totalAmount: Math.floor(parseFloat(totalAmount.replace(/,/g, '')) * 100), remainingAmount: Math.floor(parseFloat(remainingAmount.replace(/,/g, '')) * 100), reasonCode }
         })
 
         return {
-          balance: Math.trunc(parseFloat(balance.replace(/,/g, '')) * 100),
+          balance: Math.floor(parseFloat(balance.replace(/,/g, '')) * 100),
           invoices
         }
       }
@@ -198,7 +200,7 @@ module.exports = new Connection({
           // amount_paid: total,
           // outstanding_amount: total
         } = bookingJson
-        total = Math.trunc(parseFloat(total) * 100)
+        total = Math.floor(parseFloat(total) * 100)
         countAdults = parseInt(countAdults, 10)
         countChildren = parseInt(countChildren, 10)
         return {
