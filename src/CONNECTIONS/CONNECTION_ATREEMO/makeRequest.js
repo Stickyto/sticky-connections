@@ -1,4 +1,5 @@
 /* eslint-disable max-len */
+
 function getFormHttpBody(params) {
   return Object.keys(params)
     .filter(key => typeof params[key] === 'string' || typeof params[key] === 'number')
@@ -29,33 +30,22 @@ module.exports = async function makeRequest(config, method, url, json, contentTy
     :
     {}
   const body = json ? CONTENT_TYPES.get(contentType)(json) : undefined
-
-  global.rdic.logger.log({}, '[CONNECTION_ATREEMO] [makeRequest] config', config)
-  global.rdic.logger.log({}, '[CONNECTION_ATREEMO] [makeRequest] method', method)
-  global.rdic.logger.log({}, '[CONNECTION_ATREEMO] [makeRequest] url', url)
-  global.rdic.logger.log({}, '[CONNECTION_ATREEMO] [makeRequest] json', json)
-  global.rdic.logger.log({}, '[CONNECTION_ATREEMO] [makeRequest] contentType', contentType)
-  global.rdic.logger.log({}, '[CONNECTION_ATREEMO] [makeRequest] bearerToken', bearerToken)
-  global.rdic.logger.log({}, '[CONNECTION_ATREEMO] [makeRequest] headers', headers)
-  global.rdic.logger.log({}, '[CONNECTION_ATREEMO] [makeRequest] body', body)
+  const to = `${configEndpoint}/${url}`
+  global.rdic.logger.log({}, '[CONNECTION_ATREEMO] [makeRequest]', { method, headers, bearerToken, contentType, body, config, configEndpoint })
 
   const response = await fetch(
-    `${configEndpoint}/${url}`,
+    to,
     {
       method,
       headers,
       body
     }
   )
-
-  try {
-    const body = await response.json()
-    global.rdic.logger.log({}, '[CONNECTION_ATREEMO] body', body)
-
-    return body
-  } catch (e) {
-
-    global.rdic.logger.log({}, '[CONNECTION_ATREEMO] error', e.message)
-    return undefined
+  if (!response.ok) {
+    throw new Error(`!response.ok: [${to}]: ${await response.text()}`)
   }
+
+  const asJson = await response.json()
+  global.rdic.logger.log({}, '[CONNECTION_ATREEMO] [makeRequest] asJson', asJson)
+  return asJson
 }
