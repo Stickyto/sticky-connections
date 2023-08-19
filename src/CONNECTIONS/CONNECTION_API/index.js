@@ -32,26 +32,18 @@ async function eventHookLogic (config, connectionContainer) {
     password: 'choose a new password 123',
     userType: 'UT_GENERIC',
 
-    name: `${customData['Name']} (${customData['Company']})`,
+    name: [customData['Name'], customData['Company']].filter(_ => _).join(' / '),
     email: customData['Email'],
     phone: customData['Phone'],
-    address: customData['Address for free stickers'],
+    address: customData['Address'] || customData['Address for free stickers'],
     partnerId
   }
 
   global.rdic.logger.log({}, '[CONNECTION_API]', { customData, apiUrl, yourPhoto, body })
 
-  let privateKey
   try {
-    ({ privateKey } = await makeRequest(undefined, 'post', `${apiUrl}/v1/users`, body))
-  } catch (e) {
-    doFail(createEvent, e.message, { user, application })
-  }
-  if (!privateKey) {
-    return
-  }
+    const { privateKey } = await makeRequest(undefined, 'post', `${apiUrl}/v1/users`, body)
 
-  await (async () => {
     await makeRequest(
       privateKey,
       'post',
@@ -157,23 +149,20 @@ async function eventHookLogic (config, connectionContainer) {
         primaryColor: '#FF1F3E'
       }
     )
-  })()
 
-  thing && await (async () => {
-    try {
-      await makeRequest(
-        user.privateKey,
-        'post',
-        `${apiUrl}/v2/trigger/move-thing`,
-        {
-          privateKey,
-          thingId: thing.id
-        }
-      )
-    } catch (e) {
-      doFail(createEvent, e.message, { user, application })
-    }
-  })()
+    thing && await makeRequest(
+      user.privateKey,
+      'post',
+      `${apiUrl}/v2/trigger/move-thing`,
+      {
+        privateKey,
+        thingId: thing.id
+      }
+    )
+  } catch (e) {
+    doFail(createEvent, e.message, { user, application })
+    return
+  }
 }
 
 module.exports = new Connection({
