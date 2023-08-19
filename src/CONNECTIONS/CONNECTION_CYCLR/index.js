@@ -1,9 +1,7 @@
-/* eslint-disable max-len */
-/* eslint-disable quotes */
 const Connection = require('../Connection')
 const makeRequest = require('./makeRequest.js')
 
-async function eventHookLogic (config, connectionContainer) {
+async function eventHookLogic (type, config, connectionContainer) {
   const { event, payment, user, application, thing, createEvent } = connectionContainer
 
   const [configUrl] = config
@@ -21,12 +19,11 @@ async function eventHookLogic (config, connectionContainer) {
     application: application && application.toJsonPrivateWebhook(user),
     thing: thing && thing.toJsonPrivateWebhook(user),
     event: {
-      type: 'SESSION_READ',
+      type,
       id: event.id
     },
     partnerId: user.partnerId,
-    federatedUserId: event.federatedUserId,
-    // sessionId
+    federatedUserId: event.federatedUserId
   }
 
   global.rdic.logger.log({}, '[CONNECTION_CYCLR]', { configUrl, webhookPackage })
@@ -38,14 +35,14 @@ async function eventHookLogic (config, connectionContainer) {
       userId: user.id,
       applicationId: application ? application.id : undefined,
       thingId: thing ? thing.id : undefined,
-      customData: { id: 'CONNECTION_CYCLR', theirId: '123-456' }
+      customData: { id: 'CONNECTION_CYCLR', theirId: 'All good in the hood!' }
     })
-  } catch (e) {
+  } catch ({ message }) {
     createEvent({
       type: 'CONNECTION_BAD',
       userId: user.id,
       applicationId: application ? application.id : undefined,
-      customData: { id: 'CONNECTION_CYCLR', message: e.message }
+      customData: { id: 'CONNECTION_CYCLR', message }
     })
   }
 }
@@ -59,7 +56,7 @@ module.exports = new Connection({
   configDefaults: ['https://connections.sticky.to/api/partnerwebhook/SSuqwe5i'],
   userIds: ['32027163-655c-4881-9bba-780dc0243865'],
   eventHooks: {
-    'SESSION_READ': eventHookLogic,
-    'SESSION_CART_PAY': eventHookLogic
+    'SESSION_READ': (...args) => eventHookLogic('SESSION_READ, ', ...args),
+    'SESSION_CART_PAY': (...args) => eventHookLogic('SESSION_CART_PAY, ', ...args)
   }
 })

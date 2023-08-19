@@ -1,5 +1,3 @@
-/* eslint-disable max-len */
-
 function getFormHttpBody(params) {
   return Object.keys(params)
     .filter(key => typeof params[key] === 'string' || typeof params[key] === 'number')
