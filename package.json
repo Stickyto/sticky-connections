@@ -1,10 +1,10 @@
 {
   "name": "sticky-connections",
-  "version": "7.6.3",
+  "version": "7.7.0",
   "description": "",
   "main": "src/index.js",
   "dependencies": {
-    "@stickyto/openbox-node-utils": "^7.4.8",
+    "@stickyto/openbox-node-utils": "^7.6.1",
     "adal-node": "^0.2.4",
     "dotenv": "^16.3.1",
     "html-entities": "^2.4.0",
@@ -16,9 +16,9 @@
     "xml2json": "^0.12.0"
   },
   "devDependencies": {
-    "eslint": "^8.45.0",
+    "eslint": "^8.47.0",
     "eslint-plugin-jest": "^27.2.3",
-    "jest": "^29.6.1"
+    "jest": "^29.6.2"
   },
   "scripts": {
     "symlink": "rm -rf node_modules/openbox-*; rm -rf node_modules/sticky-*; ln -s $(pwd)/../openbox-entities node_modules/openbox-entities;",

@@ -32,7 +32,7 @@ describe('makeRequest', () => {
     expect(global.fetch).toHaveBeenCalledWith(mockUrl, {
       headers: {
         'Authorization': `Bearer ${mockApiToken}`,
-        'Content-Type': 'application/json'
+        'content-type': 'application/json'
       },
       method: mockMethod,
       body: JSON.stringify(mockJson)

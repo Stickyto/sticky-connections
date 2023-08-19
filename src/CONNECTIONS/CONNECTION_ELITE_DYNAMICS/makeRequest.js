@@ -24,7 +24,7 @@ module.exports = async (requestXmlBody, config, codeUnit) => {
     {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
+        'content-type': 'application/x-www-form-urlencoded'
       },
       body: oauthBody
     }
@@ -46,7 +46,7 @@ module.exports = async (requestXmlBody, config, codeUnit) => {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${xmlAccessToken}`,
-        'Content-Type': 'text/xml',
+        'content-type': 'text/xml',
         'SOAPAction': 'GetSetup'
       },
       body: requestXmlBody,

@@ -6,8 +6,8 @@ module.exports = async function makeRequest(apiToken, method, url, json) {
 
   const headers = apiToken ? {
     'Authorization': `Bearer ${apiToken}`,
-    'Content-Type': 'application/json'
-  } : { 'Content-Type': 'application/json' }
+    'content-type': 'application/json'
+  } : { 'content-type': 'application/json' }
 
   try {
     const response = await fetch(url, {

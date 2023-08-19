@@ -19,7 +19,7 @@ describe('makeRequest', () => {
     const mockMethod = 'GET'
     const mockUrl = 'https://api.example.com/test-endpoint'
     const mockJson = { key: 'value' }
-    const mockHeaders = { 'Content-Type': 'application/json' }
+    const mockHeaders = { 'content-type': 'application/json' }
     const mockResponse = { success: true }
 
     global.fetch.mockResolvedValueOnce({
