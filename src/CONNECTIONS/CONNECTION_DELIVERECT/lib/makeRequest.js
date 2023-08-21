@@ -28,8 +28,7 @@ module.exports = async function makeRequest(token, method, url, json) {
     {
       method,
       headers,
-      body: JSON.stringify(json),
-      throwHttpErrors: false
+      body: JSON.stringify(json)
     }
   )
 

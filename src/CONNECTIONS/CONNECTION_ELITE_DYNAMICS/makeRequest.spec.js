@@ -54,7 +54,6 @@ describe('makeRequest', () => {
       json: async () => ({ access_token: 'token123' }),
     })
     fetch.mockResolvedValueOnce({
-      ok: false,
       status: 404,
       text: async () => 'some error message',
     })
@@ -63,29 +62,6 @@ describe('makeRequest', () => {
 
     await expect(makeRequest(requestXmlBody, config, codeUnit)).rejects.toThrow(
       'some error message'
-    )
-    expect(fetch).toHaveBeenCalledTimes(2)
-    expect(global.rdic.logger.log).toHaveBeenCalledTimes(2)
-  })
-
-  test('failed request - no body', async () => {
-    const requestXmlBody = '<xml></xml>'
-    const config = ['clientId', 'clientSecret', 'scope', 'oAuthUrl', 'XMLUrl']
-    const codeUnit = 'codeUnit'
-
-    fetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ access_token: 'token123' })
-    })
-    fetch.mockResolvedValueOnce({
-      ok: false,
-      status: 404
-    })
-
-    parseResponse.mockImplementationOnce(() => 'some error message')
-
-    await expect(makeRequest(requestXmlBody, config, codeUnit)).rejects.toThrow(
-      'HTTP 404.'
     )
     expect(fetch).toHaveBeenCalledTimes(2)
     expect(global.rdic.logger.log).toHaveBeenCalledTimes(2)

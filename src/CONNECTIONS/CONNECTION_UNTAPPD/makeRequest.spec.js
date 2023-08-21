@@ -14,27 +14,25 @@ describe('makeRequest', () => {
     const expectedAuthHeader = 'Basic ' + Buffer.from(`${mockConfig[1]}:${mockConfig[0]}`).toString('base64')
 
     fetch.mockResolvedValue({
-      json: jest.fn().mockResolvedValue({ success: true })
+      json: jest.fn().mockResolvedValue({ success: true }),
+      ok: true
     })
 
     const result = await makeRequest(mockConfig, url)
 
     expect(fetch).toHaveBeenCalledWith(expect.stringContaining(url), {
       headers: {
-        'Authorization': expectedAuthHeader
+        'authorization': expectedAuthHeader
       }
     })
     expect(result).toEqual({ success: true })
   })
 
-  it('should throw an error for non-JSON response', async () => {
-    const url = 'test-endpoint'
-
+  it('should throw an error', async () => {
     fetch.mockResolvedValue({
-      json: jest.fn().mockRejectedValue(new Error('Invalid JSON'))
+      text: () => 'Very bad'
     })
-
-    await expect(makeRequest(mockConfig, url)).rejects.toThrow('Invalid JSON')
+    await expect(makeRequest(mockConfig, 'test-endpoint')).rejects.toThrow('!response.ok: [test-endpoint]: Very bad')
   })
 
   it('should handle server errors', async () => {

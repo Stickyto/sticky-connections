@@ -11,7 +11,7 @@ function getFormHttpBody(params) {
 }
 
 module.exports = async (requestXmlBody, config, codeUnit) => {
-  const [clientId, clientSecret, scope, oAuthUrl, XMLUrl] = config
+  const [clientId, clientSecret, scope, oAuthUrl, urlXml] = config
   const oauthBody = getFormHttpBody({
     'client_id': clientId,
     'client_secret': clientSecret,
@@ -41,11 +41,11 @@ module.exports = async (requestXmlBody, config, codeUnit) => {
   global.rdic.logger.log({}, '[CONNECTION_ELITE_DYNAMICS] [makeRequest]', { xmlAccessToken, requestXmlBody })
 
   const xmlBodyResponse = await fetch(
-    `${XMLUrl}/${codeUnit}`,
+    `${urlXml}/${codeUnit}`,
     {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${xmlAccessToken}`,
+        'authorization': `Bearer ${xmlAccessToken.access_token}`,
         'content-type': 'text/xml',
         'SOAPAction': 'GetSetup'
       },
@@ -53,19 +53,18 @@ module.exports = async (requestXmlBody, config, codeUnit) => {
     }
   )
 
+  const asText = await xmlBodyResponse.text()
   if (!xmlBodyResponse.ok) {
     let rejection
-
     try {
-      xmlBodyResponse.text()
-      rejection = await parseResponse(await xmlBodyResponse.text(), '//faultstring/text()')
+      rejection = await parseResponse(asText, '//faultstring/text()')
     } catch (e) {
-      throw new Error(`HTTP ${xmlBodyResponse.status}.`)
+      rejection = `Not working (${xmlBodyResponse.status})!`
     }
     throw new Error(rejection)
   }
 
-  const brokenXml = await parseResponse(await xmlBodyResponse.text(), '//*[local-name()=\'return_value\']/text()')
+  const brokenXml = await parseResponse(asText, '//*[local-name()=\'return_value\']/text()')
   const fixedXml = fixXml(brokenXml)
 
   const asJson = parser.toJson(fixedXml, { object: true })

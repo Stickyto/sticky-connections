@@ -8,7 +8,7 @@ const mockUrl = 'https://test.url'
 const mockJson = { key: 'value' }
 
 function mockFetchResponse(bodyContent) {
-  global.fetch.mockResolvedValueOnce({
+  fetch.mockResolvedValueOnce({
     json: () => Promise.resolve(bodyContent),
     ok: true
   })
@@ -29,9 +29,9 @@ describe('makeRequest', () => {
 
     await makeRequest(mockApiToken, mockMethod, mockUrl, mockJson)
 
-    expect(global.fetch).toHaveBeenCalledWith(mockUrl, {
+    expect(fetch).toHaveBeenCalledWith(mockUrl, {
       headers: {
-        'Authorization': `Bearer ${mockApiToken}`,
+        'authorization': `Bearer ${mockApiToken}`,
         'content-type': 'application/json'
       },
       method: mockMethod,
@@ -42,21 +42,16 @@ describe('makeRequest', () => {
   it('should parse the JSON response', async () => {
     const expectedResponse = { success: true }
     mockFetchResponse(expectedResponse)
-    console.log('Danesh, ', mockApiToken, mockMethod, mockUrl, mockJson)
 
     const result = await makeRequest(mockApiToken, mockMethod, mockUrl, mockJson)
 
     expect(result).toEqual(expectedResponse)
   })
 
-  it('should return undefined when response is not a successful HTTP response', async () => {
-    global.fetch.mockResolvedValueOnce({
-      json: () => Promise.reject(),
-      ok: false
+  it('should throw an error', async () => {
+    fetch.mockResolvedValue({
+      text: () => 'Very bad'
     })
-
-    const result = await makeRequest(mockApiToken, mockMethod, mockUrl, mockJson)
-
-    expect(result).toBeUndefined()
+    await expect(makeRequest(mockApiToken, mockMethod, mockUrl, mockJson)).rejects.toThrow('!response.ok: [https://test.url]: Very bad')
   })
 })

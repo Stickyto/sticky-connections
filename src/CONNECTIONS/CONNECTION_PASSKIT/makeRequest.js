@@ -1,28 +1,21 @@
 module.exports = async function makeRequest(apiKey, method, url, json) {
-  global.rdic.logger.log({}, '[CONNECTION_PASSKIT] [makeRequest] apiKey', apiKey)
-  global.rdic.logger.log({}, '[CONNECTION_PASSKIT] [makeRequest] method', method)
-  global.rdic.logger.log({}, '[CONNECTION_PASSKIT] [makeRequest] url', url)
-  global.rdic.logger.log({}, '[CONNECTION_PASSKIT] [makeRequest] json', json)
+  global.rdic.logger.log({}, '[CONNECTION_PASSKIT] [makeRequest] 1', { apiKey, method, url, json })
 
-  try {
-    const response = await fetch(url,
-      {
-        method,
-        headers: {
-          'Authorization': `Bearer ${apiKey}`
-        },
-        json
-      }
-    )
-
-    const body = await response.json()
-
-    global.rdic.logger.log({}, '[CONNECTION_PASSKIT] [makeRequest] toReturn', body)
-
-    return body
-  } catch (e) {
-    global.rdic.logger.log({}, '[CONNECTION_PASSKIT] [makeRequest] error', e)
-
-    return undefined
+  const response = await fetch(
+    url,
+    {
+      method,
+      headers: {
+        'authorization': `Bearer ${apiKey}`
+      },
+      body: json ? JSON.stringify(json) : undefined
+    }
+  )
+  if (!response.ok) {
+    throw new Error(`!response.ok: [${url}]: ${await response.text()}`)
   }
+
+  const asJson = await response.json()
+  global.rdic.logger.log({}, '[CONNECTION_PASSKIT] [makeRequest] 2', { asJson })
+  return asJson
 }

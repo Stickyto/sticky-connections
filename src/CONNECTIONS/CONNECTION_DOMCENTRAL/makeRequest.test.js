@@ -1,3 +1,4 @@
+/* eslint-disable jest/no-conditional-expect */
 const makeRequest = require('./makeRequest')
 
 global.fetch = jest.fn()
@@ -22,7 +23,7 @@ describe('makeRequest', () => {
     const mockHeaders = { 'content-type': 'application/json' }
     const mockResponse = { success: true }
 
-    global.fetch.mockResolvedValueOnce({
+    fetch.mockResolvedValueOnce({
       json: jest.fn().mockResolvedValueOnce(mockResponse)
     })
 
@@ -37,22 +38,11 @@ describe('makeRequest', () => {
     expect(result).toEqual({ success: true })
   })
 
-  it('should return undefined for an empty response body', async () => {
-    global.fetch.mockResolvedValueOnce({
-      json: jest.fn().mockRejectedValue('')
-    })
-
-    const result = await makeRequest('GET', 'https://api.example.com/test-endpoint', {}, {})
-
-    expect(result).toBeUndefined()
-  })
-
   it('should make a request with headers if provided', async () => {
     const mockHeaders = { 'Authorization': 'Bearer xyz' }
-    const mockResponse = JSON.stringify({ authenticated: true })
 
-    global.fetch.mockResolvedValueOnce({
-      json: jest.fn().mockResolvedValueOnce(mockResponse)
+    fetch.mockResolvedValueOnce({
+      json: jest.fn().mockResolvedValueOnce({ authenticated: true })
     })
 
     await makeRequest('GET', 'https://api.example.com/test-endpoint', {}, mockHeaders)
@@ -62,24 +52,21 @@ describe('makeRequest', () => {
     }))
   })
 
-  it('should return undefined and log an error for invalid JSON response', async () => {
+  it('should log an error for an invalid JSON response', async () => {
     const mockMethod = 'GET'
     const mockUrl = 'https://api.example.com/test-endpoint'
-    const mockError = { message: 'invalid json' }
+    const mockError = { message: 'Invalid JSON' }
 
-    global.fetch.mockResolvedValueOnce({
+    fetch.mockResolvedValueOnce({
       json: jest.fn().mockRejectedValue(mockError)
     })
 
-    const result = await makeRequest('GET', 'https://api.example.com/test-endpoint', {}, {})
-
-
-    expect(global.rdic.logger.log).toHaveBeenCalledWith({}, '[CONNECTION_DOMCENTRAL] [makeRequest] method', mockMethod)
-    expect(global.rdic.logger.log).toHaveBeenCalledWith({}, '[CONNECTION_DOMCENTRAL] [makeRequest] url', mockUrl)
-    expect(global.rdic.logger.log).toHaveBeenCalledWith({}, '[CONNECTION_DOMCENTRAL] [makeRequest] json', {})
-    expect(global.rdic.logger.log).toHaveBeenCalledWith({}, '[CONNECTION_DOMCENTRAL] [makeRequest] headers', {})
-    expect(global.rdic.logger.log).toHaveBeenCalledWith({}, '[CONNECTION_DOMCENTRAL] [makeRequest] error', mockError.message)
-
-    expect(result).toBeUndefined()
+    try {
+      await makeRequest(mockMethod, mockUrl, {}, {})
+    } catch (e) {
+      expect(e.message).toBe('Invalid JSON')
+    } finally {
+      expect(global.rdic.logger.log).toHaveBeenCalledTimes(1)
+    }
   })
 })

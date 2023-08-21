@@ -23,7 +23,8 @@ describe('makeRequest', () => {
     const mockResponse = { success: true }
 
     fetch.mockResolvedValueOnce({
-      json: jest.fn().mockResolvedValueOnce(mockResponse)
+      json: jest.fn().mockResolvedValueOnce(mockResponse),
+      ok: true
     })
 
     const result = await makeRequest(mockPrivateKey, mockMethod, mockUrl, mockJson)
@@ -31,7 +32,8 @@ describe('makeRequest', () => {
     expect(fetch).toHaveBeenCalledWith(mockUrl, {
       method: mockMethod,
       headers: {
-        'Authorization': `Bearer ${mockPrivateKey}`
+        'authorization': `Bearer ${mockPrivateKey}`,
+        'content-type': 'application/json'
       },
       body: JSON.stringify(mockJson)
     })
@@ -39,40 +41,26 @@ describe('makeRequest', () => {
     expect(result).toEqual({ success: true })
   })
 
-  it('should return undefined for an empty response body', async () => {
+  it('should make a request without authorization header if no privateKey provided', async () => {
     fetch.mockResolvedValueOnce({
-      json: jest.fn().mockRejectedValueOnce('')
-    })
-
-    const result = await makeRequest('testPrivateKey', 'GET', 'https://api.example.com/test-endpoint', {})
-
-    expect(result).toBeUndefined()
-  })
-
-  it('should make a request without Authorization header if no privateKey provided', async () => {
-    const mockResponse = JSON.stringify({ success: true })
-
-    fetch.mockResolvedValueOnce({
-      json: jest.fn().mockResolvedValueOnce(mockResponse)
+      json: jest.fn().mockResolvedValueOnce({}),
+      ok: true
     })
 
     await makeRequest(null, 'GET', 'https://api.example.com/test-endpoint', {})
 
     expect(fetch).toHaveBeenCalledWith('https://api.example.com/test-endpoint', expect.objectContaining({
-      headers: {}
+      headers: {
+        'content-type': 'application/json'
+      },
+      method: 'GET'
     }))
   })
 
-  it('should return undefined and log an error for invalid JSON response', async () => {
-    const mockError = { message: 'invalid json' }
-
-    fetch.mockResolvedValueOnce({
-      json: jest.fn().mockRejectedValueOnce(mockError)
+  it('should throw an error', async () => {
+    fetch.mockResolvedValue({
+      text: () => 'Very bad'
     })
-
-    const result = await makeRequest('testPrivateKey', 'GET', 'https://api.example.com/test-endpoint', {})
-
-    expect(global.rdic.logger.log).toHaveBeenCalledWith({}, '[CONNECTION_API] [makeRequest] error', mockError.message)
-    expect(result).toBeUndefined()
+    await expect(makeRequest('testPrivateKey', 'GET', 'https://api.example.com/test-endpoint', {})).rejects.toThrow('!response.ok: [https://api.example.com/test-endpoint]: Very bad')
   })
 })

@@ -16,8 +16,10 @@ describe('makeRequest', () => {
   })
 
   it('should handle a GET request correctly', async () => {
-    const mockResponse = { json: jest.fn().mockResolvedValue({ FirstName: 'Ultimate Test Contact' }) }
-    fetch.mockResolvedValue(mockResponse)
+    fetch.mockResolvedValue({
+      json: jest.fn().mockResolvedValue({ FirstName: 'Ultimate Test Contact' }),
+      ok: true
+    })
 
     const response = await makeRequest(
       configDefaults,
@@ -37,8 +39,10 @@ describe('makeRequest', () => {
   })
 
   it('should handle a POST request correctly', async () => {
-    const mockResponse = { json: jest.fn().mockResolvedValue({ FirstName: 'Ultimate Test Contact' }) }
-    fetch.mockResolvedValue(mockResponse)
+    fetch.mockResolvedValue({
+      json: jest.fn().mockResolvedValue({ FirstName: 'Ultimate Test Contact' }),
+      ok: true
+    })
 
     const response = await makeRequest(
       configDefaults,

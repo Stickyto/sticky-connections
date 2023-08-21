@@ -21,7 +21,8 @@ describe('makeRequest', () => {
     const mockResponse = { key: 'value' }
 
     fetch.mockResolvedValueOnce({
-      json: jest.fn().mockResolvedValueOnce(mockResponse)
+      json: jest.fn().mockResolvedValueOnce(mockResponse),
+      ok: true
     })
 
     const result = await makeRequest([mockApiKey], mockUrl)
@@ -29,28 +30,23 @@ describe('makeRequest', () => {
     expect(fetch).toHaveBeenCalledWith(`https://api.loyverse.com${mockUrl}`,
       {
         headers: {
-          'Authorization': `Bearer ${mockApiKey}`
+          'authorization': `Bearer ${mockApiKey}`
         }
       }
     )
 
-    expect(global.rdic.logger.log).toHaveBeenCalledWith({}, '[CONNECTION_LOYALVERSE] [makeRequest] body', mockResponse)
+    expect(global.rdic.logger.log).toHaveBeenCalledWith({}, '[CONNECTION_LOYALVERSE] [makeRequest]', { asJson: mockResponse })
     expect(result).toEqual(mockResponse)
   })
 
-  it('should throw an error if the response is not valid JSON', async () => {
+  it('should throw an error', async () => {
     const mockApiKey = 'testApiKey'
     const mockUrl = '/test-endpoint'
-    const mockError = 'not valid JSON'
 
-    fetch.mockResolvedValueOnce({
-      json: jest.fn().mockRejectedValue(mockError)
+    fetch.mockResolvedValue({
+      text: () => 'Invalid JSON'
     })
 
-    const result = await makeRequest([mockApiKey], mockUrl)
-
-    expect(global.rdic.logger.log).toHaveBeenCalledWith({}, '[CONNECTION_LOYALVERSE] [makeRequest] error', mockError)
-
-    expect(result).toBeUndefined()
+    await expect(makeRequest([mockApiKey], mockUrl)).rejects.toThrow('Invalid JSON')
   })
 })

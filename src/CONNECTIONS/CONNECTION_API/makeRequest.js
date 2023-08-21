@@ -5,7 +5,7 @@ module.exports = async function makeRequest(privateKey, method, url, json) {
       'authorization': `Bearer ${privateKey}`
     } :
     {
-      'content-Type': 'application/json'
+      'content-type': 'application/json'
     }
 
   const response = await fetch(url,

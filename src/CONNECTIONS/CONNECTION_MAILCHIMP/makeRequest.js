@@ -5,28 +5,21 @@ module.exports = async function makeRequest(apiToken, method, url, json) {
   global.rdic.logger.log({}, '[CONNECTION_MAILCHIMP] [makeRequest] json', { json })
 
   const headers = apiToken ? {
-    'Authorization': `Bearer ${apiToken}`,
+    'authorization': `Bearer ${apiToken}`,
     'content-type': 'application/json'
   } : { 'content-type': 'application/json' }
 
-  try {
-    const response = await fetch(url, {
-      method,
-      headers,
-      body: JSON.stringify(json)
-    })
+  const response = await fetch(url, {
+    method,
+    headers,
+    body: JSON.stringify(json)
+  })
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`)
-    }
-
-    const body = await response.json()
-    global.rdic.logger.log({}, '[CONNECTION_MAILCHIMP] [makeRequest] body', body)
-
-    return body
-
-  } catch (e) {
-    global.rdic.logger.log({}, '[CONNECTION_MAILCHIMP] [makeRequest] error', e)
-    return undefined
+  if (!response.ok) {
+    throw new Error(`!response.ok: [${url}]: ${await response.text()}`)
   }
+
+  const asJson = await response.json()
+  global.rdic.logger.log({}, '[CONNECTION_MAILCHIMP] [makeRequest]', { asJson })
+  return asJson
 }

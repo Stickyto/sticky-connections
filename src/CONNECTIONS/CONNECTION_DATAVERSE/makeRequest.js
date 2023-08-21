@@ -12,6 +12,7 @@ module.exports = async function makeRequest(config, method, url, json) {
     })
   })
 
+  global.rdic.logger.log({}, '[CONNECTION_DATAVERSE] [makeRequest]', { method, url, config, json })
   const response = await fetch(`${configInstance}/api/data/v${configVersion}/${url}`,
     {
       method,
@@ -22,16 +23,7 @@ module.exports = async function makeRequest(config, method, url, json) {
     }
   )
 
-  global.rdic.logger.log({}, '[CONNECTION_DATAVERSE] [makeRequest]', { method, url, config, json })
-
-  try {
-    const body = await response.json()
-    global.rdic.logger.log({}, '[CONNECTION_DATAVERSE] [makeRequest] body', body)
-
-    return body
-  } catch (e) {
-    global.rdic.logger.log({}, '[CONNECTION_DATAVERSE] [makeRequest] body', e.message)
-
-    return undefined
-  }
+  const asJson = await response.json()
+  global.rdic.logger.log({}, '[CONNECTION_DATAVERSE] [makeRequest]', { asJson })
+  return asJson
 }

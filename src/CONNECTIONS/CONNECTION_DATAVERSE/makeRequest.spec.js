@@ -30,7 +30,7 @@ describe('makeRequest', () => {
     const result = await makeRequest(mockConfig, 'GET', 'testUrl', { some: 'data' })
     expect(result).toEqual({ success: true })
 
-    expect(global.fetch).toHaveBeenCalledWith('configInstance/api/data/vconfigVersion/testUrl', {
+    expect(fetch).toHaveBeenCalledWith('configInstance/api/data/vconfigVersion/testUrl', {
       method: 'GET',
       headers: {
         'Authorization': 'Bearer testToken'
@@ -56,26 +56,5 @@ describe('makeRequest', () => {
 
     await expect(makeRequest(mockConfig, 'GET', 'testUrl', { some: 'data' }))
       .rejects.toThrow('Token Error')
-  })
-
-  it('returns undefined when response cannot be parsed to JSON', async () => {
-    const mockConfig = [
-      'configInstance',
-      'configTokenUrl',
-      'configClientId',
-      'configClientSecret',
-      'configVersion'
-    ]
-    fetch.mockResolvedValue({
-      json: jest.fn().mockRejectedValue('invalid json')
-    })
-
-    const mockAcquireTokenWithClientCredentials = jest.fn((_, __, ___, cb) => cb(null, { accessToken: 'testToken' }))
-    AuthenticationContext.mockImplementation(() => ({
-      acquireTokenWithClientCredentials: mockAcquireTokenWithClientCredentials
-    }))
-
-    const result = await makeRequest(mockConfig, 'GET', 'testUrl', { some: 'data' })
-    expect(result).toBeUndefined()
   })
 })

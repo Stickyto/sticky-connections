@@ -19,13 +19,14 @@ describe('makeRequest', () => {
     const mockJson = { data: 'test' }
     const mockResponse = { success: 'ok' }
 
-    fetch.mockResolvedValue({ json: jest.fn().mockResolvedValue(mockResponse) })
+    fetch.mockResolvedValue({
+      json: jest.fn().mockResolvedValue(mockResponse),
+      ok: true
+    })
 
     const result = await makeRequest(mockMethod, mockUrl, mockJson)
 
-    expect(global.rdic.logger.log).toHaveBeenCalledWith({}, '[CONNECTION_CYCLR] [makeRequest] method', { method: mockMethod })
-    expect(global.rdic.logger.log).toHaveBeenCalledWith({}, '[CONNECTION_CYCLR] [makeRequest] url', { url: mockUrl })
-    expect(global.rdic.logger.log).toHaveBeenCalledWith({}, '[CONNECTION_CYCLR] [makeRequest] json/mimeType', { json: mockJson })
+    expect(global.rdic.logger.log).toHaveBeenCalledWith({}, '[CONNECTION_CYCLR] [makeRequest]', { method: mockMethod, url: mockUrl, json: mockJson })
 
     expect(result).toEqual(mockResponse)
   })
@@ -35,7 +36,10 @@ describe('makeRequest', () => {
     const mockUrl = 'https://test-url.com'
     const mockJson = { data: 'test' }
 
-    fetch.mockResolvedValue({ json: jest.fn().mockResolvedValue({}) })
+    fetch.mockResolvedValue({
+      json: jest.fn().mockResolvedValue({}),
+      ok: true
+    })
 
     await makeRequest(mockMethod, mockUrl, mockJson)
 
@@ -45,23 +49,20 @@ describe('makeRequest', () => {
     })
   })
 
-  it('returns the body if the response is a valid JSON', async () => {
+  it('returns the body if the response is valid JSON', async () => {
     const mockResponseBody = { result: 'success' }
 
-    fetch.mockResolvedValue({ json: jest.fn().mockResolvedValue(mockResponseBody) })
+    fetch.mockResolvedValue({ json: jest.fn().mockResolvedValue(mockResponseBody), ok: true })
 
     const result = await makeRequest('GET', 'https://test-url.com', { data: 'test' })
 
     expect(result).toEqual(mockResponseBody)
   })
 
-  it('returns undefined if the response cannot be parsed as JSON', async () => {
+  it('should throw an error', async () => {
     fetch.mockResolvedValue({
-      json: jest.fn().mockRejectedValue(new Error('invalid json'))
+      text: () => 'Very bad'
     })
-
-    const result = await makeRequest('GET', 'https://test-url.com', { data: 'test' })
-
-    expect(result).toBeUndefined()
+    await expect(makeRequest('GET', 'https://test-url.com', { data: 'test' })).rejects.toThrow('!response.ok: [https://test-url.com]: Very bad')
   })
 })
