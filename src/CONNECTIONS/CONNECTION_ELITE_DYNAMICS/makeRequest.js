@@ -1,4 +1,3 @@
-const got = require('got')
 const parseResponse = require('./parseResponse/parseResponse')
 const { decode: fixXml } = require('html-entities')
 const parser = require('xml2json')
@@ -12,7 +11,7 @@ function getFormHttpBody(params) {
 }
 
 module.exports = async (requestXmlBody, config, codeUnit) => {
-  const [clientId, clientSecret, scope, oAuthUrl, XMLUrl] = config
+  const [clientId, clientSecret, scope, oAuthUrl, urlXml] = config
   const oauthBody = getFormHttpBody({
     'client_id': clientId,
     'client_secret': clientSecret,
@@ -21,37 +20,50 @@ module.exports = async (requestXmlBody, config, codeUnit) => {
   })
   global.rdic.logger.log({}, '[CONNECTION_ELITE_DYNAMICS] [makeRequest]', { oauthBody })
 
-  const { body: bodyAsString } = await got.post(
+  const xmlAccessTokenresponse = await fetch(
     oAuthUrl,
     {
+      method: 'POST',
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
+        'content-type': 'application/x-www-form-urlencoded'
       },
       body: oauthBody
     }
   )
 
-  const { access_token: xmlAccessToken } = JSON.parse(bodyAsString)
+  let xmlAccessToken
+  try {
+    xmlAccessToken = await xmlAccessTokenresponse.json()
+  } catch (e) {
+    throw new Error(e.message)
+  }
   global.rdic.logger.log({}, '[CONNECTION_ELITE_DYNAMICS] [makeRequest]', { xmlAccessToken, requestXmlBody })
 
-  const response = await got.post(
-    `${XMLUrl}/${codeUnit}`,
+  const xmlBodyResponse = await fetch(
+    `${urlXml}/${codeUnit}`,
     {
+      method: 'POST',
       headers: {
-        'Authorization': `Bearer ${xmlAccessToken}`,
-        'Content-Type': 'text/xml',
+        'authorization': `Bearer ${xmlAccessToken.access_token}`,
+        'content-type': 'text/xml',
         'SOAPAction': 'GetSetup'
       },
-      body: requestXmlBody,
-      throwHttpErrors: false
+      body: requestXmlBody
     }
   )
 
-  if (response.statusCode !== 200) {
-    const rejection = response.body ? await parseResponse(response.body, '//faultstring/text()') : `HTTP ${response.statusCode}.`
+  const asText = await xmlBodyResponse.text()
+  if (!xmlBodyResponse.ok) {
+    let rejection
+    try {
+      rejection = await parseResponse(asText, '//faultstring/text()')
+    } catch (e) {
+      rejection = `Not working (${xmlBodyResponse.status})!`
+    }
     throw new Error(rejection)
   }
-  const brokenXml = await parseResponse(response.body, '//*[local-name()=\'return_value\']/text()')
+
+  const brokenXml = await parseResponse(asText, '//*[local-name()=\'return_value\']/text()')
   const fixedXml = fixXml(brokenXml)
 
   const asJson = parser.toJson(fixedXml, { object: true })

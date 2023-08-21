@@ -1,18 +1,6 @@
 /* eslint-disable max-len */
-const got = require('got')
 const Connection = require('../Connection')
-
-async function makeRequest (method, url, json) {
-  global.rdic.logger.log({}, '[CONNECTION_RINGCENTRAL] [makeRequest]', { method, url, json })
-  const { body: bodyAsString } = await got[method](
-    url,
-    {
-      json
-    }
-  )
-  global.rdic.logger.log({}, '[CONNECTION_RINGCENTRAL] [makeRequest] bodyAsString', bodyAsString)
-  return typeof bodyAsString === 'string' && bodyAsString.length > 0 ? JSON.parse(bodyAsString) : undefined
-}
+const makeRequest = require('./makeRequest')
 
 module.exports = new Connection({
   id: 'CONNECTION_RINGCENTRAL',

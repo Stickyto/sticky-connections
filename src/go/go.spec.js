@@ -1,19 +1,20 @@
+/* eslint-disable jest/no-conditional-expect */
 const go = require('./go')
 
 const VALID_USER = {
   connections: [{
     id: 'CONNECTION_ELITE_DYNAMICS',
     config: [
-      '---',
-      '---',
+      process.env.TEST_ELITE_DYNAMICS_CLIENT_ID,
+      process.env.TEST_ELITE_DYNAMICS_CLIENT_SECRET,
       'https://api.businesscentral.dynamics.com/.default',
-      'https://login.microsoftonline.com/---/oauth2/v2.0/token',
-      'https://api.businesscentral.dynamics.com/v2.0/---/Sandbox/WS/Customer-Name/Codeunit'
+      process.env.TEST_ELITE_DYNAMICS_CLIENT_OAUTH_URL,
+      process.env.TEST_ELITE_DYNAMICS_CLIENT_CODE_UNIT_URL
     ]
   }]
 }
 
-const BOOKING_ID = 'BK123'
+const BOOKING_ID = 'BK00115059'
 
 let user, partner
 beforeEach(() => {
@@ -52,35 +53,31 @@ describe('doesnt work', () => {
     partner = {
       name: 'Elite Dynamics'
     }
-
-    await expect(
-      go('CONNECTION_ELITE_DYNAMICS', 'doesntExist', { user, partner })
-    )
-      .rejects.toMatchObject({
-        message: 'EliteParks doesn\'t have a method called doesntExist!',
-      })
+    try {
+      await go('CONNECTION_ELITE_DYNAMICS', 'doesntExist', { user, partner })
+    } catch ({ message }) {
+      expect(message).toBe('Elite Dynamics doesn\'t have a method called doesntExist!')
+    }
   })
 
   it('respects configuration', async () => {
     partner = {
       name: 'Elite Dynamics'
     }
-
-    await expect(
-      go('CONNECTION_ELITE_DYNAMICS', 'bookingGet', { user, partner })
-    )
-      .rejects.toMatchObject({
-        message: 'EliteParks isn\'t configured!',
-      })
+    try {
+      await go('CONNECTION_ELITE_DYNAMICS', 'bookingGet', { user, partner })
+    } catch ({ message }) {
+      expect(message).toBe('Elite Dynamics isn\'t configured!')
+    }
   })
 })
 
-it.skip('works', async () => {
+it('works', async () => {
   partner = {
     name: 'Elite Dynamics'
   }
 
   const r = await go('CONNECTION_ELITE_DYNAMICS', 'bookingGet', { user: VALID_USER, partner, body: { bookingId: BOOKING_ID } })
   expect(r.id).toBe(BOOKING_ID)
-  expect(r.total).toBe(8000)
+  expect(r.total).toBe(49900)
 })

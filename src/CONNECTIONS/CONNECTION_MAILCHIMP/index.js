@@ -2,7 +2,7 @@ const { assert, isEmailValid } = require('@stickyto/openbox-node-utils')
 const Connection = require('../Connection')
 const makeRequest = require('./makeRequest')
 
-async function eventHookLogic (config, connectionContainer) {
+async function eventHookLogic(config, connectionContainer) {
   const { user, application, thing, customData, createEvent } = connectionContainer
 
   const [configServer, configApiKey, configList] = config
@@ -17,7 +17,7 @@ async function eventHookLogic (config, connectionContainer) {
   }
 
   try {
-    const { lists } = await makeRequest(configApiKey, 'get', `https://${configServer}.api.mailchimp.com/3.0/lists`, undefined, 'json')
+    const { lists } = await makeRequest(configApiKey, 'get', `https://${configServer}.api.mailchimp.com/3.0/lists`, undefined)
     const foundList = lists.find(_ => _.name === configList)
     assert(foundList, `There isn't a list called "${configList}". The lists are ${lists.map(_ => `"${_.name}"`).join('/')}.`)
 
@@ -28,8 +28,7 @@ async function eventHookLogic (config, connectionContainer) {
       {
         email_address: foundEmailAddress,
         status_if_new: 'subscribed'
-      },
-      'json'
+      }
     )
     createEvent({
       type: 'CONNECTION_GOOD',

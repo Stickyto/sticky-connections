@@ -1,33 +1,38 @@
 /* eslint-disable max-len */
-const got = require('got')
-
-const MIME_TYPES = new Map([
-  ['text', _ => _],
-  ['json', _ => JSON.parse(_)]
-])
-
-module.exports = async function makeRequest (apiToken, method, url, json, mimeType) {
-  global.rdic.logger.log({}, '[CONNECTION_PLAY_IT_GREEN] [makeRequest] apiToken', { apiToken })
-  global.rdic.logger.log({}, '[CONNECTION_PLAY_IT_GREEN] [makeRequest] method', { method })
-  global.rdic.logger.log({}, '[CONNECTION_PLAY_IT_GREEN] [makeRequest] url', { url })
-  global.rdic.logger.log({}, '[CONNECTION_PLAY_IT_GREEN] [makeRequest] json/mimeType', { json, mimeType })
+module.exports = async function makeRequest(apiToken, method, url, json, mimeType) {
+  global.rdic.logger.log({}, '[CONNECTION_PLAY_IT_GREEN] [makeRequest] 1', { apiToken,method, url })
+  global.rdic.logger.log({}, '[CONNECTION_PLAY_IT_GREEN] [makeRequest] 2 json/mimeType', { json, mimeType })
 
   const headers = apiToken ? {
     'Authorization': `Bearer ${apiToken}`
   } : {}
-  const { body: bodyAsString } = await got[method](
+
+  const response = await fetch(
     url,
     {
+      method,
       headers,
-      json
+      body: json ? JSON.stringify(json) : undefined
     }
   )
+  if (!response.ok) {
+    throw new Error(`!response.ok: [${url}]: ${await response.text()}`)
+  }
 
-  global.rdic.logger.log({}, '[CONNECTION_PLAY_IT_GREEN] [makeRequest] typeof bodyAsString', typeof bodyAsString)
-  global.rdic.logger.log({}, '[CONNECTION_PLAY_IT_GREEN] [makeRequest] bodyAsString.length', bodyAsString.length)
+  let body
 
-  const toReturn = typeof bodyAsString === 'string' && bodyAsString.length > 0 ? MIME_TYPES.get(mimeType)(bodyAsString) : undefined
-  global.rdic.logger.log({}, '[CONNECTION_PLAY_IT_GREEN] toReturn', toReturn)
+  try {
+    body = await response.json()
+  } catch (e) {
+    global.rdic.logger.log({}, '[CONNECTION_PLAY_IT_GREEN] [makeRequest] 3')
+  }
 
-  return toReturn
+  if (mimeType === 'text') {
+    body = JSON.stringify(body, null, 0)
+    global.rdic.logger.log({}, '[CONNECTION_PLAY_IT_GREEN] [makeRequest] 4 typeof body', typeof body)
+    global.rdic.logger.log({}, '[CONNECTION_PLAY_IT_GREEN] [makeRequest] 5 body.length', body.length)
+  }
+  global.rdic.logger.log({}, '[CONNECTION_PLAY_IT_GREEN] [makeRequest] 6 body', body)
+
+  return body
 }

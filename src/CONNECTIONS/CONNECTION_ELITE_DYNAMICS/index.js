@@ -27,7 +27,7 @@ function getBody(codeUnit, method, body = {}) {
 
 module.exports = new Connection({
   id: 'CONNECTION_ELITE_DYNAMICS',
-  name: 'EliteParks',
+  name: 'Elite Dynamics',
   partnerNames: ['Elite Dynamics', 'RoyaleResorts'],
   color: '#0D9277',
   logo: cdn => `${cdn}/connections/CONNECTION_ELITE_DYNAMICS.svg`,

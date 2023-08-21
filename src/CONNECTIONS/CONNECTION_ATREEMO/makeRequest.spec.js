@@ -1,33 +1,25 @@
 const makeRequest = require('./makeRequest')
 
 const configDefaults = [
-  '',
+  'https://example.com',
   'username',
   'password'
 ]
 
-const mockGet = jest.fn()
-const mockPost = jest.fn()
-
-jest.mock('got', () => {
-  return {
-    __esModule: true,
-    'get': (...args) => mockGet(...args),
-    'post': (...args) => mockPost(...args),
-  }
-})
-
+global.fetch = jest.fn()
 global.rdic = { logger: { log: jest.fn() } }
 
 describe('makeRequest', () => {
   beforeEach(() => {
-    mockGet.mockClear()
-    mockPost.mockClear()
+    fetch.mockClear()
     global.rdic.logger.log.mockClear()
   })
 
   it('should handle a GET request correctly', async () => {
-    mockGet.mockResolvedValue({ body: '{"FirstName": "Ultimate Test Contact"}'})
+    fetch.mockResolvedValue({
+      json: jest.fn().mockResolvedValue({ FirstName: 'Ultimate Test Contact' }),
+      ok: true
+    })
 
     const response = await makeRequest(
       configDefaults,
@@ -36,9 +28,10 @@ describe('makeRequest', () => {
     )
 
     expect(response.FirstName).toBe('Ultimate Test Contact')
-    expect(mockGet).toHaveBeenCalledWith(
+    expect(fetch).toHaveBeenCalledWith(
       `${configDefaults[0]}/api/Contact/Get/110428`,
       {
+        method: 'get',
         headers: {},
         body: undefined
       }
@@ -46,7 +39,10 @@ describe('makeRequest', () => {
   })
 
   it('should handle a POST request correctly', async () => {
-    mockPost.mockResolvedValue({ body: '{"FirstName": "Ultimate Test Contact"}'})
+    fetch.mockResolvedValue({
+      json: jest.fn().mockResolvedValue({ FirstName: 'Ultimate Test Contact' }),
+      ok: true
+    })
 
     const response = await makeRequest(
       configDefaults,
@@ -58,9 +54,10 @@ describe('makeRequest', () => {
     )
 
     expect(response.FirstName).toBe('Ultimate Test Contact')
-    expect(mockPost).toHaveBeenCalledWith(
+    expect(fetch).toHaveBeenCalledWith(
       `${configDefaults[0]}/api/Contact/Post/110428`,
       {
+        method: 'post',
         headers: {
           'authorization': 'Bearer sampleBearerToken',
           'content-type': 'application/json'
@@ -71,7 +68,7 @@ describe('makeRequest', () => {
   })
 
   it('should handle error in request', async () => {
-    mockGet.mockRejectedValue(new Error('Network error'))
+    fetch.mockRejectedValue(new Error('Network error'))
 
     await expect(
       makeRequest(
@@ -81,5 +78,4 @@ describe('makeRequest', () => {
       )
     ).rejects.toThrow('Network error')
   })
-
 })

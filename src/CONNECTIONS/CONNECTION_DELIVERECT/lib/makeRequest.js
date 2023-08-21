@@ -1,45 +1,36 @@
-/* eslint-disable max-len */
-const got = require('got')
-const { assert } = require('@stickyto/openbox-node-utils')
-
 const MIME_DECODERS = new Map([
   // when they don't return a content-type header, it could be anything (usually a body-less HTTP 201)
-  ['unknown', _ => {
-    try {
-      return JSON.parse(_)
-    } catch (e) {
-      return { ourMessage: 'All good in the hood!' }
-    }
-  }],
+  ['unknown', () => ({ customMessage: 'All good in the hood!' })],
   ['application/json', _ => JSON.parse(_)],
-  ['text/html', () => ({ ourMessage: 'Deliverect returned HTML. This is very bad.' })]
+  ['text/html', _ => ({ customMessage: _ || 'Deliverect returned HTML. This is very bad.' })],
+  ['text/html; charset=utf-8', _ => ({ customMessage: _ || 'Deliverect returned HTML. This is very bad.' })]
 ])
 
-module.exports = async function makeRequest (token, method, url, json) {
-  global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [makeRequest] token', token)
-  global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [makeRequest] method', method)
-  global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [makeRequest] url', url)
-  global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [makeRequest] json', json)
+module.exports = async function makeRequest(token, method, url, json) {
+  global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [makeRequest] 1', { token, method, url, json })
 
   const headers = token ? {
-    'Authorization': `Bearer ${token}`
-  } : {}
-  const { body: bodyAsString, ...response } = await got[method](
+    'authorization': `Bearer ${token}`,
+    'content-type': 'application/json'
+  } : {
+    'content-type': 'application/json'
+  }
+
+  const response = await fetch(
     url,
     {
+      method,
       headers,
-      json,
-      throwHttpErrors: false
+      body: JSON.stringify(json)
     }
   )
+  const contentType = response.headers.get('content-type') || 'unknown'
 
-  const finalToReturn = MIME_DECODERS.get(((response.headers || {})['content-type']) || 'unknown')(bodyAsString)
-
-  assert([201, 200].includes(response.statusCode), JSON.stringify(finalToReturn, null, 2))
-
-  global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [makeRequest] 1 bodyAsString', bodyAsString)
-  global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [makeRequest] 2 finalToReturn', finalToReturn)
-  global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [makeRequest] 3 bodyAsString.length', bodyAsString.length)
+  const finalToReturn = MIME_DECODERS.get(contentType)(await response.text())
+  global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] [makeRequest] 2', { wasOk: response.ok, status: response.status, finalToReturn })
+  if (!response.ok) {
+    throw new Error(JSON.stringify(finalToReturn, null, 2))
+  }
 
   return finalToReturn
 }

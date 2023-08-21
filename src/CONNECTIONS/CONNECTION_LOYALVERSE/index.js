@@ -1,22 +1,9 @@
 /* eslint-disable quotes */
-const got = require('got')
 const { assert, sanitize, getNow } = require('@stickyto/openbox-node-utils')
 const Connection = require('../Connection')
+const makeRequest = require('./makeRequest')
 
 const COLOR = '#00A1E4'
-
-async function makeRequest(config, url) {
-  const [apiKey] = config
-  const { body: bodyAsString } = await got(
-    `https://api.loyverse.com${url}`,
-    {
-      headers: {
-        'Authorization': `Bearer ${apiKey}`
-      }
-    }
-  )
-  return JSON.parse(bodyAsString)
-}
 
 const CATEGORY_COLORS = new Map([
   ['LIME', '#CDDC39'],
@@ -50,16 +37,16 @@ async function getCategories(config) {
   }))
 }
 
-function formatVariant (v) {
+function formatVariant(v) {
   return [v.option1_value, v.option2_value, v.option3_value].filter(e => e).join(' / ')
 }
 
-function isVariantForSale (variant, store) {
+function isVariantForSale(variant, store) {
   const foundStore = variant.stores.find(_ => _.store_id === store.id)
   return foundStore.available_for_sale
 }
 
-function getFirstVariantForSale (variants, store) {
+function getFirstVariantForSale(variants, store) {
   return variants.find(variant => isVariantForSale(variant, store))
 }
 
