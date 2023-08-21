@@ -12,47 +12,45 @@ describe('makeRequest', () => {
   })
 
   it('should handle JSON response', async () => {
-    const responseBody = { key: 'value' }
     fetch.mockResolvedValueOnce({
-      json: async () => responseBody,
+      text: async () => JSON.stringify({ key: 'value' }),
       headers: {
         get: () => 'application/json'
       },
-      status: 200
+      ok: true
     })
 
     const result = await makeRequest('testToken', 'GET', 'testUrl', { some: 'data' })
 
     expect(result).toEqual({ key: 'value' })
-    expect(mockLogger.log).toHaveBeenCalledTimes(6)
+    expect(mockLogger.log).toHaveBeenCalledTimes(2)
   })
 
   it('should handle HTML response', async () => {
     fetch.mockResolvedValueOnce({
-      json: async () => '<html></html>',
+      text: async () => '<html></html>',
       headers: {
         get: () => 'text/html'
       },
-      status: 200
+      ok: true
     })
 
     const result = await makeRequest('testToken', 'GET', 'testUrl', { some: 'data' })
 
-    expect(result).toEqual({ ourMessage: 'Deliverect returned HTML. This is very bad.' })
+    expect(result).toEqual({ customMessage: '<html></html>' })
   })
 
   it('should handle unknown content type', async () => {
-    const responseBody = 'random string'
     fetch.mockResolvedValueOnce({
-      json: async () => responseBody,
+      text: async () => 'random string',
       headers: {
         get: () => undefined
       },
-      status: 200
+      ok: true
     })
 
     const result = await makeRequest('testToken', 'GET', 'testUrl', { some: 'data' })
 
-    expect(result).toEqual('random string')
+    expect(result).toMatchObject({ customMessage: 'All good in the hood!' })
   })
 })

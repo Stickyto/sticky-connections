@@ -11,11 +11,12 @@ module.exports = async function makeRequest(apiKey, method, url, json) {
       body: json ? JSON.stringify(json) : undefined
     }
   )
+  const asJson = await response.json()
+
   if (!response.ok) {
-    throw new Error(`!response.ok: [${url}]: ${await response.text()}`)
+    throw new Error(asJson.error)
   }
 
-  const asJson = await response.json()
   global.rdic.logger.log({}, '[CONNECTION_PASSKIT] [makeRequest] 2', { asJson })
   return asJson
 }
