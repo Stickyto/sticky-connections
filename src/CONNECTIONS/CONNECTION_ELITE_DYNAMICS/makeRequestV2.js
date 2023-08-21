@@ -1,4 +1,3 @@
-const got = require('got')
 const parseResponse = require('./parseResponse/parseResponse')
 const parser = require('xml2json')
 
@@ -20,37 +19,44 @@ module.exports = async (requestXmlBody, config, codeUnit) => {
   })
   global.rdic.logger.log({}, '[CONNECTION_ELITE_DYNAMICS] [makeRequestV2]', { oauthBody })
 
-  const { body: bodyAsString } = await got.post(
+  const xmlAccessTokenresponse = await fetch(
     oAuthUrl,
     {
+      method: 'POST',
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
+        'content-type': 'application/x-www-form-urlencoded'
       },
       body: oauthBody
     }
   )
 
-  const { access_token: xmlAccessToken } = JSON.parse(bodyAsString)
-  global.rdic.logger.log({}, '[CONNECTION_ELITE_DYNAMICS] [makeRequestV2]', { xmlAccessToken, requestXmlBody })
+  let xmlAccessToken
+  try {
+    xmlAccessToken = await xmlAccessTokenresponse.json()
+  } catch (e) {
+    throw new Error(e.message)
+  }
+  global.rdic.logger.log({}, '[CONNECTION_ELITE_DYNAMICS] [makeRequest]', { xmlAccessToken, requestXmlBody })
 
-  const response = await got.post(
+  const xmlBodyResponse = await fetch(
     `${XMLUrl}/${codeUnit}`,
     {
+      method: 'POST',
       headers: {
-        'Authorization': `Bearer ${xmlAccessToken}`,
-        'Content-Type': 'text/xml',
+        'authorization': `Bearer ${xmlAccessToken}`,
+        'content-type': 'text/xml',
         'SOAPAction': 'GetSetup'
       },
-      body: requestXmlBody,
-      throwHttpErrors: false
+      body: requestXmlBody
     }
   )
 
-  if (response.statusCode !== 200) {
-    const rejection = response.body ? await parseResponse(response.body, '//faultstring/text()') : `HTTP ${response.statusCode}.`
+  const asText = await xmlBodyResponse.text()
+  if (!xmlBodyResponse.ok) {
+    const rejection = asText ? await parseResponse(asText, '//faultstring/text()') : `HTTP ${xmlBodyResponse.status}.`
     throw new Error(rejection)
   }
-  const rawXml = '<?xml version="1.0" encoding="utf-8"?>' + response.body
+  const rawXml = '<?xml version="1.0" encoding="utf-8"?>' + asText
   const highLevelJson = parser.toJson(rawXml, { object: true })['Soap:Envelope']['Soap:Body']
   const internalXml = highLevelJson[Object.keys(highLevelJson)[0]]['return_value']
   const finalJson = parser.toJson(internalXml, { object: true })

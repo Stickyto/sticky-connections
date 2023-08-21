@@ -20,7 +20,8 @@ module.exports = async (requestXmlBody, config, codeUnit) => {
   })
   global.rdic.logger.log({}, '[CONNECTION_ELITE_DYNAMICS] [makeRequest]', { oauthBody })
 
-  const xmlAccessTokenresponse = await fetch(oAuthUrl,
+  const xmlAccessTokenresponse = await fetch(
+    oAuthUrl,
     {
       method: 'POST',
       headers: {
@@ -31,13 +32,11 @@ module.exports = async (requestXmlBody, config, codeUnit) => {
   )
 
   let xmlAccessToken
-
   try {
     xmlAccessToken = await xmlAccessTokenresponse.json()
   } catch (e) {
     throw new Error(e.message)
   }
-
   global.rdic.logger.log({}, '[CONNECTION_ELITE_DYNAMICS] [makeRequest]', { xmlAccessToken, requestXmlBody })
 
   const xmlBodyResponse = await fetch(
@@ -49,7 +48,7 @@ module.exports = async (requestXmlBody, config, codeUnit) => {
         'content-type': 'text/xml',
         'SOAPAction': 'GetSetup'
       },
-      body: requestXmlBody,
+      body: requestXmlBody
     }
   )
 

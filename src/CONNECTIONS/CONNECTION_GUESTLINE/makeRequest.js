@@ -1,24 +1,24 @@
-const got = require('got')
 const { assert } = require('@stickyto/openbox-node-utils')
 const parser = require('xml2json')
 
 const BASE_URL = 'https://pmsws.eu.guestline.net/RLXSoapRouter/rlxsoap.asmx'
 
 module.exports = async function makeRequest (soapAction, xml) {
-  const responseObject = await got.post(
+  const response = await fetch(
     BASE_URL,
     {
+      method: 'POST',
       headers: {
-        'Content-Type': 'text/xml',
+        'content-type': 'text/xml',
         'SOAPAction': soapAction
       },
-      body: xml,
-      throwHttpErrors: false
+      body: xml
     }
   )
-  global.rdic.logger.log({}, '[CONNECTION_GUESTLINE] [makeRequest] -> doing', { soapAction, xml, statusCode: responseObject.statusCode })
-  assert(responseObject.statusCode === 200, responseObject.statusMessage)
-  const asJson = parser.toJson(responseObject.body, { object: true })
-  global.rdic.logger.log({}, '[CONNECTION_GUESTLINE] [makeRequest] -> done', { soapAction, asJson })
+  global.rdic.logger.log({}, '[CONNECTION_GUESTLINE] [makeRequest] -> doing', { soapAction, xml, status: response.status })
+  assert(response.status === 200, `HTTP ${response.status}!`)
+  const asText = await response.text()
+  const asJson = parser.toJson(asText, { object: true })
+  global.rdic.logger.log({}, '[CONNECTION_GUESTLINE] [makeRequest] -> done', { soapAction, asText, asJson })
   return asJson['soap:Envelope']['soap:Body']
 }
