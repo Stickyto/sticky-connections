@@ -33,6 +33,10 @@ const CONNECTIONS = new Map([
     require('./CONNECTION_DELIVERECT')
   ],
   [
+    'CONNECTION_GUESTLINE',
+    require('./CONNECTION_GUESTLINE')
+  ],
+  [
     'CONNECTION_UNTAPPD',
     require('./CONNECTION_UNTAPPD')
   ],

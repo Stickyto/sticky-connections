@@ -1,5 +1,6 @@
 const { assert } = require('@stickyto/openbox-node-utils')
 const makeRequest = require('./makeRequest')
+const makeRequestV2 = require('./makeRequestV2')
 
 const dateStringToUtc = require('./dateStringToUtc/dateStringToUtc')
 const timeStringToSeconds = require('./timeStringToSeconds/timeStringToSeconds')
@@ -33,6 +34,25 @@ module.exports = new Connection({
   configNames: ['Client ID', 'Client Secret', 'Scope', 'OAuth URL', 'Code unit URL'],
   configDefaults: ['', '', 'https://api.businesscentral.dynamics.com/.default', 'https://login.microsoftonline.com/---/oauth2/v2.0/token', 'https://api.businesscentral.dynamics.com/v2.0/---/Sandbox/WS/Customer-Name/Codeunit'],
   methods: {
+    setUp: {
+      name: 'Set up',
+      logic: async ({ connectionContainer, config, body }) => {
+        const { GetSetup: { Park, BookingAttribute } } = await makeRequestV2(getBody('BookingAPI', 'GetSetup'), config, 'BookingAPI')
+        return {
+          parks: Park.map(_ => ({
+            id: _.code,
+            name: _.name,
+            canBookPlot: _.available_for_plot_booking === 'true',
+            canBookUnit: _.available_for_unit_booking === 'true'
+          })),
+          attributes: BookingAttribute.map(_ => ({
+            index: _.index,
+            id: _.code,
+            name: _.caption
+          }))
+        }
+      }
+    },
     ownerAuthenticate: {
       name: 'Owner > Authenticate',
       logic: async ({ connectionContainer, config, body }) => {
