@@ -51,7 +51,7 @@ module.exports = async function getBooking (sessionId, { bookingReference, booki
     .map(_ => ({
       id: _.BookRef,
       roomId: _.RoomId,
-      roomIndex: _.RoomPickId,
+      roomIndex: parseInt(_.RoomPickId, 10),
       dates: {
         start: remoteDateToEpoch(_.Arrival),
         end: remoteDateToEpoch(_.Departure)

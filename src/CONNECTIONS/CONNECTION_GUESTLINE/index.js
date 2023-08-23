@@ -37,6 +37,7 @@ async function eventHookLogic (config, connectionContainer) {
     assert(session, `Payment has session ID ${payment.sessionId} which does not exist; this is very bad.`)
     bookingReference = session.userSectors.readFrom(user.id).readFrom('Guestline booking reference')
     roomIndex = session.userSectors.readFrom(user.id).readFrom('Guestline room index')
+    global.rdic.logger.log({ user }, '[CONNECTION_GUESTLINE] [eventHookLogic]', { bookingReference, roomIndex })
     assert(typeof bookingReference === 'string', `"Guestline booking reference" is not set. bookingReference has typeof ${typeof bookingReference} which is wrong; it must be a string.`)
     assert(typeof roomIndex === 'number', `"Guestline room index" is not set. roomIndex has typeof ${typeof roomIndex} which is wrong; it must be a number.`)
   } catch (e) {
