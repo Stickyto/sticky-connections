@@ -285,6 +285,7 @@ function getPQuestions(theirP, modifierGroups, modifiers) {
 
     return {
       type: willDoTypeOptions ? 'options' : 'option',
+      checklistMinimum: (willDoTypeOptions && foundMg.min > 0 ? foundMg.min : undefined),
       checklistMaximum: (willDoTypeOptions && foundMg.max > 0 ? foundMg.max : undefined),
       theirId: foundMg.plu,
       question: foundMgNameClean.endsWith('?') ? foundMgNameClean : `${foundMgNameClean}?`,
