@@ -9,8 +9,8 @@ function getFormHttpBody(params) {
     }).join('&')
 }
 
-module.exports = async (requestXmlBody, config, codeUnit) => {
-  const [clientId, clientSecret, scope, oAuthUrl, XMLUrl] = config
+module.exports = async (url, requestXmlBody, config) => {
+  const [clientId, clientSecret, scope, oAuthUrl] = config
   const oauthBody = getFormHttpBody({
     'client_id': clientId,
     'client_secret': clientSecret,
@@ -39,11 +39,11 @@ module.exports = async (requestXmlBody, config, codeUnit) => {
   global.rdic.logger.log({}, '[CONNECTION_ELITE_DYNAMICS] [makeRequest]', { xmlAccessToken, requestXmlBody })
 
   const xmlBodyResponse = await fetch(
-    `${XMLUrl}/${codeUnit}`,
+    url,
     {
       method: 'POST',
       headers: {
-        'authorization': `Bearer ${xmlAccessToken}`,
+        'authorization': `Bearer ${xmlAccessToken.access_token}`,
         'content-type': 'text/xml',
         'SOAPAction': 'GetSetup'
       },
