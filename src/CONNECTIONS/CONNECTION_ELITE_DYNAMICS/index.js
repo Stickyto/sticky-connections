@@ -32,8 +32,22 @@ module.exports = new Connection({
   partnerNames: ['Elite Dynamics', 'RoyaleResorts'],
   color: '#0D9277',
   logo: cdn => `${cdn}/connections/CONNECTION_ELITE_DYNAMICS.svg`,
-  configNames: ['Client ID', 'Client Secret', 'Scope', 'OAuth URL', 'Code unit URL'],
-  configDefaults: ['', '', 'https://api.businesscentral.dynamics.com/.default', 'https://login.microsoftonline.com/---/oauth2/v2.0/token', 'https://api.businesscentral.dynamics.com/v2.0/---/Sandbox/WS/Customer-Name/Codeunit'],
+  configNames: [
+    'Client ID',
+    'Client Secret',
+    'Scope',
+    'OAuth URL',
+    'BookingAPI URL',
+    'OwnerAPI URL'
+  ],
+  configDefaults: [
+    '',
+    '',
+    'https://api.businesscentral.dynamics.com/.default',
+    'https://login.microsoftonline.com/Customer-ID/oauth2/v2.0/token',
+    'https://api.businesscentral.dynamics.com/v2.0/Customer-ID/Sandbox/WS/Customer-Name/Codeunit/BookingAPI',
+    'https://api.businesscentral.dynamics.com/v2.0/Customer-ID/Sandbox/WS/Customer-Name/Codeunit/OwnerAPI'
+  ],
   methods: {
     businessCentralApi: {
       name: 'Business Central',
@@ -54,8 +68,8 @@ module.exports = new Connection({
     setUp: {
       name: 'Set up',
       logic: async ({ connectionContainer, config, body }) => {
-        const [, , , , urlXml] = config
-        const { GetSetup: { Park, BookingAttribute, BookingSeasonDatePeriod } } = await makeRequestV2(`${urlXml}/BookingAPI`, getBody('BookingAPI', 'GetSetup'), config)
+        const [, , , , urlBookingApi] = config
+        const { GetSetup: { Park, BookingAttribute, BookingSeasonDatePeriod } } = await makeRequestV2(urlBookingApi, getBody('BookingAPI', 'GetSetup'), config)
         return {
           parks: Park.map(_ => ({
             id: _.code,
@@ -75,16 +89,16 @@ module.exports = new Connection({
     ownerAuthenticate: {
       name: 'Owner > Authenticate',
       logic: async ({ connectionContainer, config, body }) => {
-        const [, , , , urlXml] = config
+        const [, , , , , urlOwnerApi] = config
         let { ownerId = '', ownerEmail = '' } = body
         ownerId = ownerId.trim().toUpperCase()
         ownerEmail = ownerEmail.trim().toLowerCase()
-        const { GetOwner: ownerJson } = await makeRequest(`${urlXml}/OwnerAPI`, getBody('OwnerAPI', 'GetOwner', { 'customer_no': ownerId }), config)
+        const { GetOwner: ownerJson } = await makeRequest(urlOwnerApi, getBody('OwnerAPI', 'GetOwner', { 'customer_no': ownerId }), config)
         ownerJson.email && assert(ownerJson.email.toLowerCase() === ownerEmail, `We found someone with ID ${ownerId} but the email wasn't ${ownerEmail}.`)
 
         let dealJson
         try {
-          ({ GetDeal: dealJson } = await makeRequest(getBody('OwnerAPI', 'GetDeal', { 'deal_no': ownerJson.current_deal_no }), config, 'OwnerAPI'))
+          ({ GetDeal: dealJson } = await makeRequest(urlOwnerApi, getBody('OwnerAPI', 'GetDeal', { 'deal_no': ownerJson.current_deal_no }), config, 'OwnerAPI'))
         } catch (e) {
           throw new Error(`We found ${ownerId} but you don't have a current deal.`)
         }
@@ -102,10 +116,10 @@ module.exports = new Connection({
     invoicesGet: {
       name: 'Invoices > Get',
       logic: async ({ connectionContainer, config, body }) => {
-        const [, , , , urlXml] = config
+        const [, , , , , urlOwnerApi] = config
         let { ownerId = '' } = body
         ownerId = ownerId.trim().toUpperCase()
-        const { GetCustomerLedgerEntries: response } = await makeRequest(`${urlXml}/OwnerAPI`, getBody('OwnerAPI', 'GetCustomerLedgerEntries', { 'customer_no': ownerId, 'open': false, 'document_type': 'Invoice' }), config)
+        const { GetCustomerLedgerEntries: response } = await makeRequest(urlOwnerApi, getBody('OwnerAPI', 'GetCustomerLedgerEntries', { 'customer_no': ownerId, 'open': false, 'document_type': 'Invoice' }), config)
 
         const {
           customer_balance: balance,
@@ -135,8 +149,8 @@ module.exports = new Connection({
     maintenanceJobTypes: {
       name: 'Maintenance Job Types > Get',
       logic: async ({ connectionContainer, config }) => {
-        const [, , , , urlXml] = config
-        const { GetMaintenanceJobTypes: { MaintenanceJobType: response } } = await makeRequest(`${urlXml}/OwnerAPI`, getBody('OwnerAPI', 'GetMaintenanceJobTypes'), config)
+        const [, , , , , urlOwnerApi] = config
+        const { GetMaintenanceJobTypes: { MaintenanceJobType: response } } = await makeRequest(urlOwnerApi, getBody('OwnerAPI', 'GetMaintenanceJobTypes'), config)
 
         return response.map(type => ({
           id: type.code,
@@ -147,10 +161,10 @@ module.exports = new Connection({
     maintenanceJobsGet: {
       name: 'Maintenance Jobs > Get',
       logic: async ({ connectionContainer, config, body }) => {
-        const [, , , , urlXml] = config
+        const [, , , , , urlOwnerApi] = config
         let { ownerId = '' } = body
         ownerId = ownerId.trim().toUpperCase()
-        const fromEp = await makeRequest(`${urlXml}/OwnerAPI`, getBody('OwnerAPI', 'GetCustomerMaintenanceJobs', { 'customer_no': ownerId }), config)
+        const fromEp = await makeRequest(urlOwnerApi, getBody('OwnerAPI', 'GetCustomerMaintenanceJobs', { 'customer_no': ownerId }), config)
         let { GetCustomerMaintenanceJobs: { MaintenanceJob: response } } = fromEp
         if (typeof response === 'object' && !Array.isArray(response)) {
           response = [response]
@@ -169,11 +183,11 @@ module.exports = new Connection({
     maintenanceJobsCreate: {
       name: 'Maintenance Jobs > Create',
       logic: async ({ connectionContainer, config, body }) => {
-        const [, , , , urlXml] = config
+        const [, , , , , urlOwnerApi] = config
         let { ownerId = '', reportedBy, description, type, permissionToEnterUnit } = body
         ownerId = ownerId.trim().toUpperCase()
         const { GetCustomerMaintenanceJobs: response } = await makeRequest(
-          `${urlXml}/OwnerAPI`,
+          urlOwnerApi,
           getBody(
             'OwnerAPI',
             'CreateMaintenanceJob',
@@ -194,11 +208,11 @@ module.exports = new Connection({
     bookingAuthenticate: {
       name: 'Booking > Authenticate',
       logic: async ({ connectionContainer, config, body }) => {
-        const [, , , , urlXml] = config
+        const [, , , , urlBookingApi] = config
         let { bookingId = '', bookingEmail = '' } = body
         bookingId = bookingId.trim().toUpperCase()
         bookingEmail = bookingEmail.trim().toLowerCase()
-        const { GetBooking: bookingJson } = await makeRequest(`${urlXml}/BookingAPI`, getBody('BookingAPI', 'GetBooking', { 'booking_no': bookingId }), config)
+        const { GetBooking: bookingJson } = await makeRequest(urlBookingApi, getBody('BookingAPI', 'GetBooking', { 'booking_no': bookingId }), config)
         bookingJson.email && assert(bookingJson.email.toLowerCase() === bookingEmail, `We found ${bookingId} but it doesn't belong to ${bookingEmail}.`)
         let {
           booking_no: id,
@@ -211,10 +225,10 @@ module.exports = new Connection({
     bookingGet: {
       name: 'Booking > Get',
       logic: async ({ connectionContainer, config, body }) => {
-        const [, , , , urlXml] = config
+        const [, , , , urlBookingApi] = config
         const { user } = connectionContainer
         let { bookingId } = body
-        const { GetBooking: bookingJson } = await makeRequest(`${urlXml}/BookingAPI`, getBody('BookingAPI', 'GetBooking', { 'booking_no': bookingId }), config)
+        const { GetBooking: bookingJson } = await makeRequest(urlBookingApi, getBody('BookingAPI', 'GetBooking', { 'booking_no': bookingId }), config)
         let {
           booking_no: id,
           no_of_adults: countAdults,
