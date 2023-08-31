@@ -6,6 +6,7 @@ const makeRequestV2 = require('./makeRequestV2')
 const dateStringToUtc = require('./dateStringToUtc/dateStringToUtc')
 const timeStringToSeconds = require('./timeStringToSeconds/timeStringToSeconds')
 const Connection = require('../Connection')
+const forceArray = require('./forceArray/forceArray')
 
 function getBody(codeUnit, method, body = {}) {
   const bodyAttributes = Object.keys(body)
@@ -126,7 +127,7 @@ module.exports = new Connection({
           CustomerLedgerEntry: customerLedgerEntries
         } = response
 
-        const invoices = customerLedgerEntries.map(invoice => {
+        const invoices = forceArray(customerLedgerEntries).map(invoice => {
           const {
             document_no: documentNo,
             description,
