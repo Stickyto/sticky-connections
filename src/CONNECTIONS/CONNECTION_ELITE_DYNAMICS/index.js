@@ -90,12 +90,13 @@ module.exports = new Connection({
     ownerAuthenticate: {
       name: 'Owner > Authenticate',
       logic: async ({ connectionContainer, config, body }) => {
-        const [, , , , , urlOwnerApi] = config
-        let { ownerId = '', ownerEmail = '' } = body
+        const [, clientSecret, , , , urlOwnerApi] = config
+        let { ownerId = '', ownerEmail = '', clientSecret: bodyClientSecret } = body
+        const knowsSomethingSecret = clientSecret === bodyClientSecret
         ownerId = ownerId.trim().toUpperCase()
         ownerEmail = ownerEmail.trim().toLowerCase()
         const { GetOwner: ownerJson } = await makeRequest(urlOwnerApi, getBody('OwnerAPI', 'GetOwner', { 'customer_no': ownerId }), config)
-        ownerJson.email && assert(ownerJson.email.toLowerCase() === ownerEmail, `We found someone with ID ${ownerId} but the email wasn't ${ownerEmail}.`)
+        !knowsSomethingSecret && ownerJson.email && assert(ownerJson.email.toLowerCase() === ownerEmail, `We found someone with ID ${ownerId} but the email wasn't ${ownerEmail || '?'}.`)
 
         let dealJson
         try {
@@ -209,17 +210,20 @@ module.exports = new Connection({
     bookingAuthenticate: {
       name: 'Booking > Authenticate',
       logic: async ({ connectionContainer, config, body }) => {
-        const [, , , , urlBookingApi] = config
-        let { bookingId = '', bookingEmail = '' } = body
+        const [, clientSecret, , , urlBookingApi] = config
+        let { bookingId = '', bookingEmail = '', clientSecret: bodyClientSecret } = body
+        const knowsSomethingSecret = clientSecret === bodyClientSecret
         bookingId = bookingId.trim().toUpperCase()
         bookingEmail = bookingEmail.trim().toLowerCase()
         const { GetBooking: bookingJson } = await makeRequest(urlBookingApi, getBody('BookingAPI', 'GetBooking', { 'booking_no': bookingId }), config)
-        bookingJson.email && assert(bookingJson.email.toLowerCase() === bookingEmail, `We found ${bookingId} but it doesn't belong to ${bookingEmail}.`)
+        !knowsSomethingSecret && bookingJson.email && assert(bookingJson.email.toLowerCase() === bookingEmail, `We found ${bookingId} but it doesn't belong to ${bookingEmail}.`)
         let {
           booking_no: id,
+          email: rBookingEmail
         } = bookingJson
         return {
-          id
+          id,
+          email: knowsSomethingSecret ? rBookingEmail : undefined
         }
       }
     },
