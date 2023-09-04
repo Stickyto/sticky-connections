@@ -218,10 +218,12 @@ module.exports = new Connection({
         !knowsSomethingSecret && bookingJson.email && assert(bookingJson.email.toLowerCase() === bookingEmail, `We found ${bookingId} but it doesn't belong to ${bookingEmail}.`)
         let {
           booking_no: id,
-          email: rBookingEmail
+          email: rBookingEmail,
+          park_code: parkCode
         } = bookingJson
         return {
           id,
+          parkCode,
           email: knowsSomethingSecret ? rBookingEmail : undefined
         }
       }
