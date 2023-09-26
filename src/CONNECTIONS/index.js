@@ -20,6 +20,10 @@ const CONNECTIONS = new Map([
     require('./CONNECTION_CYCLR')
   ],
   [
+    'CONNECTION_TEVALIS',
+    require('./CONNECTION_TEVALIS')
+  ],
+  [
     'CONNECTION_DOMCENTRAL',
     require('./CONNECTION_DOMCENTRAL')
   ],
