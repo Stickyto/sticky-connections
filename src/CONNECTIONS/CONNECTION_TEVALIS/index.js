@@ -11,8 +11,8 @@ module.exports = new Connection({
   configDefaults: [],
   partnerNames: ['Tevalis', 'Elite Dynamics', 'RoyaleResorts'],
   methods: {
-    payment: {
-      name: 'Payment',
+    'private--payment': {
+      name: 'Private -> Payment',
       logic: async ({ connectionContainer, body, config }) => {
         const { createEvent } = connectionContainer
         const {
@@ -37,7 +37,8 @@ module.exports = new Connection({
             total,
             discount,
             paymentGatewayId,
-            sessionPaidAt: getNow()
+            sessionPaidAt: getNow(),
+            gateway: 'GATEWAY_NOOP'
           },
           user
         )
