@@ -11,7 +11,7 @@ it(
 
     expect(() => {
       isCartValid(cart)
-    }).toThrow("ValidationError: \"[0].productId\" must be a valid GUID")
+    }).toThrow("cart is not valid: ValidationError: \"[0].productId\" must be a valid GUID")
   }
 )
 
@@ -22,7 +22,7 @@ it(
 
     expect(() => {
       isCartValid(cart)
-    }).toThrow("ValidationError: \"value\" must be an array")
+    }).toThrow("cart is not valid: ValidationError: \"value\" must be an array")
   }
 )
 
@@ -44,7 +44,6 @@ it(
       {
         productName: 'Product 1',
         productPrice: 123,
-        productCurrency: 'GBP',
         quantity: 100
       }
     ]

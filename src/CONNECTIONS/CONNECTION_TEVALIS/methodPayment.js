@@ -1,5 +1,6 @@
 const { assert, isUuid, getNow } = require('@stickyto/openbox-node-utils')
 const { Payment } = require('openbox-entities')
+const isCartValid = require('./isCartValid/isCartValid')
 
 module.exports = async function methodPayment (connection, { connectionContainer, body }) {
   global.rdic.logger.log({}, '[methodPayment]', { connection, body })
@@ -9,16 +10,25 @@ module.exports = async function methodPayment (connection, { connectionContainer
     sessionId,
     total,
     discount,
-    paymentGatewayId
+    paymentGatewayId,
+    cart
   } = body
   assert(isUuid(sessionId), 'sessionId is not a UUID!')
   assert(typeof total === 'number', 'total is not a number!')
   assert(typeof discount === 'number' || discount === undefined, 'discount is not a number or undefined!')
   assert(typeof paymentGatewayId === 'string' || paymentGatewayId === undefined, 'paymentGatewayId is not a string or undefined!')
+  cart !== undefined && isCartValid(cart)
 
   const { user, rdic } = connectionContainer
   const dlr = rdic.get('datalayerRelational')
 
+  const finalCart = cart ? cart.map(_ => {
+    return {
+      ..._,
+      productCurrency: user.currency,
+      questions: []
+    }
+  }) : undefined
   const payment = new Payment(
     {
       sessionId,
@@ -29,7 +39,8 @@ module.exports = async function methodPayment (connection, { connectionContainer
       paymentGatewayId,
       paymentGatewayExtra: connection,
       sessionPaidAt: getNow(),
-      gateway: 'GATEWAY_NOOP'
+      gateway: 'GATEWAY_NOOP',
+      cart: finalCart
     },
     user
   )
@@ -46,7 +57,7 @@ module.exports = async function methodPayment (connection, { connectionContainer
       discount: payment.discount,
       currency: payment.currency,
       gateway: payment.gateway,
-      cart: []
+      cart: finalCart
     }
   })
 
