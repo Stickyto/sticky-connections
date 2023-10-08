@@ -50,7 +50,7 @@ async function eventHookLogic (config, connectionContainer) {
       `${apiUrl}/v1/applications`,
       {
         name: 'My business card',
-        backendLogic: 'return `${input.consumerAppUrl}/${!input.v2.user.permissions.includes("bus-light") ? "flow" : "light"}`;',
+        backendLogic: 'return `${input.consumerAppUrl}/${!input.v2.user.lightMode ? "flow" : "light"}`;',
         events: {
           on_load: [
             {
