@@ -51,7 +51,7 @@ module.exports = {
 
       const rawPayment = await rdic.get('datalayerRelational').readOne('payments', { user_id: user.id, id: coPaymentId })
       assert(rawPayment, `[status] payment with coPaymentId "${coPaymentId}" not found; we have really screwed up.`)
-      const payment = new Payment().fromDatalayerRelational(rawPayment)
+      const payment = new Payment(undefined, user).fromDatalayerRelational(rawPayment)
       statusMap.get(status)(payment)
 
       await rdic.get('datalayerRelational').updateOne('payments', payment.id, payment.toDatalayerRelational())

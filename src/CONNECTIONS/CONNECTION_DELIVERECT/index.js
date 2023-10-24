@@ -36,9 +36,12 @@ async function eventHookLogic(config, connectionContainer) {
     return
   }
 
-  const temporaryPayment = new Payment({
-    id: event.paymentId
-  })
+  const temporaryPayment = new Payment(
+    {
+      id: event.paymentId
+    },
+    user
+  )
 
   const channelCarts = aggregateCartsByProduct(customData)
 
