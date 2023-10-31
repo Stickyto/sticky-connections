@@ -2,7 +2,6 @@ const { env } = require('@stickyto/openbox-node-utils')
 
 class Connection {
   constructor(json) {
-    this.payGoToKeys = []
     this.crons = []
     this.instructions = []
     this.methods = {}
@@ -35,7 +34,6 @@ class Connection {
     return {
       id: this.id,
       name: this.name,
-      payGoToKeys: this.payGoToKeys,
       color: this.color,
       logo: this.logo( env.get('CDN') ),
       logoInverted: this.logoInverted ? this.logoInverted( env.get('CDN') ) : undefined,
