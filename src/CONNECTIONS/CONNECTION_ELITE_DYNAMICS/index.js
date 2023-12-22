@@ -14,6 +14,8 @@ async function eventHookLogic (config, connectionContainer) {
   const userSector = session ? session.userSectors.readFrom(user.id) : undefined
   const ownerId = userSector.readFrom('EliteParks owner')
 
+  console.warn('[DebugLater] 1', { userSector, ownerId })
+
   const [, , , , , urlOwnerApi] = config
   let userPaymentId = ownerId ? {
     ownerId,
@@ -23,12 +25,16 @@ async function eventHookLogic (config, connectionContainer) {
     }]
   } : undefined
   try {
+    console.warn('[DebugLater] 2')
     userPaymentId = JSON.parse(payment.userPaymentId)
+    console.warn('[DebugLater] 3', { userPaymentId })
   } catch (_) {
   }
+  console.warn('[DebugLater] 4', { userPaymentId })
   if (userPaymentId) {
+    console.warn('[DebugLater] 5', { userPaymentId })
     const xmlBody = `<PayInvoice reference="${payment.id}" customer_no="${userPaymentId.ownerId}">${userPaymentId.basket.map(_ => `<Invoice amount="${(_.total / 100).toFixed(2)}" no="${_.id}" />`).join('')}</PayInvoice>`
-
+    console.warn('[DebugLater] 6', { userPaymentId })
     try {
       const r = await makeRequest(
         urlOwnerApi,
@@ -42,6 +48,7 @@ async function eventHookLogic (config, connectionContainer) {
       )
       // { PayInvoice: { receipt_no: 'POS0315727' } }
     } catch ({ message }) {
+      console.warn('[DebugLater] 7 catching', { userPaymentId })
       createEvent({
         type: 'CONNECTION_BAD',
         userId: user.id,
