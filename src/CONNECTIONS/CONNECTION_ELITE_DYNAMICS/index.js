@@ -8,7 +8,50 @@ const timeStringToSeconds = require('./timeStringToSeconds/timeStringToSeconds')
 const Connection = require('../Connection')
 const forceArray = require('./forceArray/forceArray')
 
-function getBody(codeUnit, method, body = {}) {
+
+async function eventHookLogic (config, connectionContainer) {
+  const { event, payment, user, application, thing, session, createEvent } = connectionContainer
+  const userSector = session ? session.userSectors.readFrom(user.id) : undefined
+  const ownerId = userSector.readFrom('EliteParks owner')
+
+  const [, , , , , urlOwnerApi] = config
+  let userPaymentId = ownerId ? {
+    ownerId,
+    basket: [{
+      id: '',
+      total: payment.total
+    }]
+  } : undefined
+  try {
+    userPaymentId = JSON.parse(payment.userPaymentId)
+  } catch (_) {
+  }
+  if (userPaymentId) {
+    const xmlBody = `<PayInvoice reference="${payment.id}" customer_no="${userPaymentId.ownerId}">${userPaymentId.basket.map(_ => `<Invoice amount="${(_.total / 100).toFixed(2)}" no="${_.id}" />`).join('')}</PayInvoice>`
+
+    try {
+      const r = await makeRequest(
+        urlOwnerApi,
+        getBody(
+          'OwnerAPI',
+          'PayInvoice',
+          undefined,
+          xmlBody
+        ),
+        config
+      )
+      // { PayInvoice: { receipt_no: 'POS0315727' } }
+    } catch ({ message }) {
+      createEvent({
+        type: 'CONNECTION_BAD',
+        userId: user.id,
+        customData: { id: 'CONNECTION_ELITE_DYNAMICS', message }
+      })
+    }
+  }
+}
+
+function getBody(codeUnit, method, body = {}, xmlBody = '') {
   const bodyAttributes = Object.keys(body)
     .map(bk => `${bk}="${body[bk]}"`)
     .join(' ')
@@ -19,7 +62,7 @@ function getBody(codeUnit, method, body = {}) {
       <${method} xmlns="urn:microsoft-dynamics-schemas/codeunit/${codeUnit}">
         <request>
           <xmldata>
-            <![CDATA[<${method}${bodyAttributes.length > 0 ? ` ${bodyAttributes}` : ''}></${method}>]]>
+            <![CDATA[${xmlBody ? xmlBody : `<${method}${bodyAttributes.length > 0 ? ` ${bodyAttributes}` : ''}></${method}>`}]]>
           </xmldata>
         </request>
       </${method}>
@@ -48,6 +91,9 @@ module.exports = new Connection({
     'https://api.businesscentral.dynamics.com/v2.0/Customer-ID/Sandbox/WS/Customer-Name/Codeunit/BookingAPI',
     'https://api.businesscentral.dynamics.com/v2.0/Customer-ID/Sandbox/WS/Customer-Name/Codeunit/OwnerAPI'
   ],
+  eventHooks: {
+    'SESSION_CART_PAY': eventHookLogic
+  },
   methods: {
     businessCentralApi: {
       name: 'Business Central',
@@ -138,7 +184,7 @@ module.exports = new Connection({
             reason_code: reasonCode
           } = invoice
 
-          return { documentNo, description, dueDate: dateStringToUtc(dueDate), open, totalAmount: Math.floor(parseFloat(totalAmount.replace(/,/g, '')) * 100), remainingAmount: Math.floor(parseFloat(remainingAmount.replace(/,/g, '')) * 100), reasonCode }
+          return { documentNo, description, dueDate: dateStringToUtc(dueDate), open: open === 'true', totalAmount: Math.floor(parseFloat(totalAmount.replace(/,/g, '')) * 100), remainingAmount: Math.floor(parseFloat(remainingAmount.replace(/,/g, '')) * 100), reasonCode }
         })
 
         return {
