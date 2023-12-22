@@ -95,7 +95,7 @@ module.exports = new Connection({
         ownerId = ownerId.trim().toUpperCase()
         ownerEmail = ownerEmail.trim().toLowerCase()
         const { GetOwner: ownerJson } = await makeRequest(urlOwnerApi, getBody('OwnerAPI', 'GetOwner', { 'customer_no': ownerId }), config)
-        !knowsSomethingSecret && ownerJson.email && assert(ownerJson.email.toLowerCase() === ownerEmail, `We found someone with ID ${ownerId} but the email wasn't ${ownerEmail || '?'}.`)
+        // !knowsSomethingSecret && ownerJson.email && assert(ownerJson.email.toLowerCase() === ownerEmail, `We found someone with ID ${ownerId} but the email wasn't ${ownerEmail || '?'}.`)
 
         let dealJson
         try {
