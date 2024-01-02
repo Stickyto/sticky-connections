@@ -185,13 +185,14 @@ module.exports = new Connection({
             document_no: documentNo,
             description,
             due_date: dueDate,
+            posting_date: postingDate,
             open,
             amount_lcy: totalAmount,
             remaining_amount_lcy: remainingAmount,
             reason_code: reasonCode
           } = invoice
 
-          return { documentNo, description, dueDate: dateStringToUtc(dueDate), open: open === 'true', totalAmount: Math.floor(parseFloat(totalAmount.replace(/,/g, '')) * 100), remainingAmount: Math.floor(parseFloat(remainingAmount.replace(/,/g, '')) * 100), reasonCode }
+          return { documentNo, description, dueDate: dateStringToUtc(dueDate), postingDate: dateStringToUtc(postingDate), open: open === 'true', totalAmount: Math.floor(parseFloat(totalAmount.replace(/,/g, '')) * 100), remainingAmount: Math.floor(parseFloat(remainingAmount.replace(/,/g, '')) * 100), reasonCode }
         })
 
         return {
