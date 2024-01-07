@@ -53,6 +53,10 @@ const CONNECTIONS = new Map([
     require('./CONNECTION_PLAY_IT_GREEN')
   ],
   [
+    'CONNECTION_WOOCOMMERCE',
+    require('./CONNECTION_WOOCOMMERCE')
+  ],
+  [
     'CONNECTION_ATREEMO',
     require('./CONNECTION_ATREEMO')
   ],
