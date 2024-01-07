@@ -3,6 +3,7 @@ module.exports = async function makeRequest(method, url, apiKeys, json) {
   global.rdic.logger.log({}, '[CONNECTION_WOOCOMMERCE] [makeRequest] 1', { method, url, apiKeys, json })
 
   const headers = {
+    'Content-Type': 'application/json',
     'Authorization': `Basic ${Buffer.from(apiKeys.join(':')).toString('base64')}` 
   }
 

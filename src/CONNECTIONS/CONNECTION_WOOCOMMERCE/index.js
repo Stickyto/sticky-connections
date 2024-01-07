@@ -7,7 +7,7 @@ async function eventHookLogic (config, connectionContainer) {
   const [configDomain, configConsumerKey, configConsumerSecret, configNewOrderStatus] = config
   const userPaymentId = payment.userPaymentId
 
-  if (config.any(_ => _.length === 0) || !userPaymentId) {
+  if (config.some(_ => _.length === 0) || !userPaymentId) {
     return
   }
 
@@ -24,7 +24,7 @@ async function eventHookLogic (config, connectionContainer) {
   try {
     await makeRequest(
       'put',
-      `${configDomain}/wp-json/wc/v3/orders/${userPaymentId}`,
+      `https://${configDomain}/wp-json/wc/v3/orders/${userPaymentId}`,
       [configConsumerKey, configConsumerSecret],
       {
         status: configNewOrderStatus
@@ -50,7 +50,7 @@ module.exports = new Connection({
   color: '#7F54B3',
   logo: cdn => `${cdn}/connections/CONNECTION_WOOCOMMERCE.svg`,
   configNames: ['Domain', 'Consumer key', 'Consumer secret', 'New order status'],
-  configDefaults: ['example.com', '', '', 'completed'],
+  configDefaults: ['example.com', '', '', 'processing'],
   eventHooks: {
     'SESSION_CART_PAY': eventHookLogic
   },

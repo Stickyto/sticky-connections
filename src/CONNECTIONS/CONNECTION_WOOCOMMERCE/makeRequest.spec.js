@@ -9,8 +9,8 @@ afterEach(() => {
 it('should handle a JSON response', async () => {
   const mockMethod = 'put'
   const mockApiKeys = ['123', '456']
-  const mockUrl = 'example.com'
-  const mockJson = { status: 'completed' }
+  const mockUrl = 'https://example.com'
+  const mockJson = { status: 'processing' }
 
   fetch.mockResolvedValue({ json: jest.fn().mockResolvedValue({ 'abc': 'def' }), ok: true })
 
