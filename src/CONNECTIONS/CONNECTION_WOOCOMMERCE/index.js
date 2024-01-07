@@ -66,6 +66,15 @@ module.exports = new Connection({
       }
     },
     {
+      "id": "71d05208-3781-4c24-996e-c4c0d1c6b228",
+      "config": {
+        "what": "Set <strong>Permissions</strong> as <strong>Read/Write</strong>.",
+        "font": "#7F54B3--center--100%--false",
+        "backgroundColour": "#FFFFFF",
+        "icon": "hand"
+      }
+    },
+    {
       "id": "a21eddf2-aa86-4b6a-a2af-8ac279b246f7",
       "config": {
         "label": "Get keys",
