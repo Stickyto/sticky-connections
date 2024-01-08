@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 module.exports = async function makeRequest(apiToken, method, url, json, mimeType) {
-  global.rdic.logger.log({}, '[CONNECTION_PLAY_IT_GREEN] [makeRequest] 1', { apiToken,method, url })
+  global.rdic.logger.log({}, '[CONNECTION_PLAY_IT_GREEN] [makeRequest] 1', { apiToken, method, url })
   global.rdic.logger.log({}, '[CONNECTION_PLAY_IT_GREEN] [makeRequest] 2 json/mimeType', { json, mimeType })
 
   const headers = apiToken ? {
