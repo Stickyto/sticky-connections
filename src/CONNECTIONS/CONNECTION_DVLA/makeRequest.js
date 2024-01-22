@@ -16,7 +16,7 @@ module.exports = async function makeRequest(apiToken, method, url, json) {
   )
   if (!response.ok) {
     const asJson = await response.json()
-    throw new Error(asJson.errors[0].detail)
+    throw new Error(asJson.message || asJson.errors[0].detail)
   }
 
   let body

@@ -21,13 +21,17 @@ module.exports = new Connection({
         vrn = vrn.toUpperCase().trim()
         const [configApiKey] = config
         const url = `${API_URL}/vehicle-enquiry/v1/vehicles`
-        const r = await makeRequest(configApiKey, 'post', url, { registrationNumber: vrn })
-        return {
-          vrn: r.registrationNumber,
-          engineCapacity: r.engineCapacity,
-          make: r.make,
-          fuelType: r.fuelType,
-          co2Emissions: r.co2Emissions
+        try {
+          const r = await makeRequest(configApiKey, 'post', url, { registrationNumber: vrn })
+          return {
+            vrn: r.registrationNumber,
+            engineCapacity: r.engineCapacity,
+            make: r.make,
+            fuelType: r.fuelType,
+            co2Emissions: r.co2Emissions
+          }
+        } catch ({ message }) {
+          throw new Error(`DVLA said: ${message}.`)
         }
       }
     }
