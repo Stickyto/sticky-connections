@@ -18,7 +18,7 @@ module.exports = new Connection({
       name: 'Get VRN',
       logic: async ({ config, body }) => {
         let { vrn } = body
-        assert(typeof vrn === 'string')
+        assert(typeof vrn === 'string', 'vrn key must be a string!')
         vrn = vrn.toUpperCase().trim()
         const [configApiKey] = config
         const url = `${BASE_URL}/vehicle-enquiry/v1/vehicles`
