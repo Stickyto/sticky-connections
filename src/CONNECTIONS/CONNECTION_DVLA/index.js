@@ -8,8 +8,8 @@ const BASE_URL = 'https://driver-vehicle-licensing.api.gov.uk'
 module.exports = new Connection({
   id: 'CONNECTION_DVLA',
   name: 'DVLA',
-  color: '#006c56',
-  logo: cdn => `${cdn}/connections/CONNECTION_API.svg`,
+  color: '#006F5F',
+  logo: cdn => `${cdn}/connections/CONNECTION_DVLA.svg`,
   configNames: ['API key'],
   configDefaults: [''],
   userIds: ['0b856f3b-030a-41b1-8434-396fc79f10ed'],
