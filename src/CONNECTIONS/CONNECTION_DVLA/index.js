@@ -1,9 +1,8 @@
-/* eslint-disable quotes */
 const { assert } = require('@stickyto/openbox-node-utils')
 const Connection = require('../Connection')
 const makeRequest = require('./makeRequest')
 
-const BASE_URL = 'https://driver-vehicle-licensing.api.gov.uk'
+const API_URL = 'https://driver-vehicle-licensing.api.gov.uk'
 
 module.exports = new Connection({
   id: 'CONNECTION_DVLA',
@@ -21,7 +20,7 @@ module.exports = new Connection({
         assert(typeof vrn === 'string', 'vrn key must be a string!')
         vrn = vrn.toUpperCase().trim()
         const [configApiKey] = config
-        const url = `${BASE_URL}/vehicle-enquiry/v1/vehicles`
+        const url = `${API_URL}/vehicle-enquiry/v1/vehicles`
         const r = await makeRequest(configApiKey, 'post', url, { registrationNumber: vrn })
         return {
           vrn: r.registrationNumber,
