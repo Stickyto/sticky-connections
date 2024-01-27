@@ -12,6 +12,10 @@ const CONNECTIONS = new Map([
     require('./CONNECTION_JUSTEAT')
   ],
   [
+    'CONNECTION_BLUE_MESH',
+    require('./CONNECTION_BLUE_MESH')
+  ],
+  [
     'CONNECTION_EML',
     require('./CONNECTION_EML')
   ],
