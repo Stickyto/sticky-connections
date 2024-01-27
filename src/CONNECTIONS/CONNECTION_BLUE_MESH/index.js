@@ -30,7 +30,7 @@ async function getSpaces (firestore, { location }) {
     return {
       id: __.beacon.id,
       price: Math.floor(parseFloat(__.parking_price.substring(1)) * 100),
-      occupied: __.occupied,
+      isOccupied: __.occupied,
       isElectricOnly: __.electric_only,
       isDisabled: __.disabled,
       location: {
