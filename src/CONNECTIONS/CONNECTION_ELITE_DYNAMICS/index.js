@@ -122,7 +122,8 @@ module.exports = new Connection({
       name: 'Set up',
       logic: async ({ connectionContainer, config, body }) => {
         const [, , , , urlBookingApi] = config
-        const { GetSetup: { Park, BookingAttribute, BookingSeasonDatePeriod } } = await makeRequestV2(urlBookingApi, getBody('BookingAPI', 'GetSetup'), config)
+        let { GetSetup: { Park, BookingAttribute = [], BookingSeasonDatePeriod } } = await makeRequestV2(urlBookingApi, getBody('BookingAPI', 'GetSetup'), config)
+        Park = Array.isArray(Park) ? Park : [Park]
         return {
           parks: Park.map(_ => ({
             id: _.code,
