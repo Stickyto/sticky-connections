@@ -1,10 +1,9 @@
 /* eslint-disable max-len */
-module.exports = async function makeRequest(method, url, apiKeys, json) {
-  global.rdic.logger.log({}, '[CONNECTION_WOOCOMMERCE] [makeRequest] 1', { method, url, apiKeys, json })
+module.exports = async function makeRequest(method, url, json) {
+  global.rdic.logger.log({}, '[CONNECTION_WOOCOMMERCE] [makeRequest] 1', { method, url, json })
 
   const headers = {
-    'Content-Type': 'application/json',
-    'Authorization': `Basic ${Buffer.from(apiKeys.join(':')).toString('base64')}` 
+    'Content-Type': 'application/json'
   }
 
   const response = await fetch(
