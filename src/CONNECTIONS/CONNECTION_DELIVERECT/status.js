@@ -46,11 +46,11 @@ module.exports = {
       assert(foundChannelLinkId, `[CONNECTION_DELIVERECT] [busy] [1] Channel link IDs do not match (foundChannelLinkId is falsy; ${channelLink} provided vs one of configured ${configuredChannelLinkIds.join(' / ')})`)
 
       const [_thingId, _channel, coPaymentId, _now] = channelOrderId.split('---')
-      assert(_channel === foundChannelLinkId, '[status] _channel does not match foundChannelLinkId; we have really screwed up.')
-      assert(isUuid(coPaymentId), '[status] coPaymentId is not a uuid; we have really screwed up.')
+      assert(_channel === foundChannelLinkId, '[status] _channel does not match foundChannelLinkId; we have really got this wrong.')
+      assert(isUuid(coPaymentId), '[status] coPaymentId is not a uuid; we have really got this wrong.')
 
       const rawPayment = await rdic.get('datalayerRelational').readOne('payments', { user_id: user.id, id: coPaymentId })
-      assert(rawPayment, `[status] payment with coPaymentId "${coPaymentId}" not found; we have really screwed up.`)
+      assert(rawPayment, `[status] payment with coPaymentId "${coPaymentId}" not found; we have really got this wrong.`)
       const payment = new Payment(undefined, user).fromDatalayerRelational(rawPayment)
       statusMap.get(status)(payment)
 
