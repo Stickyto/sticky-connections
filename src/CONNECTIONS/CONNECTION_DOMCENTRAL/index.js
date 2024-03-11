@@ -29,105 +29,105 @@ module.exports = new Connection({
   configNames: ['Store ID'],
   configDefaults: [''],
   partnerNames: ['Domino\'s Pizza'],
-  crons: [
-    {
-      id: 'generic',
-      frequency: '*/2 * * * *',
-      logic: async function (user, cronContainer) {
-        const { rdic } = cronContainer
-        global.rdic.logger.log({}, '[job-CONNECTION_DOMCENTRAL] [go]', { userId: user.id })
-        try {
-          const theirData = DATA.getMenu
+  // crons: [
+  //   {
+  //     id: 'generic',
+  //     frequency: '*/2 * * * *',
+  //     logic: async function (user, cronContainer) {
+  //       const { rdic } = cronContainer
+  //       global.rdic.logger.log({}, '[job-CONNECTION_DOMCENTRAL] [go]', { userId: user.id })
+  //       try {
+  //         const theirData = DATA.getMenu
 
-          const allPcsToday = await cronContainer.getProductCategories(rdic, user, { connection: 'CONNECTION_DOMCENTRAL' })
-          if (allPcsToday.length > 0) {
-            // already configured product categories; exit early
-            return
-          }
-          for (let tdI = 0; tdI < theirData.length; tdI++) {
-            const td = theirData[tdI]
-            const subMenus = td.subcategories.filter(_ => !(_.hasHalfAndHalf || _.hasCreateYourOwn))
-            for (let tdI2 = 0; tdI2 < subMenus.length; tdI2++) {
-              const td2 = subMenus[tdI2]
-              const createdPis = []
-              for (let pI = 0; pI < td2.products.length; pI++) {
-                const p = td2.products[pI]
+  //         const allPcsToday = await cronContainer.getProductCategories(rdic, user, { connection: 'CONNECTION_DOMCENTRAL' })
+  //         if (allPcsToday.length > 0) {
+  //           // already configured product categories; exit early
+  //           return
+  //         }
+  //         for (let tdI = 0; tdI < theirData.length; tdI++) {
+  //           const td = theirData[tdI]
+  //           const subMenus = td.subcategories.filter(_ => !(_.hasHalfAndHalf || _.hasCreateYourOwn))
+  //           for (let tdI2 = 0; tdI2 < subMenus.length; tdI2++) {
+  //             const td2 = subMenus[tdI2]
+  //             const createdPis = []
+  //             for (let pI = 0; pI < td2.products.length; pI++) {
+  //               const p = td2.products[pI]
 
-                const howManySizes = p.productSkus.length
+  //               const howManySizes = p.productSkus.length
 
-                const tags = []
-                p.isVegetarian && tags.push('vegan')
-                p.isVegan && tags.push('vegetarian')
-                p.isHot && tags.push('allergy--spicy')
-                p.isGlutenFree && tags.push('gluten-free')
-                const { id: createdPId } = await cronContainer.createProduct({
-                  categories: Array.from(new Set(tags)),
-                  userId: user.id,
-                  theirId: p.productId,
-                  createdAt: getNow() + pI,
-                  connection: 'CONNECTION_DOMCENTRAL',
-                  currency: user.currency,
-                  name: p.name,
-                  price: howManySizes === 1 ? Math.ceil(p.productSkus[0].price * 100, 10) : 0,
-                  media: [
-                    {
-                      type: 'image',
-                      url: p.imageUrl
-                    }
-                  ],
-                  questions: howManySizes === 1 ? [] : [
-                    {
-                      type: 'option',
-                      question: 'What size?',
-                      answer: p.productSkus[0].name,
-                      options: p.productSkus.map(_ => ({
-                        type: 'option',
-                        name: _.name,
-                        theirId: _.productSkuId,
-                        delta: Math.ceil(_.price * 100),
-                        media: [
-                          {
-                            type: 'image',
-                            url: `https://www.dominos.co.uk${_.iconUrl}`
-                          }
-                        ],
-                        description: typeof _.calorie === 'number' ? `${_.calorie} calories` : undefined
-                      }))
-                    }
-                  ],
-                  description: p.description,
-                  oneTapCheckout: p.description.length === 0
-                })
-                createdPis.push(createdPId)
-              }
-              await cronContainer.createProductCategory(
-                {
-                  userId: user.id,
-                  name: td2.name,
-                  // name: `${td.name} → ${td2.name}`,
-                  color: '#1a1a18',
-                  theirId: [td.name, td2.name].join('--__--'),
-                  createdAt: getNow() + tdI,
-                  connection: 'CONNECTION_DOMCENTRAL',
-                  view: 'grid-name',
-                  products: createdPis
-                },
-                user
-              )
-            }
-          }
-        } catch ({ message }) {
-          const payload = {
-            type: 'CONNECTION_BAD',
-            userId: user.id,
-            customData: { id: 'CONNECTION_DOMCENTRAL', message }
-          }
-          await cronContainer.createEvent(payload)
-          global.rdic.logger.error({}, { message })
-        }
-      }
-    }
-  ],
+  //               const tags = []
+  //               p.isVegetarian && tags.push('vegan')
+  //               p.isVegan && tags.push('vegetarian')
+  //               p.isHot && tags.push('allergy--spicy')
+  //               p.isGlutenFree && tags.push('gluten-free')
+  //               const { id: createdPId } = await cronContainer.createProduct({
+  //                 categories: Array.from(new Set(tags)),
+  //                 userId: user.id,
+  //                 theirId: p.productId,
+  //                 createdAt: getNow() + pI,
+  //                 connection: 'CONNECTION_DOMCENTRAL',
+  //                 currency: user.currency,
+  //                 name: p.name,
+  //                 price: howManySizes === 1 ? Math.ceil(p.productSkus[0].price * 100, 10) : 0,
+  //                 media: [
+  //                   {
+  //                     type: 'image',
+  //                     url: p.imageUrl
+  //                   }
+  //                 ],
+  //                 questions: howManySizes === 1 ? [] : [
+  //                   {
+  //                     type: 'option',
+  //                     question: 'What size?',
+  //                     answer: p.productSkus[0].name,
+  //                     options: p.productSkus.map(_ => ({
+  //                       type: 'option',
+  //                       name: _.name,
+  //                       theirId: _.productSkuId,
+  //                       delta: Math.ceil(_.price * 100),
+  //                       media: [
+  //                         {
+  //                           type: 'image',
+  //                           url: `https://www.dominos.co.uk${_.iconUrl}`
+  //                         }
+  //                       ],
+  //                       description: typeof _.calorie === 'number' ? `${_.calorie} calories` : undefined
+  //                     }))
+  //                   }
+  //                 ],
+  //                 description: p.description,
+  //                 oneTapCheckout: p.description.length === 0
+  //               })
+  //               createdPis.push(createdPId)
+  //             }
+  //             await cronContainer.createProductCategory(
+  //               {
+  //                 userId: user.id,
+  //                 name: td2.name,
+  //                 // name: `${td.name} → ${td2.name}`,
+  //                 color: '#1a1a18',
+  //                 theirId: [td.name, td2.name].join('--__--'),
+  //                 createdAt: getNow() + tdI,
+  //                 connection: 'CONNECTION_DOMCENTRAL',
+  //                 view: 'grid-name',
+  //                 products: createdPis
+  //               },
+  //               user
+  //             )
+  //           }
+  //         }
+  //       } catch ({ message }) {
+  //         const payload = {
+  //           type: 'CONNECTION_BAD',
+  //           userId: user.id,
+  //           customData: { id: 'CONNECTION_DOMCENTRAL', message }
+  //         }
+  //         await cronContainer.createEvent(payload)
+  //         global.rdic.logger.error({}, { message })
+  //       }
+  //     }
+  //   }
+  // ],
   methods: {
     getStore: {
       name: 'Get store',

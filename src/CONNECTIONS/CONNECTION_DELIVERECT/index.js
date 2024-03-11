@@ -10,11 +10,6 @@ const CHANNEL_NAME = 'stickyconnections'
 const VALID_THING_PASSTHROUGHS = ['None', 'Your ID', 'Name', 'Number', 'Note']
 
 async function eventHookLogic(config, connectionContainer) {
-  const cacheInstance = connectionContainer.rdic.get('cache')
-
-  const testCacheValue = await cacheInstance.get('key123')
-  console.log('xxx testCacheValue', testCacheValue)
-
   const { user, application, thing, payment, event, customData, createEvent } = connectionContainer
 
   function goFail(e) {
@@ -132,13 +127,17 @@ async function eventHookLogic(config, connectionContainer) {
     for (const channel in channelCarts) {
       const theBody = channelCarts[channel].body
       global.rdic.logger.log({}, '[CONNECTION_DELIVERECT]', { theBody })
-      const r = await makeRequest(
-        token,
-        'post',
-        `${foundEnvironment.apiUrl}/${CHANNEL_NAME}/order/${channel}`,
-        theBody
-      )
-      global.rdic.logger.log({}, '[CONNECTION_DELIVERECT]', { r })
+      if (groupTime === 0) {
+        const r = await makeRequest(
+          token,
+          'post',
+          `${foundEnvironment.apiUrl}/${CHANNEL_NAME}/order/${channel}`,
+          theBody
+        )
+        global.rdic.logger.log({}, '[CONNECTION_DELIVERECT]', { r })
+      } else {
+
+      }
     }
   } catch (e) {
     goFail(e)
@@ -158,6 +157,25 @@ module.exports = new Connection({
     busy: require('./busy'),
     status: require('./status')
   },
+  crons: [
+    {
+      id: 'generic',
+      frequency: '* * * * *',
+      logic: async function (user, cronContainer) {
+        global.rdic.logger.log({}, '[job-CONNECTION_DELIVERECT] [go]', { user })
+        try {
+          const { config } = user.connections.find(c => c.id === 'CONNECTION_DELIVERECT')
+          let [environment, channelLinkId, sendOrder, thingPassthrough = VALID_THING_PASSTHROUGHS[0], groupTime] = config
+          if (groupTime === 0) {
+            return
+          }
+          // read db table etc etc etc
+        } catch (e) {
+
+        }
+      }
+    }
+  ],
   eventHooks: {
     'SESSION_CART_PAY': eventHookLogic
   }

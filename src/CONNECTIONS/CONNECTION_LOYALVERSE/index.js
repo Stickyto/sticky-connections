@@ -249,139 +249,139 @@ module.exports = new Connection({
       }
     }
   ],
-  crons: [
-    {
-      id: 'generic',
-      frequency: '*/5 * * * *',
-      logic: async function (user, cronContainer) {
-        let nextIP = 0
-        let nextIPc = 0
-        const { rdic } = cronContainer
-        global.rdic.logger.log({}, '[job-CONNECTION_LOYALVERSE] [go]', { userId: user.id })
+  // crons: [
+  //   {
+  //     id: 'generic',
+  //     frequency: '*/5 * * * *',
+  //     logic: async function (user, cronContainer) {
+  //       let nextIP = 0
+  //       let nextIPc = 0
+  //       const { rdic } = cronContainer
+  //       global.rdic.logger.log({}, '[job-CONNECTION_LOYALVERSE] [go]', { userId: user.id })
 
 
-        try {
-          const { config } = user.connections.find(c => c.id === 'CONNECTION_LOYALVERSE')
-          let [configApiKey] = config
+  //       try {
+  //         const { config } = user.connections.find(c => c.id === 'CONNECTION_LOYALVERSE')
+  //         let [configApiKey] = config
 
-          assert(typeof configApiKey === 'string' && configApiKey.length > 0, 'You have not set an API key.')
+  //         assert(typeof configApiKey === 'string' && configApiKey.length > 0, 'You have not set an API key.')
 
-          const theirStore = await getStore(config)
-          const theirCategories = await getCategories(config)
-          const theirItems = await getItems(config, theirStore)
+  //         const theirStore = await getStore(config)
+  //         const theirCategories = await getCategories(config)
+  //         const theirItems = await getItems(config, theirStore)
 
-          theirItems.forEach(item => {
-            const foundCategory = theirCategories.find(pc => pc.id === item._.categoryId)
-            foundCategory && foundCategory.products.push(item.id)
-          })
+  //         theirItems.forEach(item => {
+  //           const foundCategory = theirCategories.find(pc => pc.id === item._.categoryId)
+  //           foundCategory && foundCategory.products.push(item.id)
+  //         })
 
-          const finalPList = []
-          const allPcsToday = await cronContainer.getProductCategories(rdic, user, { connection: 'CONNECTION_LOYALVERSE' })
-          const allPsToday = await cronContainer.getProducts(rdic, user, { connection: 'CONNECTION_LOYALVERSE' })
+  //         const finalPList = []
+  //         const allPcsToday = await cronContainer.getProductCategories(rdic, user, { connection: 'CONNECTION_LOYALVERSE' })
+  //         const allPsToday = await cronContainer.getProducts(rdic, user, { connection: 'CONNECTION_LOYALVERSE' })
 
-          let handledPcs = [], handledPs = []
+  //         let handledPcs = [], handledPs = []
 
-          for (let productI = 0; productI < theirItems.length; productI++) {
-            const theirP = theirItems[productI]
-            let foundExistingP = allPsToday.find(maybeExistingP => maybeExistingP.theirId === theirP.id)
+  //         for (let productI = 0; productI < theirItems.length; productI++) {
+  //           const theirP = theirItems[productI]
+  //           let foundExistingP = allPsToday.find(maybeExistingP => maybeExistingP.theirId === theirP.id)
 
-            global.rdic.logger.log({}, '[job-CONNECTION_LOYALVERSE] [go]', theirP.name)
-            if (foundExistingP) {
-              foundExistingP.patch(theirP)
-              await cronContainer.updateProduct(foundExistingP)
-              handledPs.push(foundExistingP.id)
-              finalPList.push({
-                ...theirP,
-                id: foundExistingP.id
-              })
-            } else {
-              const payload = {
-                ...theirP,
-                userId: user.id,
-                theirId: theirP.id,
-                createdAt: getNow() + nextIP,
-                connection: 'CONNECTION_LOYALVERSE',
-                currency: user.currency
-              }
-              const createdId = (await cronContainer.createProduct({
-                ...payload,
-                id: undefined
-              })).id
-              finalPList.push({
-                ...payload,
-                id: createdId
-              })
-            }
-            nextIP++
-          }
+  //           global.rdic.logger.log({}, '[job-CONNECTION_LOYALVERSE] [go]', theirP.name)
+  //           if (foundExistingP) {
+  //             foundExistingP.patch(theirP)
+  //             await cronContainer.updateProduct(foundExistingP)
+  //             handledPs.push(foundExistingP.id)
+  //             finalPList.push({
+  //               ...theirP,
+  //               id: foundExistingP.id
+  //             })
+  //           } else {
+  //             const payload = {
+  //               ...theirP,
+  //               userId: user.id,
+  //               theirId: theirP.id,
+  //               createdAt: getNow() + nextIP,
+  //               connection: 'CONNECTION_LOYALVERSE',
+  //               currency: user.currency
+  //             }
+  //             const createdId = (await cronContainer.createProduct({
+  //               ...payload,
+  //               id: undefined
+  //             })).id
+  //             finalPList.push({
+  //               ...payload,
+  //               id: createdId
+  //             })
+  //           }
+  //           nextIP++
+  //         }
 
-          for (let categoryI = 0; categoryI < theirCategories.length; categoryI++) {
-            const theirPc = theirCategories[categoryI]
-            let foundExistingPc = allPcsToday.find(maybeExistingPc => maybeExistingPc.theirId === theirPc.id)
-            global.rdic.logger.log({}, '[job-CONNECTION_LOYALVERSE] [go]', theirPc.name)
+  //         for (let categoryI = 0; categoryI < theirCategories.length; categoryI++) {
+  //           const theirPc = theirCategories[categoryI]
+  //           let foundExistingPc = allPcsToday.find(maybeExistingPc => maybeExistingPc.theirId === theirPc.id)
+  //           global.rdic.logger.log({}, '[job-CONNECTION_LOYALVERSE] [go]', theirPc.name)
 
-            if (foundExistingPc) {
-              foundExistingPc.name = theirPc.name
-              foundExistingPc.color = theirPc.color
-              foundExistingPc.products.clear()
-              finalPList
-                .filter(ti => ti._.categoryId === foundExistingPc.theirId)
-                .forEach(ti => {
-                  foundExistingPc.products.add(ti.id)
-                })
-              foundExistingPc.view = 'grid-name'
-              await cronContainer.updateProductCategory(foundExistingPc)
-              handledPcs.push(foundExistingPc.id)
-            } else {
-              foundExistingPc = await cronContainer.createProductCategory(
-                {
-                  userId: user.id,
-                  name: theirPc.name,
-                  color: theirPc.color,
-                  theirId: theirPc.id,
-                  createdAt: getNow() + nextIPc,
-                  connection: 'CONNECTION_LOYALVERSE',
-                  view: 'grid-name',
-                  products: (() => {
-                    const toReturn = finalPList
-                      .filter(ti => ti._.categoryId === theirPc.id)
-                      .map(ti => ti.id)
-                    return toReturn
-                  })()
-                },
-                user
-              )
-              nextIPc++
-            }
-          }
+  //           if (foundExistingPc) {
+  //             foundExistingPc.name = theirPc.name
+  //             foundExistingPc.color = theirPc.color
+  //             foundExistingPc.products.clear()
+  //             finalPList
+  //               .filter(ti => ti._.categoryId === foundExistingPc.theirId)
+  //               .forEach(ti => {
+  //                 foundExistingPc.products.add(ti.id)
+  //               })
+  //             foundExistingPc.view = 'grid-name'
+  //             await cronContainer.updateProductCategory(foundExistingPc)
+  //             handledPcs.push(foundExistingPc.id)
+  //           } else {
+  //             foundExistingPc = await cronContainer.createProductCategory(
+  //               {
+  //                 userId: user.id,
+  //                 name: theirPc.name,
+  //                 color: theirPc.color,
+  //                 theirId: theirPc.id,
+  //                 createdAt: getNow() + nextIPc,
+  //                 connection: 'CONNECTION_LOYALVERSE',
+  //                 view: 'grid-name',
+  //                 products: (() => {
+  //                   const toReturn = finalPList
+  //                     .filter(ti => ti._.categoryId === theirPc.id)
+  //                     .map(ti => ti.id)
+  //                   return toReturn
+  //                 })()
+  //               },
+  //               user
+  //             )
+  //             nextIPc++
+  //           }
+  //         }
 
-          const toDeletePcPromises = allPcsToday
-            .filter(pc => !handledPcs.includes(pc.id))
-            .map(pc => rdic.get('datalayerRelational').deleteOne('product_categories', pc.id))
-          global.rdic.logger.log({}, '[job-CONNECTION_LOYALVERSE] handledPcs', handledPcs)
-          global.rdic.logger.log({}, '[job-CONNECTION_LOYALVERSE] toDeletePcPromises.length', toDeletePcPromises.length)
-          await Promise.all(toDeletePcPromises)
+  //         const toDeletePcPromises = allPcsToday
+  //           .filter(pc => !handledPcs.includes(pc.id))
+  //           .map(pc => rdic.get('datalayerRelational').deleteOne('product_categories', pc.id))
+  //         global.rdic.logger.log({}, '[job-CONNECTION_LOYALVERSE] handledPcs', handledPcs)
+  //         global.rdic.logger.log({}, '[job-CONNECTION_LOYALVERSE] toDeletePcPromises.length', toDeletePcPromises.length)
+  //         await Promise.all(toDeletePcPromises)
 
-          const toDeletePPromises = allPsToday
-            .filter(p => !handledPs.includes(p.id))
-            .map(async p => {
-              await rdic.get('datalayerRelational').deleteOne('products', p.id)
-              await rdic.get('datalayerRelational')._.sql(`UPDATE things SET product_id=NULL WHERE product_id='${p.id}' AND user_id='${user.id}'`)
-            })
-          global.rdic.logger.log({}, '[job-CONNECTION_LOYALVERSE] handledPs.length', handledPs.length)
-          global.rdic.logger.log({}, '[job-CONNECTION_LOYALVERSE] toDeletePPromises.length', toDeletePPromises.length)
-          await Promise.all(toDeletePPromises)
+  //         const toDeletePPromises = allPsToday
+  //           .filter(p => !handledPs.includes(p.id))
+  //           .map(async p => {
+  //             await rdic.get('datalayerRelational').deleteOne('products', p.id)
+  //             await rdic.get('datalayerRelational')._.sql(`UPDATE things SET product_id=NULL WHERE product_id='${p.id}' AND user_id='${user.id}'`)
+  //           })
+  //         global.rdic.logger.log({}, '[job-CONNECTION_LOYALVERSE] handledPs.length', handledPs.length)
+  //         global.rdic.logger.log({}, '[job-CONNECTION_LOYALVERSE] toDeletePPromises.length', toDeletePPromises.length)
+  //         await Promise.all(toDeletePPromises)
 
-        } catch ({ message }) {
-          const payload = {
-            type: 'CONNECTION_BAD',
-            userId: user.id,
-            customData: { id: 'CONNECTION_LOYALVERSE', message }
-          }
-          await cronContainer.createEvent(payload)
-          global.rdic.logger.error({}, { message })
-        }
-      }
-    }
-  ]
+  //       } catch ({ message }) {
+  //         const payload = {
+  //           type: 'CONNECTION_BAD',
+  //           userId: user.id,
+  //           customData: { id: 'CONNECTION_LOYALVERSE', message }
+  //         }
+  //         await cronContainer.createEvent(payload)
+  //         global.rdic.logger.error({}, { message })
+  //       }
+  //     }
+  //   }
+  // ]
 })
