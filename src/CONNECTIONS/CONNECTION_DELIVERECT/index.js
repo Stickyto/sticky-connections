@@ -10,6 +10,11 @@ const CHANNEL_NAME = 'stickyconnections'
 const VALID_THING_PASSTHROUGHS = ['None', 'Your ID', 'Name', 'Number', 'Note']
 
 async function eventHookLogic(config, connectionContainer) {
+  const cacheInstance = connectionContainer.rdic.get('cache')
+
+  const testCacheValue = await cacheInstance.get('key123')
+  console.log('xxx testCacheValue', testCacheValue)
+
   const { user, application, thing, payment, event, customData, createEvent } = connectionContainer
 
   function goFail(e) {
