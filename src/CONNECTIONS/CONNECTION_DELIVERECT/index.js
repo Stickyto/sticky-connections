@@ -21,11 +21,13 @@ async function eventHookLogic(config, connectionContainer) {
     })
   }
 
-  const [environment, channelLinkId, sendOrder, thingPassthrough = VALID_THING_PASSTHROUGHS[0]] = config
-  global.rdic.logger.log({}, '[CONNECTION_DELIVERECT]', { environment, channelLinkId, sendOrder, thingPassthrough })
+  let [environment, channelLinkId, sendOrder, thingPassthrough = VALID_THING_PASSTHROUGHS[0], groupTime] = config
+  groupTime = parseInt(groupTime || '0', 10)
+  global.rdic.logger.log({}, '[CONNECTION_DELIVERECT]', { environment, channelLinkId, sendOrder, thingPassthrough, groupTime })
 
   let foundEnvironment
   try {
+    assert(!isNaN(groupTime), 'Group order time (seconds; 0 for no group) is not valid; it must be a number.')
     assert(application, 'There is no flow.')
     assert(customData.cart.length > 0, 'Bag is empty. This is probably fine.')
     assert(sendOrder === 'Yes', 'Send order (Yes/No) is not set to "Yes".')
@@ -143,8 +145,8 @@ module.exports = new Connection({
   name: 'Deliverect',
   color: '#05CC79',
   logo: cdn => `${cdn}/connections/CONNECTION_DELIVERECT.svg`,
-  configNames: ['"Production"/"Sandbox"', 'Channel link IDs (comma separated)', 'Send order (Yes/No)', `Sticker passthrough (${VALID_THING_PASSTHROUGHS.join('/')})`],
-  configDefaults: ['Production', '', 'No', VALID_THING_PASSTHROUGHS[0]],
+  configNames: ['"Production"/"Sandbox"', 'Channel link IDs (comma separated)', 'Send order (Yes/No)', `Sticker passthrough (${VALID_THING_PASSTHROUGHS.join('/')})`, 'Group order time (seconds; 0 for no group)'],
+  configDefaults: ['Production', '', 'No', VALID_THING_PASSTHROUGHS[0], '0'],
   methods: {
     inboundMenu: require('./inboundMenu'),
     snooze: require('./snooze'),
