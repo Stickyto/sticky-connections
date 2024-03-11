@@ -143,8 +143,8 @@ module.exports = new Connection({
   name: 'Deliverect',
   color: '#05CC79',
   logo: cdn => `${cdn}/connections/CONNECTION_DELIVERECT.svg`,
-  configNames: ['"Sandbox"/"Production"', 'Channel link IDs (comma separated)', 'Send order (Yes/No)', `Sticker passthrough (${VALID_THING_PASSTHROUGHS.join('/')})`],
-  configDefaults: ['Sandbox', '', 'No', VALID_THING_PASSTHROUGHS[0]],
+  configNames: ['"Production"/"Sandbox"', 'Channel link IDs (comma separated)', 'Send order (Yes/No)', `Sticker passthrough (${VALID_THING_PASSTHROUGHS.join('/')})`],
+  configDefaults: ['Production', '', 'No', VALID_THING_PASSTHROUGHS[0]],
   methods: {
     inboundMenu: require('./inboundMenu'),
     snooze: require('./snooze'),
