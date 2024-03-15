@@ -1,5 +1,5 @@
 /* eslint-disable max-len */
-const { assert } = require('@stickyto/openbox-node-utils')
+const { assert, isEmailValid } = require('@stickyto/openbox-node-utils')
 const makeRequest = require('./makeRequest')
 const makeRequestV2 = require('./makeRequestV2')
 
@@ -88,7 +88,8 @@ module.exports = new Connection({
     'Scope',
     'OAuth URL',
     'BookingAPI URL',
-    'OwnerAPI URL'
+    'OwnerAPI URL',
+    'Validate email addresses?'
   ],
   configDefaults: [
     '',
@@ -96,7 +97,8 @@ module.exports = new Connection({
     'https://api.businesscentral.dynamics.com/.default',
     'https://login.microsoftonline.com/Customer-ID/oauth2/v2.0/token',
     'https://api.businesscentral.dynamics.com/v2.0/Customer-ID/Sandbox/WS/Customer-Name/Codeunit/BookingAPI',
-    'https://api.businesscentral.dynamics.com/v2.0/Customer-ID/Sandbox/WS/Customer-Name/Codeunit/OwnerAPI'
+    'https://api.businesscentral.dynamics.com/v2.0/Customer-ID/Sandbox/WS/Customer-Name/Codeunit/OwnerAPI',
+    'No'
   ],
   eventHooks: {
     'SESSION_CART_PAY': eventHookLogic
@@ -143,13 +145,18 @@ module.exports = new Connection({
     ownerAuthenticate: {
       name: 'Owner > Authenticate',
       logic: async ({ connectionContainer, config, body }) => {
-        const [, clientSecret, , , , urlOwnerApi] = config
+        const [, clientSecret, , , , urlOwnerApi, mustValidateEmails = 'No'] = config
         let { ownerId = '', ownerEmail = '', clientSecret: bodyClientSecret } = body
-        const knowsSomethingSecret = clientSecret === bodyClientSecret
         ownerId = ownerId.trim().toUpperCase()
         ownerEmail = ownerEmail.trim().toLowerCase()
         const { GetOwner: ownerJson } = await makeRequest(urlOwnerApi, getBody('OwnerAPI', 'GetOwner', { 'customer_no': ownerId }), config)
-        // !knowsSomethingSecret && ownerJson.email && assert(ownerJson.email.toLowerCase() === ownerEmail, `We found someone with ID ${ownerId} but the email wasn't ${ownerEmail || '?'}.`)
+
+        global.rdic.logger.log({}, '[CONNECTION_ELITE_DYNAMICS] [ownerAuthenticate]', { ownerEmail, ownerJson, mustValidateEmails })
+
+        if (mustValidateEmails === 'Yes') {
+          assert(isEmailValid(ownerJson.email), `If you would like to log in, please contact ${connectionContainer.user.name} to have your email address added to your account.`)
+          assert(ownerJson.email.toLowerCase() === ownerEmail, `There is a customer with ID ${ownerId} but the email address is not ${ownerEmail || '?'}. Please contact ${connectionContainer.user.name} to check the email address on your account is correct.`)
+        }
 
         let dealJson
         try {
