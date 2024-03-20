@@ -1,29 +1,30 @@
 /* eslint-disable quotes */
-const { Payment } = require('openbox-entities')
+const {Payment} = require('openbox-entities')
 const Connection = require('../Connection')
 const getToken = require('./lib/getToken')
 const getEnvironment = require('./lib/getEnvironment')
 const makeRequest = require('./lib/makeRequest')
-const { assert, getNow } = require('@stickyto/openbox-node-utils')
-const { aggregateCartsByProduct } = require('./lib/aggregateCartsByProduct')
+const {assert, getNow} = require('@stickyto/openbox-node-utils')
+const {aggregateCartsByProduct} = require('./lib/aggregateCartsByProduct')
 const CHANNEL_NAME = 'stickyconnections'
 const VALID_THING_PASSTHROUGHS = ['None', 'Your ID', 'Name', 'Number', 'Note']
+const processOrders = require('./lib/processOrders')
 
 async function eventHookLogic(config, connectionContainer) {
-  const { user, application, thing, payment, event, customData, createEvent } = connectionContainer
+  const {user, application, thing, payment, event, customData, createEvent} = connectionContainer
 
   function goFail(e) {
     createEvent({
       type: 'CONNECTION_BAD',
       userId: user.id,
       applicationId: application ? application.id : undefined,
-      customData: { id: 'CONNECTION_DELIVERECT', message: e.message }
+      customData: {id: 'CONNECTION_DELIVERECT', message: e.message}
     })
   }
 
   let [environment, channelLinkId, sendOrder, thingPassthrough = VALID_THING_PASSTHROUGHS[0], groupTime] = config
   groupTime = parseInt(groupTime || '0', 10)
-  global.rdic.logger.log({}, '[CONNECTION_DELIVERECT]', { environment, channelLinkId, sendOrder, thingPassthrough, groupTime })
+  global.rdic.logger.log({}, '[CONNECTION_DELIVERECT]', {environment, channelLinkId, sendOrder, thingPassthrough, groupTime})
 
   let foundEnvironment
   try {
@@ -126,16 +127,33 @@ async function eventHookLogic(config, connectionContainer) {
     global.rdic.logger.log({}, '[CONNECTION_DELIVERECT] token', token)
     for (const channel in channelCarts) {
       const theBody = channelCarts[channel].body
-      global.rdic.logger.log({}, '[CONNECTION_DELIVERECT]', { theBody })
-      const r = await makeRequest(
-        token,
-        'post',
-        `${foundEnvironment.apiUrl}/${CHANNEL_NAME}/order/${channel}`,
-        theBody
-      )
-      global.rdic.logger.log({}, '[CONNECTION_DELIVERECT]', { r })
+      let url = `${foundEnvironment.apiUrl}/${CHANNEL_NAME}/order/${channel}`
+
+      if (groupTime === 0) {
+        const r = await makeRequest(
+          token,
+          'post',
+          url,
+          theBody
+        )
+        global.rdic.logger.log({}, '[CONNECTION_DELIVERECT]', { r })
+      } else {
+        await connectionContainer.rdic.get('datalayerRelational').create('order_batches', {
+          channel_name: CHANNEL_NAME,
+          channel: channel,
+          token: token,
+          thing_id: event.thingId,
+          url: url,
+          order_data: JSON.stringify(theBody)
+        })
+
+        global.rdic.logger.log('[CONNECTION_DELIVERECT] Order Batch Item Created')
+      }
     }
   } catch (e) {
+
+    global.rdic.logger.log('[CONNECTION_DELIVERECT] Insert Error', e.message)
+
     goFail(e)
   }
 }
@@ -153,6 +171,23 @@ module.exports = new Connection({
     busy: require('./busy'),
     status: require('./status')
   },
+  crons: [
+    {
+      id: 'generic',
+      frequency: '* * * * *',
+      logic: async function processUserOrders(user, cronContainer) {
+        const { config } = user.connections.find(c => c.id === 'CONNECTION_DELIVERECT');
+
+        const groupTime = parseInt(config.at(4) || '0', 10);
+
+        if (groupTime === 0) {
+          return
+        }
+
+        await processOrders(cronContainer, groupTime)
+      }
+    }
+  ],
   eventHooks: {
     'SESSION_CART_PAY': eventHookLogic
   }
