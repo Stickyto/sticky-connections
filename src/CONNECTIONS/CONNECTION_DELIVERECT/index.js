@@ -4,7 +4,7 @@ const Connection = require('../Connection')
 const getToken = require('./lib/getToken')
 const getEnvironment = require('./lib/getEnvironment')
 const makeRequest = require('./lib/makeRequest')
-const {assert, getNow} = require('@stickyto/openbox-node-utils')
+const {assert, getNow, uuid} = require('@stickyto/openbox-node-utils')
 const {aggregateCartsByProduct} = require('./lib/aggregateCartsByProduct')
 const CHANNEL_NAME = 'stickyconnections'
 const VALID_THING_PASSTHROUGHS = ['None', 'Your ID', 'Name', 'Number', 'Note']
@@ -139,6 +139,7 @@ async function eventHookLogic(config, connectionContainer) {
         global.rdic.logger.log({}, '[CONNECTION_DELIVERECT]', { r })
       } else {
         await connectionContainer.rdic.get('datalayerRelational').create('order_batches', {
+          id: uuid(),
           channel_name: CHANNEL_NAME,
           channel: channel,
           token: token,
