@@ -94,7 +94,7 @@ module.exports = new Connection({
   eventHooks: {
     'SESSION_CART_PAY': eventHookLogic
   },
-  instructions: [
+  instructions: ({ rdic, user, applications }) => [
     {
       "id": "9545852c-d64a-457a-8ca0-2b2d1173de9b",
       "config": {

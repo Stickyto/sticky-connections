@@ -1,5 +1,5 @@
 const CONNECTIONS = require('../CONNECTIONS')
 
-module.exports = (userId, partnerName) => Array.from(CONNECTIONS.values())
-  .filter(c => c.isAMatch(userId, partnerName))
-  .map(c => c.toJson())
+module.exports = ({ rdic, user, applications, partnerName }) => Array.from(CONNECTIONS.values())
+  .filter(c => c.isAMatch(user.id, partnerName))
+  .map(c => c.toJson({ rdic, user, applications }))

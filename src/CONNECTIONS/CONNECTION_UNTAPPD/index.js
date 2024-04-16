@@ -30,7 +30,7 @@ module.exports = new Connection({
   logo: cdn => `${cdn}/connections/CONNECTION_UNTAPPD.svg`,
   configNames: ['API key', 'Email', 'Venue ID'],
   configDefaults: ['', '', ''],
-  instructions: [
+  instructions: ({ rdic, user, applications }) => [
     {
       'id': '71d05208-3781-4c24-996e-c4c0d1c6b228',
       'config': {

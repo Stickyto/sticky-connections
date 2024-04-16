@@ -3,7 +3,7 @@ const { env } = require('@stickyto/openbox-node-utils')
 class Connection {
   constructor(json) {
     this.crons = []
-    this.instructions = []
+    this.instructions = ({ rdic, user, applications }) => []
     this.methods = {}
     this.configPerApplicationBlock = {}
     this.eventHooks = {}
@@ -30,14 +30,14 @@ class Connection {
     return (doesUserMatch && doesPartnerMatch)
   }
 
-  toJson() {
+  toJson({ rdic, user, applications }) {
     return {
       id: this.id,
       name: this.name,
       color: this.color,
       logo: this.logo( env.get('CDN') ),
       logoInverted: this.logoInverted ? this.logoInverted( env.get('CDN') ) : undefined,
-      instructions: this.instructions,
+      instructions: this.instructions({ rdic, user, applications }),
       configNames: this.configNames,
       configDefaults: this.configDefaults,
       configPerApplicationBlock: this.configPerApplicationBlock,
