@@ -87,7 +87,7 @@ async function eventHookLogic(config, connectionContainer) {
         product_id: _.productId,
         name: _.productName,
         quantity: _.quantity,
-        sequence_no: _i,
+        sequence_no: _i + 1,
         price: ((_.productPrice * _.quantity) / 100).toFixed(2)
       }
     }),
