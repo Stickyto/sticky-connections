@@ -24,6 +24,10 @@ const CONNECTIONS = new Map([
     require('./CONNECTION_PASSKIT')
   ],
   [
+    'CONNECTION_SUMUP',
+    require('./CONNECTION_SUMUP')
+  ],
+  [
     'CONNECTION_CYCLR',
     require('./CONNECTION_CYCLR')
   ],
