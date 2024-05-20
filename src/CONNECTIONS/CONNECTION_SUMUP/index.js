@@ -84,7 +84,7 @@ async function eventHookLogic(config, connectionContainer) {
     },
     'sales_items': payment.cart.getRaw().map((_, _i) => {
       return {
-        product_id: _.productId,
+        product_id: _.productTheirId,
         name: _.productName,
         quantity: _.quantity,
         sequence_no: _i + 1,
