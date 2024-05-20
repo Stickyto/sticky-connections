@@ -82,7 +82,7 @@ async function eventHookLogic(config, connectionContainer) {
       name: typeof payment.name === 'string' && payment.name.length > 0 ? payment.name : undefined,
       phone: typeof payment.phone === 'string' && payment.phone.length > 0 ? payment.phone : undefined,
     },
-    'sales_items': payment.cart.map((_, _i) => {
+    'sales_items': payment.cart.getRaw().map((_, _i) => {
       return {
         product_id: _.productId,
         name: _.productName,
