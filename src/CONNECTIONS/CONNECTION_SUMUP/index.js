@@ -52,7 +52,6 @@ async function eventHookLogic(config, connectionContainer) {
   const theJson = {
     'status': 'ACCEPTED',
     'type': 'DROPOFF',
-    'strict_payments': false,
     'dropoff_point': (() => {
       if (!thing) {
         return undefined
@@ -85,6 +84,7 @@ async function eventHookLogic(config, connectionContainer) {
     },
     'sales_items': payment.cart.getRaw().map((_, _i) => {
       return {
+        discount: ((payment.total - payment.discount) / payment.total) * ((_.productPrice * _.quantity) / 100).toFixed(2),
         product_id: _.productTheirId,
         name: _.productName,
         quantity: _.quantity,
