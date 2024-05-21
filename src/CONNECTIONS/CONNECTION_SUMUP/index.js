@@ -52,6 +52,7 @@ async function eventHookLogic(config, connectionContainer) {
   const theJson = {
     'status': 'ACCEPTED',
     'type': 'DROPOFF',
+    'strict_payments': false,
     'dropoff_point': (() => {
       if (!thing) {
         return undefined
