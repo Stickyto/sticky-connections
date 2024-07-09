@@ -213,7 +213,7 @@ module.exports = new Connection({
       name: 'Maintenance Job Types > Get',
       logic: async ({ connectionContainer, config }) => {
         const [, , , , , urlOwnerApi] = config
-        const { GetMaintenanceJobTypes: { MaintenanceJobType: response } } = await makeRequest(urlOwnerApi, getBody('OwnerAPI', 'GetMaintenanceJobTypes'), config)
+        const { GetMaintenanceJobTypes: { MaintenanceJobType: response } = { MaintenanceJobType: [] } } = await makeRequest(urlOwnerApi, getBody('OwnerAPI', 'GetMaintenanceJobTypes'), config)
 
         return response.map(type => ({
           id: type.code,
