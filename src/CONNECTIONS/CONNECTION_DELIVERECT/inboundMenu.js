@@ -216,7 +216,8 @@ const vatBs = new Map([
   [15000, 'vat--15'],
   [19000, 'vat--19'],
   [20000, 'vat--20'],
-  [21000, 'vat--21']
+  [21000, 'vat--21'],
+  [5000, 'vat--5']
 ])
 
 function getPMedia(theirP) {
