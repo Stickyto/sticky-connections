@@ -12,12 +12,13 @@ module.exports = async function makeRequest(config, method, url, json) {
     })
   })
 
-  global.rdic.logger.log({}, '[CONNECTION_DATAVERSE] [makeRequest]', { method, url, config, json })
-  const response = await fetch(`${configInstance}/api/data/v${configVersion}/${url}`,
+  global.rdic.logger.log({}, '[CONNECTION_DATAVERSE] [makeRequest]', { token, method, url, config, json })
+  const response = await fetch(`${configInstance}/api/data/v${configVersion}/${encodeURIComponent(url)}`,
     {
       method,
       headers: {
-        'Authorization': `Bearer ${token}`
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify(json)
     }

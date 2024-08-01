@@ -1,5 +1,6 @@
 const Connection = require('../Connection')
 const makeRequest = require('./makeRequest')
+const { assert } = require('@stickyto/openbox-node-utils')
 
 const NAME = 'Dataverse'
 const COLOR = '#0078d4'
@@ -16,6 +17,7 @@ const CONFIG_PER_APPLICATION_BLOCK = [
 ]
 
 async function eventHookLogic (config, connectionContainer) {
+  const [_1, _2, _3, _4, _5, tableName] = config
   const { user, application, customData, createEvent } = connectionContainer
   const body = {}
   application.events.on_load.map(ab => {
@@ -25,7 +27,8 @@ async function eventHookLogic (config, connectionContainer) {
     }
   })
   try {
-    await makeRequest(config, 'post', 'leads', body)
+    const r = await makeRequest(config, 'post', tableName, body)
+    assert(!r.error, `${r.error.code || '[code]'} / ${r.error.message || '[message]'}`)
   } catch (e) {
     createEvent({
       type: 'CONNECTION_BAD',
@@ -47,14 +50,16 @@ module.exports = new Connection({
     'Token URL',
     'Client ID',
     'Client secret',
-    'Version (x.x)'
+    'Version (x.x)',
+    'Table name'
   ],
   configDefaults: [
     'https://---.api.crm11.dynamics.com',
     'https://login.microsoftonline.com/---/oauth2/token',
     '',
     '',
-    '9.2'
+    '9.2',
+    'leads'
   ],
   instructions: ({ rdic, user, applications }) => [
     {
