@@ -33,7 +33,7 @@ async function eventHookLogic (config, connectionContainer) {
   console.warn('[DebugLater] 4', { userPaymentId })
   if (userPaymentId) {
     console.warn('[DebugLater] 5', { userPaymentId })
-    const xmlBody = `<PayInvoice reference="${payment.id}" customer_no="${userPaymentId.ownerId}">${userPaymentId.basket.map(_ => `<Invoice amount="${(_.total / 100).toFixed(2)}" no="${_.id}" />`).join('')}</PayInvoice>`
+    const xmlBody = `<PayInvoice reference="${payment.id}" customer_no="${userPaymentId.ownerId}">${(userPaymentId.basket || []).map(_ => `<Invoice amount="${(_.total / 100).toFixed(2)}" no="${_.id}" />`).join('')}</PayInvoice>`
     console.warn('[DebugLater] 6', { xmlBody })
     try {
       const r = await makeRequest(
