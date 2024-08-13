@@ -35,7 +35,7 @@ async function eventHookLogic (type, config, connectionContainer) {
       userId: user.id,
       applicationId: application ? application.id : undefined,
       thingId: thing ? thing.id : undefined,
-      customData: { id: 'CONNECTION_CYCLR', theirId: 'All good in the hood!' }
+      customData: { id: 'CONNECTION_CYCLR', theirId: 'Success!' }
     })
   } catch ({ message }) {
     createEvent({

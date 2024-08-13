@@ -1,6 +1,6 @@
 const MIME_DECODERS = new Map([
   // when they don't return a content-type header, it could be anything (usually a body-less HTTP 201)
-  ['unknown', () => ({ customMessage: 'All good in the hood!' })],
+  ['unknown', () => ({ customMessage: 'Success!' })],
   ['application/json', _ => JSON.parse(_)],
   ['text/html', _ => ({ customMessage: _ || 'Deliverect returned HTML. This is very bad.' })],
   ['text/html; charset=utf-8', _ => ({ customMessage: _ || 'Deliverect returned HTML. This is very bad.' })]

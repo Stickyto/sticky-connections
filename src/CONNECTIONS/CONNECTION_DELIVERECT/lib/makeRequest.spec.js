@@ -51,6 +51,6 @@ describe('makeRequest', () => {
 
     const result = await makeRequest('testToken', 'GET', 'testUrl', { some: 'data' })
 
-    expect(result).toMatchObject({ customMessage: 'All good in the hood!' })
+    expect(result).toMatchObject({ customMessage: 'Success!' })
   })
 })
