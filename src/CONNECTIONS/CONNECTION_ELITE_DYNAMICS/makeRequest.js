@@ -19,7 +19,7 @@ module.exports = async (url, requestXmlBody, config, method = 'POST', contentTyp
     'grant_type': 'client_credentials',
     scope
   })
-  global.rdic.logger.log({}, '[CONNECTION_ELITE_DYNAMICS] [makeRequest]', { oauthBody })
+  global.rdic.logger.log({}, '[CONNECTION_ELITE_DYNAMICS] [makeRequest]', { url, oauthBody })
 
   const xmlAccessTokenresponse = await fetch(
     oAuthUrl,

@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
 const { AuthenticationContext } = require('adal-node')
 
-module.exports = async function makeRequest(config, method, url, json) {
+module.exports = async function makeRequest(config, method, tableName, json) {
   const [configInstance, configTokenUrl, configClientId, configClientSecret, configVersion] = config
   const context = new AuthenticationContext(configTokenUrl)
 
@@ -12,8 +12,8 @@ module.exports = async function makeRequest(config, method, url, json) {
     })
   })
 
-  global.rdic.logger.log({}, '[CONNECTION_DATAVERSE] [makeRequest]', { token, method, url, config, json })
-  const response = await fetch(`${configInstance}/api/data/v${configVersion}/${encodeURIComponent(url)}`,
+  global.rdic.logger.log({}, '[CONNECTION_DATAVERSE] [makeRequest]', { token, method, tableName, config, json })
+  const response = await fetch(`${configInstance}/api/data/v${configVersion}/${encodeURIComponent(tableName)}`,
     {
       method,
       headers: {
@@ -24,7 +24,7 @@ module.exports = async function makeRequest(config, method, url, json) {
     }
   )
 
-  const asJson = await response.json()
-  global.rdic.logger.log({}, '[CONNECTION_DATAVERSE] [makeRequest]', { asJson })
-  return asJson
+  // const asJson = await response.json()
+  // global.rdic.logger.log({}, '[CONNECTION_DATAVERSE] [makeRequest]', { asJson })
+  return {}
 }
