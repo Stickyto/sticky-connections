@@ -89,7 +89,8 @@ module.exports = new Connection({
     'OAuth URL',
     'BookingAPI URL',
     'OwnerAPI URL',
-    'Validate email addresses?'
+    'Validate email addresses?',
+    'POS items URL'
   ],
   configDefaults: [
     '',
@@ -98,7 +99,8 @@ module.exports = new Connection({
     'https://login.microsoftonline.com/Customer-ID/oauth2/v2.0/token',
     'https://api.businesscentral.dynamics.com/v2.0/Customer-ID/Sandbox/WS/Customer-Name/Codeunit/BookingAPI',
     'https://api.businesscentral.dynamics.com/v2.0/Customer-ID/Sandbox/WS/Customer-Name/Codeunit/OwnerAPI',
-    'No'
+    'No',
+    'https://api.businesscentral.dynamics.com/v2.0/...'
   ],
   eventHooks: {
     'SESSION_CART_PAY': eventHookLogic
@@ -207,6 +209,44 @@ module.exports = new Connection({
           balance: Math.floor(parseFloat(balance.replace(/,/g, '')) * 100),
           invoices
         }
+      }
+    },
+    posItemsUpdate: {
+      name: 'POS items > Update',
+      logic: async ({ connectionContainer, config, body }) => {
+        const [, , , , , , , posItemsUrl] = config
+        const { parkCode } = body
+        assert(parkCode, 'parkCode not set!')
+        const { value: posItems } = await makeRequest(
+          `${posItemsUrl}?$filter=parkcode eq '${encodeURIComponent(parkCode)}' AND parkwebvisibleset eq true`,
+          undefined,
+          config,
+          'GET',
+          'application/json'
+        )
+
+        // {
+        //   "@odata.etag": "W/\"---\"",
+        //   "id": "[uuid]",
+        //   "parkcode": "R_DH_L",
+        //   "positemno_": "G__47P",
+        //   "name": "G_s C_linder _kg Propane",
+        //   "typecode": "G_S",
+        //   "unitprice": 12,
+        //   "blocked": false,
+        //   "parkunitpriceset": true,
+        //   "parkblockedset": false,
+        //   "webvisible": true,
+        //   "parkwebvisibleset": true
+        // }
+
+        // return posItems.map(_ => ({
+        //   theirId: `${parkCode}---${_.positemno_}`,
+        //   name: _.name,
+        //   price: Math.floor(_.unitprice * 100)
+        // }))
+
+        return {}
       }
     },
     maintenanceJobTypes: {
