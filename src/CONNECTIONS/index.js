@@ -85,6 +85,10 @@ const CONNECTIONS = new Map([
     require('./CONNECTION_RINGCENTRAL')
   ],
   [
+    'CONNECTION_ZENDESK',
+    require('./CONNECTION_ZENDESK')
+  ],
+  [
     'CONNECTION_API',
     require('./CONNECTION_API')
   ]
