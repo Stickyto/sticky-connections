@@ -2,8 +2,8 @@ const MIME_DECODERS = new Map([
   // when they don't return a content-type header, it could be anything (usually a body-less HTTP 201)
   ['unknown', () => ({ customMessage: 'Success!' })],
   ['application/json', _ => JSON.parse(_)],
-  ['text/html', _ => ({ customMessage: _ || 'SumUp Goodtill returned HTML. This is very bad.' })],
-  ['text/html; charset=utf-8', _ => ({ customMessage: _ || 'SumUp Goodtill returned HTML. This is very bad.' })]
+  ['text/html', _ => ({ customMessage: _ || 'SumUp POS returned HTML. This is very bad.' })],
+  ['text/html; charset=utf-8', _ => ({ customMessage: _ || 'SumUp POS returned HTML. This is very bad.' })]
 ])
 
 module.exports = async function makeRequest(customHeaders = {}, method, url, json) {

@@ -136,14 +136,24 @@ async function eventHookLogic(config, connectionContainer) {
 }
 
 module.exports = new Connection({
-  userIds: ['aeb0b6bd-9f2b-48c5-b6cd-46bc89f49788'],
+  partnerIds: ['5c9e6c25-7b1f-474b-9f04-a8e705654425'],
   id: 'CONNECTION_SUMUP',
-  name: 'SumUp Goodtill',
+  name: 'SumUp POS',
   color: '#000000',
   logo: cdn => `${cdn}/connections/CONNECTION_SUMUP.svg`,
+  logoInverted: cdn => `${cdn}/connections/CONNECTION_SUMUP_WHITE.svg`,
   configNames: ['Subdomain', 'Username', 'Password', 'Vendor ID', `Sticker passthrough (${VALID_THING_PASSTHROUGHS.join('/')})`, 'Send order (Yes/No)'],
   configDefaults: ['', '', '', '', 'Name', 'No'],
   eventHooks: {
     'SESSION_CART_PAY': eventHookLogic
+  },
+  methods: {
+    getLocations: {
+      name: 'Pull',
+      uiPlaces: ['products'],
+      logic: async ({ connectionContainer, config, body }) => {
+        return 'All ok!'
+      }
+    }
   }
 })
