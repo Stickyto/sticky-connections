@@ -2,8 +2,22 @@
 const { Payment } = require('openbox-entities')
 const Connection = require('../Connection')
 const makeRequest = require('./makeRequest')
-const { assert } = require('@stickyto/openbox-node-utils')
+const { assert, getNow, asyncSeries } = require('@stickyto/openbox-node-utils')
 const VALID_THING_PASSTHROUGHS = ['None', 'Your ID', 'Name', 'Number', 'Note']
+
+async function getToken (cSubdomain, cUsername, cPassword) {
+  const { token } = await makeRequest(
+    {},
+    'POST',
+    'https://api.thegoodtill.com/api/login',
+    {
+      'subdomain': cSubdomain,
+      'username': cUsername,
+      'password': cPassword
+    }
+  )
+  return token
+}
 
 async function eventHookLogic(config, connectionContainer) {
   const {user, application, thing, payment, event, customData, createEvent} = connectionContainer
@@ -27,16 +41,7 @@ async function eventHookLogic(config, connectionContainer) {
     assert(cSendOrder === 'Yes', 'Send order (Yes/No) is not set to "Yes".')
     assert(VALID_THING_PASSTHROUGHS.includes(cThingPassthrough), `Sticker passthrough is not one of (${VALID_THING_PASSTHROUGHS.join('/')})`)
 
-    ;({ token } = await makeRequest(
-      {},
-      'POST',
-      'https://api.thegoodtill.com/api/login',
-      {
-        'subdomain': cSubdomain,
-        'username': cUsername,
-        'password': cPassword
-      }
-    ))
+    token = await getToken(cSubdomain, cUsername, cPassword)
   } catch (e) {
     goFail(e)
     return
@@ -142,8 +147,8 @@ module.exports = new Connection({
   color: '#000000',
   logo: cdn => `${cdn}/connections/CONNECTION_SUMUP.svg`,
   logoInverted: cdn => `${cdn}/connections/CONNECTION_SUMUP_WHITE.svg`,
-  configNames: ['Subdomain', 'Username', 'Password', 'Vendor ID', `Sticker passthrough (${VALID_THING_PASSTHROUGHS.join('/')})`, 'Send order (Yes/No)'],
-  configDefaults: ['', '', '', '', 'Name', 'No'],
+  configNames: ['Subdomain', 'Username', 'Password', 'Vendor ID', `Sticker passthrough (${VALID_THING_PASSTHROUGHS.join('/')})`, 'Send order (Yes/No)', 'Outlet'],
+  configDefaults: ['', '', '', '', 'Name', 'No', ''],
   eventHooks: {
     'SESSION_CART_PAY': eventHookLogic
   },
@@ -152,6 +157,71 @@ module.exports = new Connection({
       name: 'Pull',
       uiPlaces: ['products'],
       logic: async ({ connectionContainer, config, body }) => {
+        const [cSubdomain, cUsername, cPassword, _1, _2, _3, cOutletName] = config
+
+        const token = await getToken(cSubdomain, cUsername, cPassword)
+        const outletsData = await makeRequest(
+          {
+            'Authorization': `Bearer ${token}`
+          },
+          'GET',
+          'https://api.thegoodtill.com/api/outlets'
+        )
+        assert(outletsData.status)
+        const { data: outlets } = outletsData
+
+        const foundOutlet = outlets.find(o => o.outlet_name === cOutletName)
+        assert(foundOutlet, `There is no outlet with name "${cOutletName}". The outlet names are:\n\n${outlets.map(o => o.outlet_name).join('\n\n')}`)
+
+        const suProductCategoriesData = await makeRequest(
+          {
+            'Authorization': `Bearer ${token}`
+          },
+          'GET',
+          'https://api.thegoodtill.com/api/categories'
+        )
+        assert(suProductCategoriesData.status)
+        const { data: suProductCategories } = suProductCategoriesData
+
+        const { rdic, user } = connectionContainer
+        const existingPcs = await connectionContainer.getProductCategories(rdic, user, { connection: 'CONNECTION_SUMUP' })
+
+        const startTime = getNow()
+        const pcAsyncFunctions = suProductCategories.map((suPc, nextIPc) => {
+          return () => {
+            const existingPc = existingPcs.find(pc => pc.theirId === suPc.id)
+            if (existingPc) {
+              existingPc.name = suPc.name
+              existingPc.description = suPc.description || ''
+              existingPc.isEnabled = suPc.active === 1
+              return connectionContainer.updateProductCategory(existingPc, ['name', 'description', 'is_enabled'])
+            } else {
+              return connectionContainer.createProductCategory(
+                {
+                  name: suPc.name,
+                  userId: user.id,
+                  theirId: suPc.id,
+                  description: suPc.description || '',
+                  createdAt: startTime + nextIPc,
+                  connection: 'CONNECTION_SUMUP',
+                  isEnabled: suPc.active === 1
+                },
+                user
+              )
+            }
+          }
+        })
+
+        await asyncSeries(pcAsyncFunctions)
+
+        // createEvent: [AsyncFunction: createEvent],
+        // getProducts: [AsyncFunction: getProducts],
+        // createProduct: [AsyncFunction: createProduct],
+        // updateProduct: [AsyncFunction: updateProduct],
+        // getProductCategories: [AsyncFunction: getProductCategories],
+        // createProductCategory: [AsyncFunction: createProductCategory],
+        // updateProductCategory: [AsyncFunction: updateProductCategory]
+
         return 'All ok!'
       }
     }

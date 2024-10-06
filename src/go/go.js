@@ -1,4 +1,4 @@
-const { assert } = require('@stickyto/openbox-node-utils')
+const { assert, getNow } = require('@stickyto/openbox-node-utils')
 const { Event, Product, ProductCategory } = require('openbox-entities')
 const CONNECTIONS = require('../CONNECTIONS')
 
@@ -53,18 +53,21 @@ module.exports = async function go (connection, method, { rdic, user, partner, b
       await rdic.get('datalayerRelational').create('product_categories', toWrite.toDatalayerRelational())
       return toWrite
     },
-    updateProductCategory: async entity => {
-      await rdic.get('datalayerRelational').updateOne('product_categories', entity.id, entity.toDatalayerRelational([
-        'name',
-        'description',
-        'view',
-        'is_enabled',
-        'products',
-        'color',
-        'days',
-        'start_at',
-        'end_at'
-      ]))
+    updateProductCategory: async (
+      entity,
+      keys = [
+      'name',
+      'description',
+      'view',
+      'is_enabled',
+      'products',
+      'color',
+      'days',
+      'start_at',
+      'end_at'
+    ]) => {
+      entity.updatedAt = getNow()
+      await rdic.get('datalayerRelational').updateOne('product_categories', entity.id, entity.toDatalayerRelational(keys))
     }
   }
 

@@ -49,7 +49,7 @@ module.exports = new Connection({
   //       let nextIPc = 0
   //       const { rdic } = cronContainer
   //       global.rdic.logger.log({}, '[job-CONNECTION_UNTAPPD] [go]', { userId: user.id })
-
+  //       const startTime = getNow()
   //       try {
   //         const { config } = user.connections.find(c => c.id === 'CONNECTION_UNTAPPD')
   //         let [configApiKey, configEmail, configLocationId] = config
@@ -138,7 +138,7 @@ module.exports = new Connection({
   //                   categories: pCategories,
   //                   theirId,
   //                   description: pDescription,
-  //                   createdAt: getNow() + nextIP,
+  //                   createdAt: startTime + nextIP,
   //                   connection: 'CONNECTION_UNTAPPD'
   //                 }
   //                 foundExistingP = await cronContainer.createProduct(payload)
@@ -164,7 +164,7 @@ module.exports = new Connection({
   //                   userId: user.id,
   //                   theirId,
   //                   description: menuSection.description,
-  //                   createdAt: getNow() + nextIPc,
+  //                   createdAt: startTime + nextIPc,
   //                   connection: 'CONNECTION_UNTAPPD',
   //                   products: localPids,
   //                   view: 'grid-name',
