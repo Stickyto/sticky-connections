@@ -187,6 +187,7 @@ module.exports = new Connection({
         const existingPcs = await connectionContainer.getProductCategories(rdic, user, { connection: 'CONNECTION_SUMUP' })
 
         const startTime = getNow()
+
         const pcAsyncFunctions = suProductCategories.map((suPc, nextIPc) => {
           return () => {
             const existingPc = existingPcs.find(pc => pc.theirId === suPc.id)
@@ -211,19 +212,118 @@ module.exports = new Connection({
             }
           }
         })
-
         await asyncSeries(pcAsyncFunctions)
 
-        // createEvent: [AsyncFunction: createEvent],
-        // getProducts: [AsyncFunction: getProducts],
-        // createProduct: [AsyncFunction: createProduct],
-        // updateProduct: [AsyncFunction: updateProduct],
-        // getProductCategories: [AsyncFunction: getProductCategories],
-        // createProductCategory: [AsyncFunction: createProductCategory],
-        // updateProductCategory: [AsyncFunction: updateProductCategory]
+        const suProductsData = await makeRequest(
+          {
+            'Authorization': `Bearer ${token}`,
+            'Outlet-Id': foundOutlet.id
+          },
+          'GET',
+          'https://api.thegoodtill.com/api/products'
+        )
+        assert(suProductsData.status)
+        let { data: suProducts } = suProductsData
+        suProducts = suProducts.filter(_ => _.outlet_id === foundOutlet.id)
+
+        // require('fs').writeFileSync('./products.json', JSON.stringify(suProducts, null, 2), 'utf-8')
+
+        const pAsyncFunctions = suProducts.map((suP, nextIP) => {
+          return () => {
+            return connectionContainer.createProduct(
+              {
+                name: suP.display_name || suP.product_name,
+                userId: user.id,
+                theirId: suP.id,
+                createdAt: startTime + nextIP,
+                connection: 'CONNECTION_SUMUP',
+                currency: user.currecy,
+                price: Math.floor(parseFloat(suP.selling_price) * 100),
+                isEnabled: suP.active === 1,
+                media: suP.image ? [{ type: 'image', url: suP.image }] : []
+              }
+            )
+          }
+        })
+        await asyncSeries(pAsyncFunctions)
 
         return 'All ok!'
       }
     }
   }
 })
+
+// createEvent: [AsyncFunction: createEvent]
+// getProducts: [AsyncFunction: getProducts]
+// createProduct: [AsyncFunction: createProduct]
+// updateProduct: [AsyncFunction: updateProduct]
+// getProductCategories: [AsyncFunction: getProductCategories]
+// createProductCategory: [AsyncFunction: createProductCategory]
+// updateProductCategory: [AsyncFunction: updateProductCategory]
+
+// "print_on_drink": 0,
+// "print_on_other": 0,
+
+// OUTLET KEYS
+// id: 'UUID',
+// outlet_name: 'WF - K & B',
+// outlet_address: null,
+// outlet_city: null,
+// outlet_county: null,
+// outlet_postcode: null,
+// outlet_country: 'GBR',
+// store_tag: 'WF',
+// status: 'Active',
+// active: 1
+
+// PRODUCT KEYS
+// "id": "UUID",
+// "product_name": "V ",
+// "product_sku": "V_B__CAPS",
+// "display_name": "V B",
+// "parent_product_id": null,
+// "purchase_price": "0.000",
+// "supplier_purchase_price": "0.000",
+// "outlet_id": "UUID",
+// "shareable": 1,
+// "has_variant": 1,
+// "active": 1,
+// "category_id": "UUID",
+// "brand_id": null,
+// "supplier_id": null,
+// "has_ingredient_stock": 0,
+// "take_stock_from_parent": 0,
+// "stock_quantifier": "1.000",
+// "unit_conversion": "1.000",
+// "store_unit": null,
+// "supplier_unit": null,
+// "selling_price": "2.500",
+// "track_inventory": 1,
+// "inventory": null,
+// "alert_on": 0,
+// "alert_below": null,
+// "delivery_reorder_on": 0,
+// "delivery_reorder_point": null,
+// "print_on_receipt": 1,
+// "print_on_kitchen": 0,
+// "ticket_printer_1": 0,
+// "ticket_printer_2": 0,
+// "ticket_printer_3": 0,
+// "ticket_printer_4": 0,
+// "min_stock": "0.000",
+// "takeaway_override_price": 0,
+// "takeaway_selling_price": "0.000",
+// "oc_override_price": 0,
+// "oc_selling_price": "0.000",
+// "oc_collection_selling_price": null,
+// "oc_delivery_selling_price": null,
+// "oc_dropoff_selling_price": null,
+// "takeaway_vat_code": null,
+// "oc_collection_vat_code": null,
+// "oc_delivery_vat_code": null,
+// "oc_dropoff_vat_code": null,
+// "created_at": "2024-08-28 13:37:18",
+// "updated_at": "2024-08-28 13:37:18",
+// "top_level_product": true,
+// "can_change_product": true,
+// "image": "URL"
