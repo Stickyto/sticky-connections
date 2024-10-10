@@ -20,7 +20,7 @@ async function eventHookLogic (config, connectionContainer) {
   const [_1, _2, _3, _4, _5, tableName] = config
   const { user, application, customData, createEvent } = connectionContainer
   const body = {}
-  application.events.on_load.map(ab => {
+  application && application.events.on_load.forEach(ab => {
     const key = ab.config['CONNECTION_DATAVERSE--key']
     if (key) {
       body[key] = customData[ab.config.label]
