@@ -54,6 +54,16 @@ async function eventHookLogic(config, connectionContainer) {
     user
   )
 
+  const finalNote = (() => {
+    const parts = []
+    thing && cThingPassthrough === 'Note' && parts.push(`[${thing.name.toUpperCase()}]`)
+    typeof payment.extra === 'string' && payment.extra.length > 0 && parts.push(payment.extra)
+    return parts.length > 0 ? parts.join(' ').substring(0, 190) : undefined
+  })()
+  if (typeof finalNote === 'string') {
+    finalNote = finalNote.substring(0, 190)
+  }
+
   const theJson = {
     'status': 'ACCEPTED',
     'type': 'DROPOFF',
@@ -78,12 +88,7 @@ async function eventHookLogic(config, connectionContainer) {
     })(),
     'order_ref': temporaryPayment.consumerIdentifier,
     'vendor_order_ref': event.paymentId,
-    'note': (() => {
-      const parts = []
-      thing && cThingPassthrough === 'Note' && parts.push(`[${thing.name.toUpperCase()}]`)
-      typeof payment.extra === 'string' && payment.extra.length > 0 && parts.push(payment.extra)
-      return parts.length > 0 ? parts.join(' ').substring(0, 190) : undefined
-    })(),
+    'notes': finalNote,
     'user': {
       name: typeof payment.name === 'string' && payment.name.length > 0 ? payment.name : undefined,
       phone: typeof payment.phone === 'string' && payment.phone.length > 0 ? payment.phone : undefined,
@@ -103,22 +108,23 @@ async function eventHookLogic(config, connectionContainer) {
         'amount': (payment.total / 100).toFixed(2)
       }
     ]
-    // 'items': payment.cart.map(_ => {
-    //   _.questions
-    //     .forEach(__ => {
-    //       const foundOptions = Array.isArray(__.answer) ? __.options.filter(o => __.answer.includes(o.name)) : [__.options.find(o => o.name === __.answer)]
-    //       subItems = [
-    //         ...subItems,
-    //         ...foundOptions.map(foundOption => ({
-    //           plu: foundOption.theirId,
-    //           name: foundOption.name,
-    //           price: 0,
-    //           quantity: 1
-    //         }))
-    //       ]
-    //     })
-    // })
   }
+
+  // 'items': payment.cart.map(_ => {
+  //   _.questions
+  //     .forEach(__ => {
+  //       const foundOptions = Array.isArray(__.answer) ? __.options.filter(o => __.answer.includes(o.name)) : [__.options.find(o => o.name === __.answer)]
+  //       subItems = [
+  //         ...subItems,
+  //         ...foundOptions.map(foundOption => ({
+  //           plu: foundOption.theirId,
+  //           name: foundOption.name,
+  //           price: 0,
+  //           quantity: 1
+  //         }))
+  //       ]
+  //     })
+  // })
 
   global.rdic.logger.log({}, '[CONNECTION_SUMUP] customData', JSON.stringify(customData, null, 2))
   global.rdic.logger.log({}, '[CONNECTION_SUMUP] theJson', JSON.stringify(theJson, null, 2))
@@ -144,6 +150,14 @@ async function eventHookLogic(config, connectionContainer) {
   } catch (e) {
     goFail(e)
   }
+}
+
+function getFinalName (___) {
+  return ___.display_name || ___.product_name
+}
+
+function getFinalPrice (___) {
+  return Math.floor(parseFloat(___.selling_price) * 100)
 }
 
 module.exports = new Connection({
@@ -179,46 +193,44 @@ module.exports = new Connection({
         const foundOutlet = outlets.find(o => o.outlet_name === cOutletName)
         assert(foundOutlet, `There is no outlet with name "${cOutletName}". The outlet names are:\n\n${outlets.map(o => o.outlet_name).join('\n\n')}`)
 
-        const suProductCategoriesData = await makeRequest(
-          {
-            'Authorization': `Bearer ${token}`
-          },
-          'GET',
-          'https://api.thegoodtill.com/api/categories'
-        )
-        assert(suProductCategoriesData.status)
-        const { data: suProductCategories } = suProductCategoriesData
-
         const { rdic, user } = connectionContainer
-        const existingPcs = await connectionContainer.getProductCategories(rdic, user, { connection: 'CONNECTION_SUMUP' })
-
         const startTime = getNow()
 
-        const pcAsyncFunctions = suProductCategories.map((suPc, nextIPc) => {
-          return () => {
-            const existingPc = existingPcs.find(pc => pc.theirId === suPc.id)
-            if (existingPc) {
-              existingPc.name = suPc.name
-              existingPc.description = suPc.description || ''
-              existingPc.isEnabled = suPc.active === 1
-              return connectionContainer.updateProductCategory(existingPc, ['name', 'description', 'is_enabled'])
-            } else {
-              return connectionContainer.createProductCategory(
-                {
-                  name: suPc.name,
-                  userId: user.id,
-                  theirId: suPc.id,
-                  description: suPc.description || '',
-                  createdAt: startTime + nextIPc,
-                  connection: 'CONNECTION_SUMUP',
-                  isEnabled: suPc.active === 1
-                },
-                user
-              )
-            }
-          }
-        })
-        await asyncSeries(pcAsyncFunctions)
+        // const suProductCategoriesData = await makeRequest(
+        //   {
+        //     'Authorization': `Bearer ${token}`
+        //   },
+        //   'GET',
+        //   'https://api.thegoodtill.com/api/categories'
+        // )
+        // assert(suProductCategoriesData.status)
+        // const { data: suProductCategories } = suProductCategoriesData
+        // const existingPcs = await connectionContainer.getProductCategories(rdic, user, { connection: 'CONNECTION_SUMUP' })
+        // const pcAsyncFunctions = suProductCategories.map((suPc, nextIPc) => {
+        //   return () => {
+        //     const existingPc = existingPcs.find(pc => pc.theirId === suPc.id)
+        //     if (existingPc) {
+        //       existingPc.name = suPc.name
+        //       existingPc.description = suPc.description || ''
+        //       existingPc.isEnabled = suPc.active === 1
+        //       return connectionContainer.updateProductCategory(existingPc, ['name', 'description', 'is_enabled'])
+        //     } else {
+        //       return connectionContainer.createProductCategory(
+        //         {
+        //           name: suPc.name,
+        //           userId: user.id,
+        //           theirId: suPc.id,
+        //           description: suPc.description || '',
+        //           createdAt: startTime + nextIPc,
+        //           connection: 'CONNECTION_SUMUP',
+        //           isEnabled: suPc.active === 1
+        //         },
+        //         user
+        //       )
+        //     }
+        //   }
+        // })
+        // await asyncSeries(pcAsyncFunctions)
 
         const suProductsData = await makeRequest(
           {
@@ -231,24 +243,84 @@ module.exports = new Connection({
         assert(suProductsData.status)
         let { data: suProducts } = suProductsData
         suProducts = suProducts.filter(_ => _.outlet_id === foundOutlet.id)
-
         // require('fs').writeFileSync('./products.json', JSON.stringify(suProducts, null, 2), 'utf-8')
 
+        const existingPs = await connectionContainer.getProducts(rdic, user, { connection: 'CONNECTION_SUMUP' })
+
         const pAsyncFunctions = suProducts.map((suP, nextIP) => {
+          const finalName = getFinalName(suP)
+          const finalPrice = getFinalPrice(suP)
+          const finalMedia = suP.image ? [{ type: 'image', url: suP.image }] : []
+
+          const suSubProducts = suProducts.filter(_suPQ => _suPQ.parent_product_id === suP.id)
+
+          const finalQuestions = suSubProducts.length > 0 ? [
+            {
+              type: 'option',
+              question: ' ',
+              connectionHandleAsProduct: true,
+              options: suSubProducts.map(suSubP => ({
+                name: getFinalName(suSubP),
+                delta: getFinalPrice(suSubP) - finalPrice,
+                forSale: suSubP.active === 1,
+                theirId: suSubP.id
+              })),
+              answer: getFinalName(suSubProducts[0]),
+            }
+          ] : []
+
+          // const finalQuestions = [].map(suPQ => {
+          //   return               {
+          //     type: 'option',
+          //     question: [_.option1_name, _.option2_name, _.option3_name].filter(e => e).join(' / '),
+          //     options: _.variants
+          //       .filter(v => {
+          //         const thisStore = v.stores.find(_ => _.store_id === foundStore.id)
+          //         return thisStore.available_for_sale
+          //       })
+          //       .map(v => {
+          //         const thisStore = v.stores.find(s => s.store_id === foundStore.id)
+          //         return {
+          //           name: formatVariant(v),
+          //           delta: Math.ceil(thisStore.price * 100)
+          //         }
+          //       }),
+          //     answer: formatVariant(firstVariantForSale)
+          //   }
+          // })
+
+          if (suP.parent_product_id) {
+            // it's a modifier
+            return () => {}
+          }
+
           return () => {
-            return connectionContainer.createProduct(
-              {
-                name: suP.display_name || suP.product_name,
-                userId: user.id,
-                theirId: suP.id,
-                createdAt: startTime + nextIP,
-                connection: 'CONNECTION_SUMUP',
-                currency: user.currecy,
-                price: Math.floor(parseFloat(suP.selling_price) * 100),
+            const existingP = existingPs.find(p => p.theirId === suP.id)
+            if (existingP) {
+              existingP.patch({
+                name: finalName,
                 isEnabled: suP.active === 1,
-                media: suP.image ? [{ type: 'image', url: suP.image }] : []
-              }
-            )
+                price: finalPrice,
+                questions: finalQuestions,
+                media: finalMedia
+              })
+              return connectionContainer.updateProduct(existingP, ['name', 'is_enabled', 'price', 'questions', 'media'])
+            } else {
+              return connectionContainer.createProduct(
+                {
+                  userId: user.id,
+                  createdAt: startTime + nextIP,
+                  connection: 'CONNECTION_SUMUP',
+                  theirId: suP.id,
+                  name: finalName,
+                  isEnabled: suP.active === 1,
+                  currency: user.currency,
+                  price: finalPrice,
+                  media: finalMedia,
+                  questions: finalQuestions
+                }
+              )
+            }
           }
         })
         await asyncSeries(pAsyncFunctions)
