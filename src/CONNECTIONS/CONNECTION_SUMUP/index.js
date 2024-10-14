@@ -129,6 +129,7 @@ async function eventHookLogic(config, connectionContainer) {
       {
         'Authorization': `Bearer ${token}`,
         'Vendor-Id': cVendorId,
+        'Outlet-Id': '1a6ea3e2-d368-4912-bed4-c828c31eecb0'
       },
       'POST',
       'https://api.thegoodtill.com/api/external_sale/sale',
