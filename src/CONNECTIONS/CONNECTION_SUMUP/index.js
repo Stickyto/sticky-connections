@@ -135,7 +135,12 @@ async function eventHookLogic(config, connectionContainer) {
       'https://api.thegoodtill.com/api/external_sale/sale',
       theJson
     )
-    global.rdic.logger.log({}, '[CONNECTION_SUMUP]', { r })
+    global.rdic.logger.log({}, '[CONNECTION_SUMUP] r', { r })
+    assert(r.status, r.message || '(No message key)')
+
+    payment.userPaymentId = r.data.sale_id
+    await rdic.get('datalayerRelational').updateOne('payments', payment.id, payment.toDatalayerRelational(['user_payment_id']))
+
   } catch (e) {
     goFail(e)
   }
