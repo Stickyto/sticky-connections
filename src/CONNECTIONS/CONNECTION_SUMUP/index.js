@@ -64,6 +64,80 @@ async function eventHookLogic(config, connectionContainer) {
     finalNote = finalNote.substring(0, 190)
   }
 
+  let currentSequenceNumber = 1
+  const salesItems = []
+  payment.cart.getRaw().forEach(_ => {
+    if (!_.productTheirId) {
+      return
+    }
+    if (_.questions.length === 0) {
+      salesItems.push({
+        product_id: _.productTheirId,
+        name: _.productName,
+        quantity: _.quantity,
+        sequence_no: currentSequenceNumber,
+        price: (_.productPrice / 100).toFixed(2)
+      })
+      currentSequenceNumber += 1
+    } else {
+      _.questions.forEach(question => {
+        const foundOption = question.options.find(o => o.name === question.answer)
+        if (!foundOption) {
+          return
+        }
+        salesItems.push({
+          product_id: foundOption.theirId,
+          name: foundOption.name,
+          quantity: _.quantity,
+          sequence_no: currentSequenceNumber,
+          price: (_.productPrice / 100).toFixed(2)
+        })
+        currentSequenceNumber += 1
+      })
+    }
+    // {
+    //   "questions": [
+    //     {
+    //       "type": "option",
+    //       "options": [
+    //         {
+    //           "name": "7up 300ml",
+    //           "delta": 0,
+    //           "forSale": true,
+    //           "theirId": "2d5f90c1-e26c-482e-9461-786c01c6d672",
+    //           "subProducts": []
+    //         },
+    //         {
+    //           "name": "7up 500ml",
+    //           "delta": 100,
+    //           "forSale": true,
+    //           "theirId": "61537715-0677-4a06-baf1-5dc137d4a5fc",
+    //           "subProducts": []
+    //         }
+    //       ],
+    //       "question": " ",
+    //       "answer": "7up 300ml",
+    //       "connectionHandleAsProduct": true
+    //     }
+    //   ]
+    // }
+    // 'items': payment.cart.map(_ => {
+    //   _.questions
+    //     .forEach(__ => {
+    //       const foundOptions = Array.isArray(__.answer) ? __.options.filter(o => __.answer.includes(o.name)) : [__.options.find(o => o.name === __.answer)]
+    //       subItems = [
+    //         ...subItems,
+    //         ...foundOptions.map(foundOption => ({
+    //           plu: foundOption.theirId,
+    //           name: foundOption.name,
+    //           price: 0,
+    //           quantity: 1
+    //         }))
+    //       ]
+    //     })
+    // })
+  })
+
   const theJson = {
     'status': 'ACCEPTED',
     'type': 'DROPOFF',
@@ -93,15 +167,7 @@ async function eventHookLogic(config, connectionContainer) {
       name: typeof payment.name === 'string' && payment.name.length > 0 ? payment.name : undefined,
       phone: typeof payment.phone === 'string' && payment.phone.length > 0 ? payment.phone : undefined,
     },
-    'sales_items': payment.cart.getRaw().map((_, _i) => {
-      return {
-        product_id: _.productTheirId,
-        name: _.productName,
-        quantity: _.quantity,
-        sequence_no: _i + 1,
-        price: ((_.productPrice * _.quantity) / 100).toFixed(2)
-      }
-    }),
+    'sales_items': salesItems,
     'payments': [
       {
         'method': 'CARD',
@@ -109,22 +175,6 @@ async function eventHookLogic(config, connectionContainer) {
       }
     ]
   }
-
-  // 'items': payment.cart.map(_ => {
-  //   _.questions
-  //     .forEach(__ => {
-  //       const foundOptions = Array.isArray(__.answer) ? __.options.filter(o => __.answer.includes(o.name)) : [__.options.find(o => o.name === __.answer)]
-  //       subItems = [
-  //         ...subItems,
-  //         ...foundOptions.map(foundOption => ({
-  //           plu: foundOption.theirId,
-  //           name: foundOption.name,
-  //           price: 0,
-  //           quantity: 1
-  //         }))
-  //       ]
-  //     })
-  // })
 
   global.rdic.logger.log({}, '[CONNECTION_SUMUP] customData', JSON.stringify(customData, null, 2))
   global.rdic.logger.log({}, '[CONNECTION_SUMUP] theJson', JSON.stringify(theJson, null, 2))
@@ -268,26 +318,6 @@ module.exports = new Connection({
               answer: getFinalName(suSubProducts[0]),
             }
           ] : []
-
-          // const finalQuestions = [].map(suPQ => {
-          //   return               {
-          //     type: 'option',
-          //     question: [_.option1_name, _.option2_name, _.option3_name].filter(e => e).join(' / '),
-          //     options: _.variants
-          //       .filter(v => {
-          //         const thisStore = v.stores.find(_ => _.store_id === foundStore.id)
-          //         return thisStore.available_for_sale
-          //       })
-          //       .map(v => {
-          //         const thisStore = v.stores.find(s => s.store_id === foundStore.id)
-          //         return {
-          //           name: formatVariant(v),
-          //           delta: Math.ceil(thisStore.price * 100)
-          //         }
-          //       }),
-          //     answer: formatVariant(firstVariantForSale)
-          //   }
-          // })
 
           if (suP.parent_product_id) {
             // it's a modifier
