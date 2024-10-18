@@ -54,7 +54,7 @@ async function eventHookLogic(config, connectionContainer) {
     user
   )
 
-  const finalNote = (() => {
+  let finalNote = (() => {
     const parts = []
     thing && cThingPassthrough === 'Note' && parts.push(`[${thing.name.toUpperCase()}]`)
     typeof payment.extra === 'string' && payment.extra.length > 0 && parts.push(payment.extra)
