@@ -9,7 +9,7 @@ module.exports = new Connection({
   logo: cdn => `${cdn}/connections/CONNECTION_ZENDESK.svg`,
   configNames: ['Endpoint', 'Email', 'API key', 'Priority'],
   configDefaults: ['acme.zendesk.com', 'sales@acme.co', 'api_key', 'urgent'],
-  userIds: ['dc6b5519-4e10-44f8-b051-8112e428432d'],
+  partnerIds: ['06ca73aa-1311-46d2-b18f-9cb17a9e8b10'],
   methods: {
     ticket: {
       name: 'Ticket',
