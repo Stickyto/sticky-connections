@@ -56,13 +56,18 @@ async function eventHookLogic(config, connectionContainer) {
 
   let finalNote = (() => {
     const parts = []
-    thing && cThingPassthrough === 'Note' && parts.push(`[${thing.name.toUpperCase()}]`)
+    payment.cart.getRaw().forEach(_ => {
+      if (!_.productTheirId) {
+        return
+      }
+      parts.push(`${_.productName}: ${_.questions.map(question => {
+        return `${question.question}=${question.answer}`
+      }).join(',')}`)
+    })
+    // thing && cThingPassthrough === 'Note' && parts.push(`[${thing.name.toUpperCase()}]`)
     typeof payment.extra === 'string' && payment.extra.length > 0 && parts.push(payment.extra)
     return parts.length > 0 ? parts.join(' ').substring(0, 190) : undefined
   })()
-  if (typeof finalNote === 'string') {
-    finalNote = finalNote.substring(0, 190)
-  }
 
   let currentSequenceNumber = 1
   const salesItems = []
@@ -83,6 +88,9 @@ async function eventHookLogic(config, connectionContainer) {
       _.questions.forEach(question => {
         const foundOption = question.options.find(o => o.name === question.answer)
         if (!foundOption) {
+          return
+        }
+        if (!foundOption.theirId) {
           return
         }
         salesItems.push({
