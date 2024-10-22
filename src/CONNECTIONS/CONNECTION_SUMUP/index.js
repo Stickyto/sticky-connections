@@ -95,7 +95,7 @@ async function eventHookLogic(config, connectionContainer) {
         }
         salesItems.push({
           product_id: foundOption.theirId,
-          name: foundOption.name,
+          name: `${_.productName}: ${foundOption.name}`,
           quantity: _.quantity,
           sequence_no: currentSequenceNumber,
           price: (_.productPrice / 100).toFixed(2)
