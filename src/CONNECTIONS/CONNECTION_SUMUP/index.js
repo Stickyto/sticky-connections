@@ -60,12 +60,12 @@ async function eventHookLogic(config, connectionContainer) {
       if (!_.productTheirId) {
         return
       }
-      parts.push(`${_.productName}: ${_.questions.map(question => {
+      typeof payment.extra === 'string' && payment.extra.length > 0 && parts.push(payment.extra)
+      _.questions.length > 0 && parts.push(`${_.productName}: ${_.questions.map(question => {
         return `${question.question}=${question.answer}`
-      }).join(',')}`)
+      }).join('; ')}`)
     })
     // thing && cThingPassthrough === 'Note' && parts.push(`[${thing.name.toUpperCase()}]`)
-    typeof payment.extra === 'string' && payment.extra.length > 0 && parts.push(payment.extra)
     return parts.length > 0 ? parts.join(' ').substring(0, 190) : undefined
   })()
 
