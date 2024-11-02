@@ -91,6 +91,10 @@ const CONNECTIONS = new Map([
   [
     'CONNECTION_API',
     require('./CONNECTION_API')
+  ],
+  [
+    'CONNECTION_SENDGRID_INBOUND',
+    require('./CONNECTION_SENDGRID_INBOUND')
   ]
 ])
 
