@@ -56,17 +56,15 @@ async function eventHookLogic(config, connectionContainer) {
 
   let finalNote = (() => {
     const parts = []
+    typeof payment.extra === 'string' && payment.extra.length > 0 && parts.push(payment.extra)
+    thing && cThingPassthrough === 'Note' && parts.push(`[${thing.name.toUpperCase()}]`)
     payment.cart.getRaw().forEach(_ => {
-      if (!_.productTheirId) {
-        return
-      }
-      typeof payment.extra === 'string' && payment.extra.length > 0 && parts.push(payment.extra)
       _.questions.length > 0 && parts.push(`${_.productName}: ${_.questions.map(question => {
-        return `${question.question}=${question.answer}`
+        const lhs = question.question.trim()
+        return `${lhs ? `${lhs}=>` : ''}${question.answer.toString().replaceAll(_.productName, '').trim()}`
       }).join('; ')}`)
     })
-    // thing && cThingPassthrough === 'Note' && parts.push(`[${thing.name.toUpperCase()}]`)
-    return parts.length > 0 ? parts.join(' ').substring(0, 190) : undefined
+    return parts.length > 0 ? parts.join(' -- ').substring(0, 190) : undefined
   })()
 
   let currentSequenceNumber = 1
