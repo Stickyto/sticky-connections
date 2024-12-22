@@ -70,18 +70,21 @@ async function eventHookLogic(config, connectionContainer) {
   })()
 
   let currentSequenceNumber = 1
+  let runningTotal = 0
   const salesItems = []
   payment.cart.getRaw().forEach(_ => {
     if (!_.productTheirId) {
       return
     }
     if (_.questions.length === 0) {
+      const toAddToRunningTotal = (_.productPrice / 100)
+      runningTotal += toAddToRunningTotal
       salesItems.push({
         product_id: _.productTheirId,
         name: _.productName,
         quantity: _.quantity,
         sequence_no: currentSequenceNumber,
-        price: (_.productPrice / 100).toFixed(2)
+        price: toAddToRunningTotal.toFixed(2)
       })
       currentSequenceNumber += 1
     } else {
@@ -93,12 +96,14 @@ async function eventHookLogic(config, connectionContainer) {
         if (!foundOption.theirId) {
           return
         }
+        const toAddToRunningTotal = (_.productPrice / 100)
+        runningTotal += toAddToRunningTotal
         salesItems.push({
           product_id: foundOption.theirId,
           name: `${_.productName}: ${foundOption.name}`,
           quantity: _.quantity,
           sequence_no: currentSequenceNumber,
-          price: (_.productPrice / 100).toFixed(2)
+          price: toAddToRunningTotal.toFixed(2)
         })
         currentSequenceNumber += 1
       })
@@ -179,7 +184,7 @@ async function eventHookLogic(config, connectionContainer) {
     'payments': [
       {
         'method': 'CARD',
-        'amount': (payment.total / 100).toFixed(2)
+        'amount': runningTotal.toFixed(2)
       }
     ]
   }
