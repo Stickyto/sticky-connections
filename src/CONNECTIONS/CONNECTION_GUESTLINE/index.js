@@ -26,6 +26,7 @@ async function eventHookLogic (config, connectionContainer) {
       type: 'CONNECTION_BAD',
       userId: user.id,
       applicationId: application ? application.id : undefined,
+      thingId: thing ? thing.id : undefined,
       customData: { id: 'CONNECTION_GUESTLINE', message },
       paymentId: payment.id
     })
