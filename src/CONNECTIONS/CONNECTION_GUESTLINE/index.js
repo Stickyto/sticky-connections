@@ -7,7 +7,7 @@ const makePayment = require('./methods/makePayment/makePayment')
 const somethingSold = require('./methods/somethingSold/somethingSold')
 
 async function eventHookLogic (config, connectionContainer) {
-  const { rdic, user, application, thing, payment, customData, createEvent } = connectionContainer
+  const { rdic, user, application, thing, payment, event, customData, createEvent } = connectionContainer
   global.rdic.logger.log({ user }, '[CONNECTION_GUESTLINE] [eventHookLogic]')
 
   function goSuccess (whatHappened) {
@@ -28,7 +28,7 @@ async function eventHookLogic (config, connectionContainer) {
       applicationId: application ? application.id : undefined,
       thingId: thing ? thing.id : undefined,
       customData: { id: 'CONNECTION_GUESTLINE', message },
-      paymentId: payment.id
+      paymentId: event.paymentId
     })
   }
 
