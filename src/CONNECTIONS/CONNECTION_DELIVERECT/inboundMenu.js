@@ -8,206 +8,177 @@ const wait = (time) => {
 
 const allDeliverectProductTags = [
   {
-    'name': 'Alcohol',
-    'allergenId': 1,
-    ourTag: 'wet--alcohol'
-  },
-  {
-    'name': 'Halal',
-    'allergenId': 2,
-    ourTag: 'halal'
-  },
-  {
-    'name': 'Kosher',
-    'allergenId': 3,
-    ourTag: 'kosher'
-  },
-  {
-    'name': 'Vegan',
-    'allergenId': 4,
-    ourTag: 'vegan'
-  },
-  {
-    'name': 'Vegetarian',
-    'allergenId': 5,
-    ourTag: 'vegetarian'
-  },
-  {
-    'name': 'Celery',
-    'allergenId': 100,
-    ourTag: 'allergy--celery'
-  },
-  {
-    'name': 'Gluten',
-    'allergenId': 101,
+    allergenId: 101,
     ourTag: 'allergy--gluten'
   },
   {
-    'name': 'Crustaceans',
-    'allergenId': 102,
+    allergenId: 1101,
+    ourTag: 'gluten-free-really',
+  },
+  {
+    allergenId: 1,
+    ourTag: 'wet--alcohol'
+  },
+  {
+    allergenId: 2,
+    ourTag: 'halal'
+  },
+  {
+    allergenId: 3,
+    ourTag: 'kosher'
+  },
+  {
+    allergenId: 4,
+    ourTag: 'vegan'
+  },
+  {
+    allergenId: 5,
+    ourTag: 'vegetarian'
+  },
+  {
+    allergenId: 100,
+    ourTag: 'allergy--celery'
+  },
+  {
+    allergenId: 102,
     ourTag: 'allergy--crustaceans'
   },
   {
-    'name': 'Fish',
-    'allergenId': 103,
+    allergenId: 103,
     ourTag: 'allergy--fish'
   },
   {
-    'name': 'Eggs',
-    'allergenId': 104,
+    allergenId: 104,
     ourTag: 'allergy--eggs'
   },
   {
-    'name': 'Lupin',
-    'allergenId': 105,
+    allergenId: 105,
     ourTag: 'allergy--lupin'
   },
   {
-    'name': 'Milk',
-    'allergenId': 106,
+    allergenId: 106,
     ourTag: 'allergy--milk'
   },
   {
-    'name': 'Molluscs',
-    'allergenId': 107,
+    allergenId: 107,
     ourTag: 'allergy--molluscs'
   },
   {
-    'name': 'Mustard',
-    'allergenId': 108,
+    allergenId: 108,
     ourTag: 'allergy--mustard',
   },
   {
-    'name': 'Nuts',
-    'allergenId': 109,
+    allergenId: 109,
     ourTag: 'allergy--nuts',
   },
   {
-    'name': 'Sesame',
-    'allergenId': 111,
+    allergenId: 111,
     ourTag: 'allergy--sesame',
   },
   {
-    'name': 'Soya',
-    'allergenId': 112,
+    allergenId: 112,
     ourTag: 'allergy--soy',
   },
   {
-    'name': 'Sulphites',
-    'allergenId': 113,
+    allergenId: 113,
     ourTag: 'allergy--sulphites',
   },
   {
-    'name': 'Gluten Free',
-    'allergenId': 1101,
-    ourTag: 'gluten-free',
-  },
-  {
-    'name': 'Peanuts',
-    'allergenId': 110,
+    allergenId: 110,
     ourTag: 'allergy--nuts' // subset
   },
   {
-    'name': 'Almonds',
-    'allergenId': 114,
+    allergenId: 114,
     ourTag: 'allergy--nuts' // subset
   },
   {
-    'name': 'Brazil Nuts',
-    'allergenId': 116,
+    allergenId: 116,
     ourTag: 'allergy--nuts' // subset
   },
   {
-    'name': 'Cashew',
-    'allergenId': 117,
+    allergenId: 117,
     ourTag: 'allergy--nuts' // subset
   },
   {
-    'name': 'Hazelnuts',
-    'allergenId': 118,
+    allergenId: 118,
     ourTag: 'allergy--nuts' // subset
   },
   {
-    'name': 'Macadamia',
-    'allergenId': 120,
+    allergenId: 120,
     ourTag: 'allergy--nuts' // subset
   },
   {
-    'name': 'Pecan',
-    'allergenId': 122,
+    allergenId: 122,
     ourTag: 'allergy--nuts' // subset
   },
   {
-    'name': 'Pistachios',
-    'allergenId': 123,
+    allergenId: 123,
     ourTag: 'allergy--nuts' // subset
   },
   {
-    'name': 'Walnuts',
-    'allergenId': 126,
+    allergenId: 126,
     ourTag: 'allergy--nuts' // subset
   },
   {
-    'name': 'Dairy',
-    'allergenId': 129,
+    allergenId: 129,
     ourTag: 'allergy--milk' // subset
-  },
-  {
-    'name': 'Can Serve Alone',
-    'allergenId': 6
-  },
-  {
-    'name': 'Bottle Deposit',
-    'allergenId': 7
-  },
-  {
-    'name': 'Organic',
-    'allergenId': 8
-  },
-  {
-    'name': 'Natural',
-    'allergenId': 9
-  },
-  {
-    'name': 'Barley',
-    'allergenId': 115
-  },
-  {
-    'name': 'Kamut',
-    'allergenId': 119
-  },
-  {
-    'name': 'Oats',
-    'allergenId': 121
-  },
-  {
-    'name': 'Rye',
-    'allergenId': 124
-  },
-  {
-    'name': 'Spelt',
-    'allergenId': 125
-  },
-  {
-    'name': 'Wheat',
-    'allergenId': 127
-  },
-  {
-    'name': 'Sugared Drink',
-    'allergenId': 128
-  },
-  {
-    'name': 'No Allergens',
-    'allergenId': 1000
-  },
-  {
-    'name': 'Sugar Free',
-    'allergenId': 1128
-  },
-  {
-    'name': 'Lac Free',
-    'allergenId': 1129
   }
+  // {
+  //   'name': 'Can Serve Alone',
+  //   allergenId: 6
+  // },
+  // {
+  //   'name': 'Bottle Deposit',
+  //   allergenId: 7
+  // },
+  // {
+  //   'name': 'Organic',
+  //   allergenId: 8
+  // },
+  // {
+  //   'name': 'Natural',
+  //   allergenId: 9
+  // },
+  // {
+  //   'name': 'Barley',
+  //   allergenId: 115
+  // },
+  // {
+  //   'name': 'Kamut',
+  //   allergenId: 119
+  // },
+  // {
+  //   'name': 'Oats',
+  //   allergenId: 121
+  // },
+  // {
+  //   'name': 'Rye',
+  //   allergenId: 124
+  // },
+  // {
+  //   'name': 'Spelt',
+  //   allergenId: 125
+  // },
+  // {
+  //   'name': 'Wheat',
+  //   allergenId: 127
+  // },
+  // {
+  //   'name': 'Sugared Drink',
+  //   allergenId: 128
+  // },
+  // {
+  //   'name': 'No Allergens',
+  //   allergenId: 1000
+  // },
+  // {
+  //   'name': 'Sugar Free',
+  //   allergenId: 1128
+  // },
+  // {
+  //   'name': 'Lac Free',
+  //   allergenId: 1129
+  // }
 ]
 
 const vatBs = new Map([

@@ -59,7 +59,7 @@ module.exports = new Connection({
   //               p.isVegetarian && tags.push('vegan')
   //               p.isVegan && tags.push('vegetarian')
   //               p.isHot && tags.push('allergy--spicy')
-  //               p.isGlutenFree && tags.push('gluten-free')
+  //               p.isGlutenFree && tags.push('gluten-free-really')
   //               const { id: createdPId } = await cronContainer.createProduct({
   //                 categories: Array.from(new Set(tags)),
   //                 userId: user.id,

@@ -104,7 +104,7 @@ module.exports = new Connection({
   //               const pCategories = []
   //               isAlcohol && pCategories.push('wet--alcohol')
   //               !isAlcohol && pCategories.push('wet--soft')
-  //               isGlutenFree && pCategories.push('gluten-free')
+  //               isGlutenFree && pCategories.push('gluten-free-really')
   //               isVegan && pCategories.push('vegan')
   //               const pName = p.name
   //               const pDescription = [
