@@ -77,14 +77,14 @@ async function eventHookLogic(config, connectionContainer) {
       return
     }
     if (_.questions.length === 0) {
-      const toAddToRunningTotal = (_.productPrice / 100)
+      const toAddToRunningTotal = Math.floor((_.productPrice / 100) * _.quantity)
       runningTotal += toAddToRunningTotal
       salesItems.push({
         product_id: _.productTheirId,
         name: _.productName,
         quantity: _.quantity,
         sequence_no: currentSequenceNumber,
-        price: toAddToRunningTotal.toFixed(2)
+        price: (_.productPrice / 100).toFixed(2)
       })
       currentSequenceNumber += 1
     } else {
@@ -96,14 +96,14 @@ async function eventHookLogic(config, connectionContainer) {
         if (!foundOption.theirId) {
           return
         }
-        const toAddToRunningTotal = (_.productPrice / 100)
+        const toAddToRunningTotal = Math.floor((_.productPrice / 100) * _.quantity)
         runningTotal += toAddToRunningTotal
         salesItems.push({
           product_id: foundOption.theirId,
           name: `${_.productName}: ${foundOption.name}`,
           quantity: _.quantity,
           sequence_no: currentSequenceNumber,
-          price: toAddToRunningTotal.toFixed(2)
+          price: (_.productPrice / 100).toFixed(2)
         })
         currentSequenceNumber += 1
       })
