@@ -77,7 +77,7 @@ async function eventHookLogic(config, connectionContainer) {
       return
     }
     if (_.questions.length === 0) {
-      const toAddToRunningTotal = Math.floor((_.productPrice / 100) * _.quantity)
+      const toAddToRunningTotal = Math.floor(_.productPrice * _.quantity)
       runningTotal += toAddToRunningTotal
       salesItems.push({
         product_id: _.productTheirId,
@@ -96,7 +96,7 @@ async function eventHookLogic(config, connectionContainer) {
         if (!foundOption.theirId) {
           return
         }
-        const toAddToRunningTotal = Math.floor((_.productPrice / 100) * _.quantity)
+        const toAddToRunningTotal = Math.floor(_.productPrice * _.quantity)
         runningTotal += toAddToRunningTotal
         salesItems.push({
           product_id: foundOption.theirId,
@@ -108,47 +108,6 @@ async function eventHookLogic(config, connectionContainer) {
         currentSequenceNumber += 1
       })
     }
-    // {
-    //   "questions": [
-    //     {
-    //       "type": "option",
-    //       "options": [
-    //         {
-    //           "name": "7up 300ml",
-    //           "delta": 0,
-    //           "forSale": true,
-    //           "theirId": "2d5f90c1-e26c-482e-9461-786c01c6d672",
-    //           "subProducts": []
-    //         },
-    //         {
-    //           "name": "7up 500ml",
-    //           "delta": 100,
-    //           "forSale": true,
-    //           "theirId": "61537715-0677-4a06-baf1-5dc137d4a5fc",
-    //           "subProducts": []
-    //         }
-    //       ],
-    //       "question": " ",
-    //       "answer": "7up 300ml",
-    //       "connectionHandleAsProduct": true
-    //     }
-    //   ]
-    // }
-    // 'items': payment.cart.map(_ => {
-    //   _.questions
-    //     .forEach(__ => {
-    //       const foundOptions = Array.isArray(__.answer) ? __.options.filter(o => __.answer.includes(o.name)) : [__.options.find(o => o.name === __.answer)]
-    //       subItems = [
-    //         ...subItems,
-    //         ...foundOptions.map(foundOption => ({
-    //           plu: foundOption.theirId,
-    //           name: foundOption.name,
-    //           price: 0,
-    //           quantity: 1
-    //         }))
-    //       ]
-    //     })
-    // })
   })
 
   const theJson = {
@@ -184,7 +143,7 @@ async function eventHookLogic(config, connectionContainer) {
     'payments': [
       {
         'method': 'CARD',
-        'amount': runningTotal.toFixed(2)
+        'amount': (runningTotal / 100).toFixed(2)
       }
     ]
   }
