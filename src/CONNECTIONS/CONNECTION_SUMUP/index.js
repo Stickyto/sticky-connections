@@ -157,7 +157,10 @@ async function eventHookLogic(config, connectionContainer) {
       {
         'Authorization': `Bearer ${token}`,
         'Vendor-Id': cVendorId,
-        'Outlet-Id': '1a6ea3e2-d368-4912-bed4-c828c31eecb0'
+        'Outlet-Id': ({
+          'Waterfront Street Kitchen and Bar': '1a6ea3e2-d368-4912-bed4-c828c31eecb0',
+          'The Bridge Restaurant': 'fe6a4504-1b14-4664-abd5-aed5dcf5bcf8'
+        })[user.name]
       },
       'POST',
       'https://api.thegoodtill.com/api/external_sale/sale',
