@@ -123,7 +123,7 @@ module.exports = new Connection({
   //           customData: { id: 'CONNECTION_DOMCENTRAL', message }
   //         }
   //         await cronContainer.createEvent(payload)
-  //         global.rdic.logger.error({}, { message })
+  //         global.rdic.logger.error({ user }, { message })
   //       }
   //     }
   //   }

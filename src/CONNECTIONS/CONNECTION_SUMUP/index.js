@@ -192,8 +192,8 @@ module.exports = new Connection({
   color: '#000000',
   logo: cdn => `${cdn}/connections/CONNECTION_SUMUP.svg`,
   logoInverted: cdn => `${cdn}/connections/CONNECTION_SUMUP_WHITE.svg`,
-  configNames: ['Subdomain', 'Username', 'Password', 'Vendor ID', `Sticker passthrough (${VALID_THING_PASSTHROUGHS.join('/')})`, 'Send order (Yes/No)', 'Outlet'],
-  configDefaults: ['', '', '', '', 'Name', 'No', ''],
+  configNames: ['Subdomain', 'Username', 'Password', 'Vendor ID', `Sticker passthrough (${VALID_THING_PASSTHROUGHS.join('/')})`, 'Send order (Yes/No)', 'Outlet', 'Pull external orders (Yes/No)'],
+  configDefaults: ['', '', '', '', 'Name', 'No', '', 'No'],
   eventHooks: {
     'SESSION_CART_PAY': eventHookLogic
   },
@@ -333,7 +333,200 @@ module.exports = new Connection({
         return 'All ok!'
       }
     }
-  }
+  },
+  // Pull external orders (Yes/No)
+  crons: [
+    {
+      id: 'generic',
+      frequency: '* * * * *',
+      logic: async function (user, cronContainer) {
+        const { config } = user.connections.find(c => c.id === 'CONNECTION_SUMUP')
+        let [cSubdomain, cUsername, cPassword, cVendorId, cThingPassthrough, cSendOrder, cOutletName, _pullExternalPayments] = config
+        const pullExternalPayments = _pullExternalPayments === 'Yes'
+        if (!pullExternalPayments) {
+          return
+        }
+        
+        try {
+          const allPsToday = await cronContainer.getProducts(rdic, user, { connection: 'CONNECTION_SUMUP' })
+          console.warn('xxx allPsToday', allPsToday)
+
+          const token = await getToken(cSubdomain, cUsername, cPassword)
+
+          global.rdic.logger.log({ user }, `[CONNECTION_SUMUP] [crons->pullExternalPayments] -> user ID ${user.id}`)
+  
+          const outletsData = await makeRequest(
+            {
+              'Authorization': `Bearer ${token}`
+            },
+            'GET',
+            'https://api.thegoodtill.com/api/outlets'
+          )
+          assert(outletsData.status, '[Pull external orders] Failed outletsData.status assert (very bad)')
+          const { data: outlets } = outletsData
+  
+          const foundOutlet = outlets.find(o => o.outlet_name === cOutletName)
+          assert(foundOutlet, `[Pull external orders] There is no outlet with name "${cOutletName}". The outlet names are:\n\n${outlets.map(o => o.outlet_name).join('\n\n')}`)
+
+          const allExternalPayments = await makeRequest(
+            {
+              'Authorization': `Bearer ${token}`,
+              'Outlet-Id': foundOutlet.id
+            },
+            'GET',
+            `https://api.thegoodtill.com/api/external/get_sales?timezone=utc&from=2025-01-15 00:00:00&to=2025-01-16 00:00:00`
+          )
+          assert(allExternalPayments.status, '[Pull external orders] Failed allExternalPayments.status assert (very bad)')
+
+          const interestingExternalPayments = allExternalPayments.data.filter(_ => _.sale_type !== 'WEB')
+
+          console.warn('xxx', interestingExternalPayments.length)
+          require('fs').writeFileSync('./dump.json', JSON.stringify(allExternalPayments.data, null, 2), 'utf-8')
+
+          const dlr = rdic.get('datalayerRelational')
+          dlr.deleteMany('payments', { user_id: user.id })
+
+          // {
+          //   "product_name": "Budweiser NRB",
+          //   "product_sku": "BUDWEISER_1",
+          //   "account_code": null,
+          //   "category_name": "Bottled Beer",
+          //   "quantity": 1,
+          //   "discount_id": null,
+          //   "vat_rate_id": "6bf79c86-1dd7-4b74-8e47-7da0466bb0eb",
+          //   "vat_rate": "20.000",
+          //   "product_id": "104544c4-00bd-4891-b020-4ecb5162c7b2",
+          //   "line_discount": 0,
+          //   "sales_discount": 0,
+          //   "total_inc_vat": 6,
+          //   "vat": 1
+          // },
+          // {
+          //   "product_name": "Corona NRB",
+          //   "product_sku": "CORONA",
+          //   "account_code": null,
+          //   "category_name": "Bottled Beer",
+          //   "quantity": 1,
+          //   "discount_id": null,
+          //   "vat_rate_id": "6bf79c86-1dd7-4b74-8e47-7da0466bb0eb",
+          //   "vat_rate": "20.000",
+          //   "product_id": "0fd73431-8f32-43c7-a2b9-a8a601c9c894",
+          //   "line_discount": 0,
+          //   "sales_discount": 0,
+          //   "total_inc_vat": 6,
+          //   "vat": 1
+          // }
+
+
+
+          // [
+          //   {
+          //     "productId": "6253b60a-e504-4cf5-a646-3b228a323e30",
+          //     "productName": "Caesar Salad (NGCI)",
+          //     "productPrice": 1050,
+          //     "productCurrency": "GBP",
+          //     "productTheirId": "e434b9b7-43c2-47b9-9e9d-ea4af204a10b",
+          //     "quantity": 1,
+          //     "questions": [
+          //       {
+          //         "type": "options",
+          //         "options": [
+          //           {
+          //             "name": "Add Griddled Chicken Breast",
+          //             "delta": 400,
+          //             "subProducts": [],
+          //             "forSale": true,
+          //             "theirId": "21880f14-1d2b-4dad-b12a-9489b0bd1687"
+          //           }
+          //         ],
+          //         "question": "Add Griddled Chicken Breast",
+          //         "answer": [],
+          //         "connectionHandleAsProduct": false,
+          //         "checklistMaximum": 1,
+          //         "theirId": ""
+          //       }
+          //     ]
+          //   },
+          //   {
+          //     "productId": "6253b60a-e504-4cf5-a646-3b228a323e30",
+          //     "productName": "Caesar Salad (NGCI)",
+          //     "productPrice": 1450,
+          //     "productCurrency": "GBP",
+          //     "productTheirId": "e434b9b7-43c2-47b9-9e9d-ea4af204a10b",
+          //     "quantity": 1,
+          //     "questions": [
+          //       {
+          //         "type": "options",
+          //         "options": [
+          //           {
+          //             "name": "Add Griddled Chicken Breast",
+          //             "delta": 400,
+          //             "subProducts": [],
+          //             "forSale": true,
+          //             "theirId": "21880f14-1d2b-4dad-b12a-9489b0bd1687"
+          //           }
+          //         ],
+          //         "question": "Add Griddled Chicken Breast",
+          //         "answer": [
+          //           "Add Griddled Chicken Breast"
+          //         ],
+          //         "connectionHandleAsProduct": false,
+          //         "checklistMaximum": 1,
+          //         "theirId": ""
+          //       }
+          //     ]
+          //   }
+          // ]
+
+
+          
+          for (let i = 0; i < interestingExternalPayments.length; i++) {
+            const thisPaymentFromSu = interestingExternalPayments[i]
+            let existingPayment = await dlr.readOne('payments', { user_id: user.id, user_payment_id: thisPaymentFromSu.sales_id })
+            if (!existingPayment) {
+              const newPayment = new Payment(
+                {
+                  userId: user.id,
+                  userPaymentId: thisPaymentFromSu.sales_id,
+                  total: Math.floor(thisPaymentFromSu.total_inc_vat * 100),
+                  paymentGatewayId: thisPaymentFromSu.receipt_no,
+                  newStatusDone: false,
+                  createdAt: 1737158400,
+                  cart: thisPaymentFromSu.items.map(suItem => {
+                    const foundExistingPc = allPsToday.find(pToday => pToday.theirId === suItem.product_id)
+                    return {
+                      // productId: foundExistingPc ? foundExistingPc.id : undefined,
+                      productName: suItem.product_name,
+                      productPrice: Math.floor(suItem.total_inc_vat / suItem.quantity),
+                      productCurrency: user.currency,
+                      quantity: suItem.quantity,
+                      productTheirId: suItem.product_id,
+                      questions: []
+                    }
+                  })
+                },
+                user
+              )
+              newPayment.sessionPaidAt = 1735693261
+              await dlr.create('payments', newPayment.toDatalayerRelational())
+            }
+          }
+
+          // const { rdic } = connectionContainer
+          // const startTime = getNow()
+
+        } catch({ message }) {
+          const payload = {
+            type: 'CONNECTION_BAD',
+            userId: user.id,
+            customData: { id: 'CONNECTION_SUMUP', message }
+          }
+          await cronContainer.createEvent(payload)
+          global.rdic.logger.error({ user }, { message })
+        }
+      }
+    }
+  ],
 })
 
 // createEvent: [AsyncFunction: createEvent]
