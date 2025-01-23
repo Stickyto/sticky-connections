@@ -76,7 +76,9 @@ async function eventHookLogic(config, connectionContainer) {
     if (!_.productTheirId) {
       return
     }
-    if (_.questions.length === 0) {
+    const questionsWhichAreVariants = _.questions.filter(___ => ___.question === ' ')
+
+    if (questionsWhichAreVariants.length === 0) {
       const toAddToRunningTotal = Math.floor(_.productPrice * _.quantity)
       runningTotal += toAddToRunningTotal
       salesItems.push({
@@ -88,7 +90,7 @@ async function eventHookLogic(config, connectionContainer) {
       })
       currentSequenceNumber += 1
     } else {
-      _.questions.forEach(question => {
+      questionsWhichAreVariants.forEach(question => {
         const foundOption = question.options.find(o => o.name === question.answer)
         if (!foundOption) {
           return
