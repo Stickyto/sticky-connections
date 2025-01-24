@@ -178,7 +178,7 @@ module.exports = new Connection({
     {
       id: 'generic',
       frequency: '* * * * *',
-      logic: async function processUserOrders(user, cronContainer) {
+      logic: async function (user, cronContainer) {
         const { config } = user.connections.find(c => c.id === 'CONNECTION_DELIVERECT');
 
         const groupTime = parseInt(config.at(4) || '0', 10);
