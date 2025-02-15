@@ -38,7 +38,6 @@ async function eventHookLogic(config, connectionContainer) {
 
   let token
   try {
-    assert(application, 'There is no flow.')
     assert(customData.cart.length > 0, 'Bag is empty. This is probably fine.')
     assert(cSendOrder === 'Yes', 'Send order (Yes/No) is not set to "Yes".')
     assert(VALID_THING_PASSTHROUGHS.includes(cThingPassthrough), `Sticker passthrough is not one of (${VALID_THING_PASSTHROUGHS.join('/')})`)
@@ -118,13 +117,13 @@ async function eventHookLogic(config, connectionContainer) {
     'strict_payments': false,
     'dropoff_point': (() => {
       if (!thing) {
-        return undefined
+        return '???'
       }
       if (cThingPassthrough === 'None') {
-        return undefined
+        return '???'
       }
       if (cThingPassthrough === 'Your ID') {
-        return thing.theirId || undefined
+        return thing.theirId || '???'
       }
       if (cThingPassthrough === 'Name') {
         return thing.name
@@ -132,7 +131,7 @@ async function eventHookLogic(config, connectionContainer) {
       if (cThingPassthrough === 'Number') {
         return thing.name.split('').filter(_ => ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'].includes(_)).join('')
       }
-      return undefined
+      return '???'
     })(),
     'order_ref': temporaryPayment.consumerIdentifier,
     'vendor_order_ref': event.paymentId,
