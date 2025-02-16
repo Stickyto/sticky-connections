@@ -63,7 +63,7 @@ async function eventHookLogic(config, connectionContainer) {
 
   let token
   try {
-    assert(customData.cart.length > 0, 'Bag is empty. This is probably fine.')
+    assert(customData.cart.length > 0, 'The bag is empty.')
     assert(cSendOrder === 'Yes', 'Send order (Yes/No) is not set to "Yes".')
     assert(VALID_THING_PASSTHROUGHS.includes(cThingPassthrough), `Sticker passthrough is not one of (${VALID_THING_PASSTHROUGHS.join('/')})`)
 

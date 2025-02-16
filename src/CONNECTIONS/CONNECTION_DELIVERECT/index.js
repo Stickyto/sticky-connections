@@ -32,7 +32,7 @@ async function eventHookLogic(config, connectionContainer) {
   try {
     assert(!isNaN(groupTime), 'Group order time (seconds; 0 for no group) is not valid; it must be a number.')
     assert(application, 'There is no flow.')
-    assert(customData.cart.length > 0, 'Bag is empty. This is probably fine.')
+    assert(customData.cart.length > 0, 'The bag is empty.')
     assert(sendOrder === 'Yes', 'Send order (Yes/No) is not set to "Yes".')
     assert(VALID_THING_PASSTHROUGHS.includes(thingPassthrough), `Sticker passthrough is not one of (${VALID_THING_PASSTHROUGHS.join('/')})`)
     foundEnvironment = getEnvironment(environment)
