@@ -136,6 +136,20 @@ async function eventHookLogic(config, connectionContainer) {
     }
   })
 
+  if (runningTotal !== payment.total) {
+    const toEmail = {
+      user,
+      subject: `SumUp total mis-match at "${user.name}"`,
+      message: `
+  <p>Payment total: ${payment.total}</p>
+  <p>SumUp total: ${runningTotal}</p>
+  <p>Payment ID: ${event.paymentId}</p>
+      `,
+      to: 'dev@sticky.to'
+    }
+    services.mail.quickSend(rdic, toEmail)
+  }
+
   const theJson = {
     'status': 'ACCEPTED',
     'type': 'DROPOFF',
