@@ -2,7 +2,7 @@
 const { Payment } = require('openbox-entities')
 const Connection = require('../Connection')
 const makeRequest = require('./makeRequest')
-const { assert, getNow, asyncSeries } = require('@stickyto/openbox-node-utils')
+const { assert, getNow, asyncSeries, services } = require('@stickyto/openbox-node-utils')
 const VALID_THING_PASSTHROUGHS = ['None', 'Your ID', 'Name', 'Number', 'Note']
 
 async function getToken (cSubdomain, cUsername, cPassword) {
@@ -31,6 +31,31 @@ async function eventHookLogic(config, connectionContainer) {
       thingId: thing ? thing.id : undefined,
       customData: {id: 'CONNECTION_SUMUP', message: e.message}
     })
+      .then(createdEvent => {
+        const toEmail = {
+          user,
+          subject: `SumUp injection failure at "${user.name}"`,
+          message: `
+<p>Event ID: ${createdEvent.id}</p>
+<p>Payment ID: ${event.paymentId}</p>
+<p>SumUp said: ${e.message}</p>
+          `,
+          to: 'dev@sticky.to'
+        }
+        services.mail.quickSend(rdic, toEmail)
+      })
+    // createEvent({
+    //   type: 'TO_DO',
+    //   userId: user.id,
+    //   paymentId: event.paymentId,
+    //   applicationId: application ? application.id : undefined,
+    //   thingId: thing ? thing.id : undefined,
+    //   customData: {
+    //     what: `SumUp failure: ${e.message}`,
+    //     colour: '#ff3838',
+    //     foregroundColor: '#ffffff'
+    //   }
+    // })
   }
 
   let [cSubdomain, cUsername, cPassword, cVendorId, cThingPassthrough, cSendOrder] = config

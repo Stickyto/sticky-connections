@@ -26,7 +26,7 @@ module.exports = async function makeRequest(customHeaders = {}, method, url, jso
   const finalToReturn = MIME_DECODERS.get(contentType)(await response.text())
   global.rdic.logger.log({}, '[CONNECTION_SUMUP] [makeRequest] 2', { wasOk: response.ok, status: response.status, finalToReturn })
   if (!response.ok) {
-    throw new Error(JSON.stringify(finalToReturn, null, 2))
+    throw new Error(finalToReturn.message)
   }
 
   return finalToReturn
