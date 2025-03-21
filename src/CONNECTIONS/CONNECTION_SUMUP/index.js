@@ -22,6 +22,10 @@ async function getToken (cSubdomain, cUsername, cPassword) {
 async function eventHookLogic(config, connectionContainer) {
   const {user, application, thing, payment, event, customData, createEvent} = connectionContainer
 
+  if (payment.gateway === 'GATEWAY_NOOP') {
+    return
+  }
+
   function goFail(e) {
     createEvent({
       type: 'CONNECTION_BAD',
