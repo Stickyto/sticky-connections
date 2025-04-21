@@ -25,7 +25,7 @@ module.exports = {
         thingId: p.thingId,
         customData: {
           what: `Deliverect failed: ${realReason}`,
-          colour: '#ff3838',
+          colour: '#F0003C',
           foregroundColor: '#ffffff'
         }
       })

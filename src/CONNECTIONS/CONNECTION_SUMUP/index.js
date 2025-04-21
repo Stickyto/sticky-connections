@@ -56,7 +56,7 @@ async function eventHookLogic(config, connectionContainer) {
     //   thingId: thing ? thing.id : undefined,
     //   customData: {
     //     what: `SumUp failure: ${e.message}`,
-    //     colour: '#ff3838',
+    //     colour: '#F0003C',
     //     foregroundColor: '#ffffff'
     //   }
     // })

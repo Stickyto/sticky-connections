@@ -28,10 +28,6 @@ const CONNECTIONS = new Map([
     require('./CONNECTION_SUMUP')
   ],
   [
-    'CONNECTION_CYCLR',
-    require('./CONNECTION_CYCLR')
-  ],
-  [
     'CONNECTION_TEVALIS',
     require('./CONNECTION_TEVALIS')
   ],
