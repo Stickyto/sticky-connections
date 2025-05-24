@@ -144,7 +144,7 @@ module.exports = new Connection({
       "config": {
         "action": "url~~||~~https://r.loyverse.com/dashboard/#/integrations/tokens~~||~~false",
         "label": "Go to Loyverse access tokens",
-        "colour": "#F0F1F3",
+        "colour": "#F3F5F7",
         "foregroundColour": "#1A1F35",
         "icon": "",
         "fullWidth": false
@@ -233,7 +233,7 @@ module.exports = new Connection({
       "config": {
         "action": "url~~||~~https://r.loyverse.com/dashboard/#/settings/outlets~~||~~false",
         "label": "Go to Loyverse stores",
-        "colour": "#F0F1F3",
+        "colour": "#F3F5F7",
         "foregroundColour": "#1A1F35",
         "icon": "",
         "fullWidth": false
