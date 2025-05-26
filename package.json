@@ -6,6 +6,7 @@
   "dependencies": {
     "@google-cloud/firestore": "^7.10.0",
     "@stickyto/openbox-node-utils": "10.0.16",
+    "@stickyto/openbox-gateways": "^10.0.12",
     "adal-node": "^0.2.4",
     "dotenv": "^16.4.5",
     "html-entities": "^2.5.2",

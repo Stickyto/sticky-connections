@@ -49,7 +49,7 @@ async function eventHookLogic(config, connectionContainer) {
 
 module.exports = new Connection({
   id: 'CONNECTION_MAILCHIMP',
-  type: 'CONNECTION_TYPE_CRM',
+  type: 'CONNECTION_TYPE_ERP',
   name: 'Mailchimp',
   color: '#000000',
   logo: cdn => `${cdn}/connections/CONNECTION_MAILCHIMP.svg`,

@@ -4,7 +4,7 @@ const makeRequest = require('./makeRequest')
 
 module.exports = new Connection({
   id: 'CONNECTION_ZENDESK',
-  type: 'CONNECTION_TYPE_CRM',
+  type: 'CONNECTION_TYPE_ERP',
   name: 'Zendesk',
   color: '#03363D',
   logo: cdn => `${cdn}/connections/CONNECTION_ZENDESK.svg`,

@@ -12,6 +12,10 @@ const CONNECTIONS = new Map([
     require('./CONNECTION_ZENDESK')
   ],
   [
+    'CONNECTION_ZAPIER',
+    require('./CONNECTION_ZAPIER')
+  ],
+  [
     'CONNECTION_ELITE_DYNAMICS',
     require('./CONNECTION_ELITE_DYNAMICS')
   ],
