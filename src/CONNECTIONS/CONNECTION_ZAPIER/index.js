@@ -1,4 +1,4 @@
-const { isUrl, assert } = require('@stickyto/openbox-node-utils')
+const { isUrl, assert, formatTime } = require('@stickyto/openbox-node-utils')
 const gateways = require('@stickyto/openbox-gateways')
 const Connection = require('../Connection')
 
@@ -32,6 +32,9 @@ async function eventHookLogic(config, connectionContainer) {
     'Sticky ID': thing ? thing.id : undefined,
     'Sticky name': thing ? thing.name : undefined,
 
+    'Paid at': formatTime(payment.sessionPaidAt, user.timezone),
+    [`${user.name} reference`]: payment.userPaymentId ? payment.userPaymentId : undefined,
+    'Payment reference': payment.consumerIdentifier,
     'Payment total': (payment.total / 100).toFixed(2),
     'Payment currency': payment.currency,
 
@@ -44,7 +47,7 @@ async function eventHookLogic(config, connectionContainer) {
 
     'Payment provider': gateway ? gateway.name : 'Unknown',
     'Payment provider ID': payment.paymentGatewayId || undefined,
-    'Payment provider extra info': payment.paymentGatewayExtra || undefined,
+    'Paid with': payment.paymentGatewayExtra || undefined,
     ...payment.customDataPublic.getRaw()
   }
   global.rdic.logger.log({ user }, '[CONNECTION_ZAPIER]', { configZapUrl, json })
