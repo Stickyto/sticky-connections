@@ -230,8 +230,8 @@ function getFinalPrice (___) {
 }
 
 module.exports = new Connection({
-  partnerIds: ['5c9e6c25-7b1f-474b-9f04-a8e705654425'],
   id: 'CONNECTION_SUMUP',
+  type: 'CONNECTION_TYPE_POINT_OF_SALE',
   name: 'SumUp POS',
   color: '#000000',
   logo: cdn => `${cdn}/connections/CONNECTION_SUMUP.svg`,

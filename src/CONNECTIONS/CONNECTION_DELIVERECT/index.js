@@ -163,6 +163,7 @@ async function eventHookLogic(config, connectionContainer) {
 
 module.exports = new Connection({
   id: 'CONNECTION_DELIVERECT',
+  type: 'CONNECTION_TYPE_POINT_OF_SALE',
   name: 'Deliverect',
   color: '#05CC79',
   logo: cdn => `${cdn}/connections/CONNECTION_DELIVERECT.svg`,

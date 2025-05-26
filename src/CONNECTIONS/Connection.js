@@ -11,6 +11,7 @@ class Connection {
     Object.keys(json).forEach(k => {
       this[k] = json[k]
     })
+    this.type = this.type || 'CONNECTION_TYPE_GENERIC'
   }
 
   isAMatch(userId, partnerName) {
@@ -33,6 +34,7 @@ class Connection {
   toJson({ rdic, user, applications }) {
     return {
       id: this.id,
+      type: this.type,
       name: this.name,
       color: this.color,
       logo: this.logo( env.get('CDN') ),

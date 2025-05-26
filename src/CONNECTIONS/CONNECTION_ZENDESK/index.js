@@ -4,12 +4,12 @@ const makeRequest = require('./makeRequest')
 
 module.exports = new Connection({
   id: 'CONNECTION_ZENDESK',
+  type: 'CONNECTION_TYPE_CRM',
   name: 'Zendesk',
   color: '#03363D',
   logo: cdn => `${cdn}/connections/CONNECTION_ZENDESK.svg`,
   configNames: ['Endpoint', 'Email', 'API key', 'Priority'],
   configDefaults: ['acme.zendesk.com', 'sales@acme.co', 'api_key', 'urgent'],
-  partnerIds: ['06ca73aa-1311-46d2-b18f-9cb17a9e8b10', '8ee9d97e-f23c-4d0b-a1a3-55f39d809009'],
   methods: {
     ticket: {
       name: 'Ticket',

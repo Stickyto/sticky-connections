@@ -48,6 +48,7 @@ async function eventHookLogic (wasSuccessful, config, connectionContainer, ) {
 
 module.exports = new Connection({
   id: 'CONNECTION_WOOCOMMERCE',
+  type: 'CONNECTION_TYPE_ERP',
   name: 'WooCommerce',
   color: '#7F54B3',
   logo: cdn => `${cdn}/connections/CONNECTION_WOOCOMMERCE.svg`,

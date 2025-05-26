@@ -1,5 +1,17 @@
 const CONNECTIONS = new Map([
   [
+    'CONNECTION_DELIVERECT',
+    require('./CONNECTION_DELIVERECT')
+  ],
+  [
+    'CONNECTION_SUMUP',
+    require('./CONNECTION_SUMUP')
+  ],
+  [
+    'CONNECTION_ZENDESK',
+    require('./CONNECTION_ZENDESK')
+  ],
+  [
     'CONNECTION_ELITE_DYNAMICS',
     require('./CONNECTION_ELITE_DYNAMICS')
   ],
@@ -24,10 +36,6 @@ const CONNECTIONS = new Map([
     require('./CONNECTION_PASSKIT')
   ],
   [
-    'CONNECTION_SUMUP',
-    require('./CONNECTION_SUMUP')
-  ],
-  [
     'CONNECTION_TEVALIS',
     require('./CONNECTION_TEVALIS')
   ],
@@ -39,10 +47,6 @@ const CONNECTIONS = new Map([
   [
     'CONNECTION_MAILCHIMP',
     require('./CONNECTION_MAILCHIMP')
-  ],
-  [
-    'CONNECTION_DELIVERECT',
-    require('./CONNECTION_DELIVERECT')
   ],
   [
     'CONNECTION_GUESTLINE',
@@ -81,16 +85,20 @@ const CONNECTIONS = new Map([
     require('./CONNECTION_RINGCENTRAL')
   ],
   [
-    'CONNECTION_ZENDESK',
-    require('./CONNECTION_ZENDESK')
-  ],
-  [
     'CONNECTION_API',
     require('./CONNECTION_API')
   ],
   [
     'CONNECTION_SENDGRID_INBOUND',
     require('./CONNECTION_SENDGRID_INBOUND')
+  ],
+  [
+    'CONNECTION_AI_SIMULATOR',
+    require('./CONNECTION_AI_SIMULATOR')
+  ],
+  [
+    'CONNECTION_OPENAI',
+    require('./CONNECTION_OPENAI')
   ]
 ])
 
