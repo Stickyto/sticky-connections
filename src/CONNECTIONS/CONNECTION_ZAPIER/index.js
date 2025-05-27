@@ -5,6 +5,8 @@ const Connection = require('../Connection')
 async function eventHookLogic(config, connectionContainer) {
   const { user, application, thing, payment, event, customData, createEvent } = connectionContainer
 
+  const whichFu = await rdic.dlGetFederatedUser({ userId: user.id, federatedUserId: payment.lastFederatedUserId })
+
   function goFail(e) {
     createEvent({
       type: 'CONNECTION_BAD',
@@ -31,6 +33,9 @@ async function eventHookLogic(config, connectionContainer) {
 
     'Sticky ID': thing ? thing.id : undefined,
     'Sticky name': thing ? thing.name : undefined,
+
+    'Team member name': whichFu ? whichFu.name : undefined,
+    'Team member email': whichFu ? whichFu.email : undefined,
 
     'Paid at': formatTime(payment.sessionPaidAt, user.timezone),
     [`${user.name} reference`]: payment.userPaymentId ? payment.userPaymentId : undefined,
