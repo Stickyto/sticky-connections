@@ -52,25 +52,25 @@ async function eventHookLogic(config, connectionContainer) {
   }
   global.rdic.logger.log({ user }, '[CONNECTION_ZAPIER]', { configZapUrl, json })
 
-  // try {
-  //   const response = await fetch(
-  //     configZapUrl,
-  //     {
-  //       method: 'post',
-  //       headers: new Headers({
-  //         'Content-Type': 'application/json'
-  //       }),
-  //       body: JSON.stringify(json)
-  //     }
-  //   )
+  try {
+    const response = await fetch(
+      configZapUrl,
+      {
+        method: 'post',
+        headers: new Headers({
+          'Content-Type': 'application/json'
+        }),
+        body: JSON.stringify(json)
+      }
+    )
 
-  //   assert(response.status === 200, `Failed: received a non-200 status code from Zapier (${response.status}).`)
-  //   const body = await response.json()
-  //   global.rdic.logger.log({ user }, '[CONNECTION_ZAPIER]', { body })
-  // } catch (e) {
-  //   global.rdic.logger.log('[CONNECTION_ZAPIER] fail', e.message)
-  //   goFail(e)
-  // }
+    assert(response.status === 200, `Failed: received a non-200 status code from Zapier (${response.status}).`)
+    const body = await response.json()
+    global.rdic.logger.log({ user }, '[CONNECTION_ZAPIER]', { body })
+  } catch (e) {
+    global.rdic.logger.log('[CONNECTION_ZAPIER] fail', e.message)
+    goFail(e)
+  }
 }
 
 module.exports = new Connection({
