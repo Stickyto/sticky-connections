@@ -1,6 +1,6 @@
 {
   "name": "sticky-connections",
-  "version": "9.9.1",
+  "version": "10.1.0",
   "description": "",
   "main": "src/index.js",
   "dependencies": {
