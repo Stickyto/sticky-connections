@@ -14,7 +14,7 @@ async function getToken ({ configUrl, configApiKey }) {
 }
 
 async function eventHookLogic (config, connectionContainer) {
-  const { user, application, thing, payment, customData, session, createEvent } = connectionContainer
+  const { rdic, user, application, thing, payment, customData, session, createEvent } = connectionContainer
   const [configUrl, configApiKey] = config
 
   try {
@@ -44,6 +44,7 @@ async function eventHookLogic (config, connectionContainer) {
       customData: { id: 'CONNECTION_ROTUNDA' }
     })
   } catch (e) {
+    payment.onSessionFail(rdic, user, { whichConnection: 'CONNECTION_ROTUNDA' }, { customSubject: '⚠️ Your {name} top up was not successful', customMessage: '<p>We are sorry but your {name} top up was not successful.</p>' })
     createEvent({
       type: 'CONNECTION_BAD',
       userId: user.id,
