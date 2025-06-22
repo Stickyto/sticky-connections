@@ -176,7 +176,7 @@ module.exports = new Connection({
     {
       'id': '71d05208-3781-4c24-996e-c4c0d1c6b228',
       'config': {
-        'what': 'Form submissions and touchpoints will now create Sticky dashboards.',
+        'what': 'Form submissions and touchpoints will now create dashboards.',
         'font': `${COLOR}--center--100%--false`,
         'icon': 'hand'
       }

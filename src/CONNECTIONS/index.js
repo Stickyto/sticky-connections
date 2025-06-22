@@ -4,6 +4,10 @@ const CONNECTIONS = new Map([
     require('./CONNECTION_DELIVERECT')
   ],
   [
+    'CONNECTION_PAX',
+    require('./CONNECTION_PAX')
+  ],
+  [
     'CONNECTION_SUMUP',
     require('./CONNECTION_SUMUP')
   ],
