@@ -15,9 +15,19 @@ async function getToken ({ configUrl, configApiKey }) {
 
 async function eventHookLogic (config, connectionContainer) {
   const { rdic, user, application, thing, payment, customData, session, createEvent } = connectionContainer
-  const [configUrl, configApiKey] = config
+  const [configUrl, configApiKey, configApplicationIds = ''] = config
+
+  if (!application) {
+    return
+  }
 
   try {
+    if (configApplicationIds.length > 0) {
+      const realConfigApplicationIds = configApplicationIds.split(',')
+      if (!realConfigApplicationIds.includes(application.id)) {
+        return
+      }
+    }
     const token = await getToken({ configUrl, configApiKey })
     const userSector = session.userSectors.readFrom(user.id)
     const rBody = {
@@ -60,8 +70,8 @@ module.exports = new Connection({
   name: 'Rotunda',
   color: '#EFA71E',
   logo: cdn => `${cdn}/connections/CONNECTION_ROTUNDA.png`,
-  configNames: ['URL', 'API key'],
-  configDefaults: ['deluxe.rotunda.systems', ''],
+  configNames: ['URL', 'API key', 'Flow IDs'],
+  configDefaults: ['deluxe.rotunda.systems', '', ''],
   userIds: ['3e43c939-1d76-4238-b51d-a6e27a425677'],
   methods: {
     validate: {
