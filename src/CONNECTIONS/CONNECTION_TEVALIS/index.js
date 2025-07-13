@@ -11,7 +11,7 @@ module.exports = new Connection({
   partnerNames: ['Tevalis', 'Elite Dynamics', 'RoyaleResorts'],
   methods: {
     'private--payment': {
-      name: 'Private -> Payment',
+      name: 'Payment',
       logic: async calledWith => methodPayment('CONNECTION_TEVALIS', calledWith)
     }
   }

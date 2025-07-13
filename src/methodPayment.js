@@ -8,12 +8,15 @@ module.exports = async function methodPayment (connection, { connectionContainer
   const { createEvent } = connectionContainer
   const {
     sessionId,
+    applicationId,
     total,
     discount,
     paymentGatewayId,
-    cart
+    cart,
+    gateway
   } = body
-  assert(isUuid(sessionId), 'sessionId is not a UUID!')
+  assert(isUuid(sessionId) || sessionId === undefined, 'sessionId is not a UUID or undefined!')
+  assert(isUuid(applicationId) || applicationId === undefined, 'applicationId is not a UUID or undefined!')
   assert(typeof total === 'number', 'total is not a number!')
   assert(typeof discount === 'number' || discount === undefined, 'discount is not a number or undefined!')
   assert(typeof paymentGatewayId === 'string' || paymentGatewayId === undefined, 'paymentGatewayId is not a string or undefined!')
@@ -29,17 +32,19 @@ module.exports = async function methodPayment (connection, { connectionContainer
       questions: []
     }
   }) : undefined
+  const finalGateway = gateway || 'GATEWAY_NOOP'
   const payment = new Payment(
     {
       sessionId,
-      type: 'external',
+      applicationId,
+      type: finalGateway !== 'GATEWAY_NOOP' ? 'sticky' : 'external',
       userId: user.id,
       total,
       discount,
       paymentGatewayId,
       paymentGatewayExtra: connection,
       sessionPaidAt: getNow(),
-      gateway: 'GATEWAY_NOOP',
+      gateway: finalGateway,
       cart: finalCart
     },
     user
@@ -50,14 +55,16 @@ module.exports = async function methodPayment (connection, { connectionContainer
   const event = await createEvent({
     type: 'SESSION_CART_PAY',
     userId: user.id,
-    paymentId: payment.id,
+    applicationId,
     sessionId,
+    paymentId: payment.id,
     customData: {
       total: payment.total,
       discount: payment.discount,
       currency: payment.currency,
       gateway: payment.gateway,
-      cart: finalCart
+      cart: finalCart,
+      tip: 0
     }
   })
 

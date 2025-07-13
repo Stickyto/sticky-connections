@@ -48,6 +48,10 @@ const CONNECTIONS = new Map([
     require('./CONNECTION_TEVALIS')
   ],
   [
+    'CONNECTION_EXTERNAL_PAYMENT',
+    require('./CONNECTION_EXTERNAL_PAYMENT')
+  ],
+  [
     'CONNECTION_DOMCENTRAL',
     require('./CONNECTION_DOMCENTRAL')
   ],
