@@ -1,5 +1,5 @@
 const Connection = require('../Connection')
-const methodPayment = require('./methodPayment')
+const methodPayment = require('../../methodPayment')
 
 module.exports = new Connection({
   id: 'CONNECTION_TEVALIS',
