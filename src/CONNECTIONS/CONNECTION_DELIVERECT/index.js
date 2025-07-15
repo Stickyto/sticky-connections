@@ -54,8 +54,8 @@ async function eventHookLogic(config, connectionContainer) {
   for (const channel in channelCarts) {
     const theDiscount = Math.floor(payment.discount * (1 / howMany))
     channelCarts[channel].body = {
-      'channelOrderId': `ORD${temporaryPayment.consumerIdentifier}`,
-      'channelOrderDisplayId': `ORD${temporaryPayment.consumerIdentifier}`,
+      'channelOrderId': `${temporaryPayment.consumerIdentifier}`,
+      'channelOrderDisplayId': `${temporaryPayment.consumerIdentifier}`,
       'items': channelCarts[channel].cart.map(_ => {
         let subItems = []
         _.questions
