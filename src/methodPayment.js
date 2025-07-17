@@ -9,6 +9,7 @@ module.exports = async function methodPayment (connection, { connectionContainer
   const {
     sessionId,
     applicationId,
+    thingId,
     total,
     discount,
     paymentGatewayId,
@@ -17,6 +18,7 @@ module.exports = async function methodPayment (connection, { connectionContainer
   } = body
   assert(isUuid(sessionId) || sessionId === undefined, 'sessionId is not a UUID or undefined!')
   assert(isUuid(applicationId) || applicationId === undefined, 'applicationId is not a UUID or undefined!')
+  assert(isUuid(thingId) || thingId === undefined, 'thingId is not a UUID or undefined!')
   assert(typeof total === 'number', 'total is not a number!')
   assert(typeof discount === 'number' || discount === undefined, 'discount is not a number or undefined!')
   assert(typeof paymentGatewayId === 'string' || paymentGatewayId === undefined, 'paymentGatewayId is not a string or undefined!')
@@ -37,6 +39,7 @@ module.exports = async function methodPayment (connection, { connectionContainer
     {
       sessionId,
       applicationId,
+      thingId,
       type: finalGateway !== 'GATEWAY_NOOP' ? 'sticky' : 'external',
       userId: user.id,
       total,
@@ -56,6 +59,7 @@ module.exports = async function methodPayment (connection, { connectionContainer
     type: 'SESSION_CART_PAY',
     userId: user.id,
     applicationId,
+    thingId,
     sessionId,
     paymentId: payment.id,
     customData: {
