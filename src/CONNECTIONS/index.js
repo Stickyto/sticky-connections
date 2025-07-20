@@ -52,6 +52,10 @@ const CONNECTIONS = new Map([
     require('./CONNECTION_EXTERNAL_PAYMENT')
   ],
   [
+    'CONNECTION_ECOMMPAY',
+    require('./CONNECTION_ECOMMPAY')
+  ],
+  [
     'CONNECTION_DOMCENTRAL',
     require('./CONNECTION_DOMCENTRAL')
   ],
