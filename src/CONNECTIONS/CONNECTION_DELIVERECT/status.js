@@ -11,7 +11,8 @@ module.exports = {
     } = connectionContainer
 
     const { channelLink, status, reason, channelOrderId: coPaymentId } = body
-    let [, configuredChannelLinkIds] = config
+    let [_1, configuredChannelLinkIds, _2, _3, _4, orderIdPrefix = ''] = config
+
     configuredChannelLinkIds = configuredChannelLinkIds.split(',').map(_ => _.trim())
     const realReason = reason || 'We\'re sorry but we don\'t know any more.'
     const borkedStatusRs = p => {
@@ -45,7 +46,7 @@ module.exports = {
       const foundChannelLinkId = configuredChannelLinkIds.find(_ => _ === channelLink)
       assert(foundChannelLinkId, `[CONNECTION_DELIVERECT] [busy] [1] Channel link IDs do not match (foundChannelLinkId is falsy; ${channelLink} provided vs one of configured ${configuredChannelLinkIds.join(' / ')})`)
 
-      const rpQuery = `startsWith:${coPaymentId.toLowerCase()}`
+      const rpQuery = `startsWith:${coPaymentId.toLowerCase().substring(${orderIdPrefix.length})}`
       const rawPayment = await rdic.get('datalayerRelational').readOne(
         'payments',
         {

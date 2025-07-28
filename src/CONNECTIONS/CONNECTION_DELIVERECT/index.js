@@ -24,7 +24,7 @@ async function eventHookLogic(config, connectionContainer) {
     })
   }
 
-  let [environment, channelLinkId, sendOrder, thingPassthrough = VALID_THING_PASSTHROUGHS[0], groupTime] = config
+  let [environment, channelLinkId, sendOrder, thingPassthrough = VALID_THING_PASSTHROUGHS[0], groupTime, orderIdPrefix = ''] = config
   groupTime = parseInt(groupTime || '0', 10)
   global.rdic.logger.log({}, '[CONNECTION_DELIVERECT]', {environment, channelLinkId, sendOrder, thingPassthrough, groupTime})
 
@@ -54,8 +54,8 @@ async function eventHookLogic(config, connectionContainer) {
   for (const channel in channelCarts) {
     const theDiscount = Math.floor(payment.discount * (1 / howMany))
     channelCarts[channel].body = {
-      'channelOrderId': `${temporaryPayment.consumerIdentifier}`,
-      'channelOrderDisplayId': `${temporaryPayment.consumerIdentifier}`,
+      'channelOrderId': `${orderIdPrefix}${temporaryPayment.consumerIdentifier}`,
+      'channelOrderDisplayId': `${orderIdPrefix}${temporaryPayment.consumerIdentifier}`,
       'items': channelCarts[channel].cart.map(_ => {
         let subItems = []
         _.questions
@@ -167,8 +167,8 @@ module.exports = new Connection({
   name: 'Deliverect',
   color: '#05CC79',
   logo: cdn => `${cdn}/connections/CONNECTION_DELIVERECT.svg`,
-  configNames: ['"Production"/"Sandbox"', 'Channel link IDs (comma separated)', 'Send order (Yes/No)', `Sticker passthrough (${VALID_THING_PASSTHROUGHS.join('/')})`, 'Group order time (seconds; 0 for no group)'],
-  configDefaults: ['Production', '', 'No', VALID_THING_PASSTHROUGHS[0], '0'],
+  configNames: ['"Production"/"Sandbox"', 'Channel link IDs (comma separated)', 'Send order (Yes/No)', `Sticker passthrough (${VALID_THING_PASSTHROUGHS.join('/')})`, 'Group order time (seconds; 0 for no group)', 'Order ID prefix'],
+  configDefaults: ['Production', '', 'No', VALID_THING_PASSTHROUGHS[0], '0', ''],
   methods: {
     inboundMenu: require('./inboundMenu'),
     snooze: require('./snooze'),
