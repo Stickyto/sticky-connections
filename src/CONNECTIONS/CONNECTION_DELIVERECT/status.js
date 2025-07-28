@@ -46,7 +46,7 @@ module.exports = {
       const foundChannelLinkId = configuredChannelLinkIds.find(_ => _ === channelLink)
       assert(foundChannelLinkId, `[CONNECTION_DELIVERECT] [busy] [1] Channel link IDs do not match (foundChannelLinkId is falsy; ${channelLink} provided vs one of configured ${configuredChannelLinkIds.join(' / ')})`)
 
-      const rpQuery = `startsWith:${coPaymentId.toLowerCase().substring(${orderIdPrefix.length})}`
+      const rpQuery = `startsWith:${coPaymentId.toLowerCase().substring(orderIdPrefix.length)}`
       const rawPayment = await rdic.get('datalayerRelational').readOne(
         'payments',
         {
