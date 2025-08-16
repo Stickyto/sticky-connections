@@ -32,14 +32,20 @@ function flatten (obj, prefix = '', res = {}) {
   return res
 }
 
-async function makeRequest (payload, secretKey) {
+async function makeRequest (url, payload, secretKey) {
+  global.rdic.logger.log({}, '[CONNECTION_ECOMMPAY] [makeRequest]', { url, payload })
   payload.general.signature = generateSignature(payload, secretKey)
-  const res = await fetch('https://api.ecommpay.com/v2/payment/card/payout', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-    body: JSON.stringify(payload)
-  })
-  return res.json()
+  const res = await fetch(
+    url,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify(payload)
+    }
+  )
+  const asJson = await res.json()
+  global.rdic.logger.log({}, '[CONNECTION_ECOMMPAY] [makeRequest]', { asJson })
+  return asJson
 }
 
 module.exports = new Connection({
@@ -74,12 +80,12 @@ module.exports = new Connection({
           },
           card: {
             "pan": '4242424242424242' || vaultItem.number,
-            "year": parseInt(`${new Date().getFullYear().toString().substring(0, 2)}${parseInt(vaultItem.expires.split('/')[1])}`, 10),
-            "month": parseInt(vaultItem.expires.split('/')[0], 10),
+            "year": 27 || parseInt(`${new Date().getFullYear().toString().substring(0, 2)}${parseInt(vaultItem.expires.split('/')[1])}`, 10),
+            "month": 11 || parseInt(vaultItem.expires.split('/')[0], 10),
             "card_holder": vaultItem.name
           },
           payment: {
-            amount: total,
+            amount: '0.01' || total,
             currency: user.currency,
             description: 'Payout'
           },
@@ -90,9 +96,7 @@ module.exports = new Connection({
           }
         }
 
-        global.rdic.logger.log({}, '[CONNECTION_ECOMMPAY]', payload)
-
-        await makeRequest(payload, secretKey)
+        const r = await makeRequest('https://api.ecommpay.com/v2/payment/card/payout', payload, secretKey)
 
         return {}
       }
