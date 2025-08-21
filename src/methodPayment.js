@@ -1,7 +1,6 @@
 const { assert, isUuid, getNow } = require('@stickyto/openbox-node-utils')
 const { Payment } = require('openbox-entities')
 const assertIsCartValid = require('./isCartValid/isCartValid')
-const getAllConnections = require('./getAll/getAll')
 const connectionGo = require('./connectionGo')
 
 module.exports = async function methodPayment (connection, { connectionContainer, body }) {
