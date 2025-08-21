@@ -4,7 +4,7 @@ const assertIsCartValid = require('./isCartValid/isCartValid')
 const connectionGo = require('./connectionGo')
 
 module.exports = async function methodPayment (connection, { connectionContainer, body }) {
-  const { user, partner, rdic, createEvent } = connectionContainer
+  const { user, partner, rdic, createEvent, getProducts } = connectionContainer
   global.rdic.logger.log({ user }, '[methodPayment]', { connection, body })
   const dlr = rdic.get('datalayerRelational')
 
@@ -36,7 +36,7 @@ module.exports = async function methodPayment (connection, { connectionContainer
         user,
         partner,
         body: {
-          systemMessage: 'You are a robot that parses paper receipts into JSON (strictly JSON). Produce JSON with a `total` key for the receipt total and `products` key which is an array of objects as follows. Each `products` element has `theirId` as product name and `quantity` as the quantity of that line item. Ignore what you believe are modifiers.',
+          systemMessage: 'You are a robot that parses paper receipts strictly into JSON. Produce JSON with a `total` key for the receipt total and `products` key which is an array of objects as follows. Each `products` element has `theirId` as product name and `quantity` as the quantity of that line item. Ignore what you believe are modifiers.',
           userMessage: cart
         },
         rdic
@@ -48,6 +48,20 @@ module.exports = async function methodPayment (connection, { connectionContainer
     global.rdic.logger.log({ user }, '[methodPayment]', { messageAsString, messageAsObject })
 
     total = parseInt(parseFloat(messageAsObject.total) * 100, 10)
+
+    const allProducts = await getProducts(rdic, user)
+    cart = []
+    messageAsObject.products.forEach(p => {
+      const foundProduct = allProducts.find(_p => _p.theirId && _p.theirId.toUpperCase() === p.theirId.trim().toUpperCase())
+      assert(foundProduct, `There is a string-cart product with "theirId" "${p.theirId}".`)
+      cart.push({
+        productId: foundProduct.id,
+        productName: foundProduct.name,
+        productPrice: foundProduct.price,
+        productTheirId: foundProduct.theirId,
+        quantity: p.quantity
+      })
+    })
   }
 
   assert(isUuid(sessionId) || sessionId === undefined, 'sessionId is not a UUID or undefined!')
