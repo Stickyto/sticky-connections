@@ -79,13 +79,13 @@ module.exports = new Connection({
             merchant_callback_url: `${apiUrl}/v2/connectionhook/${user.privateKey}/CONNECTION_ECOMMPAY/private--oct-done`
           },
           card: {
-            "pan": '4242424242424242' || vaultItem.number,
-            "year": 27 || parseInt(`${new Date().getFullYear().toString().substring(0, 2)}${parseInt(vaultItem.expires.split('/')[1])}`, 10),
-            "month": 11 || parseInt(vaultItem.expires.split('/')[0], 10),
+            "pan": vaultItem.number,
+            "year": parseInt(`${new Date().getFullYear().toString().substring(0, 2)}${parseInt(vaultItem.expires.split('/')[1])}`, 10),
+            "month": parseInt(vaultItem.expires.split('/')[0], 10),
             "card_holder": vaultItem.name
           },
           payment: {
-            amount: '0.01' || total,
+            amount: total,
             currency: user.currency,
             description: 'Payout'
           },
