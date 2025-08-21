@@ -1,33 +1,68 @@
 const { assert, isUuid, getNow } = require('@stickyto/openbox-node-utils')
 const { Payment } = require('openbox-entities')
-const isCartValid = require('./isCartValid/isCartValid')
+const assertIsCartValid = require('./isCartValid/isCartValid')
+const getAllConnections = require('./getAll/getAll')
+const connectionGo = require('./connectionGo')
 
 module.exports = async function methodPayment (connection, { connectionContainer, body }) {
-  global.rdic.logger.log({}, '[methodPayment]', { connection, body })
+  const { user, partner, rdic, createEvent } = connectionContainer
+  global.rdic.logger.log({ user }, '[methodPayment]', { connection, body })
+  const dlr = rdic.get('datalayerRelational')
 
-  const { createEvent } = connectionContainer
-  const {
+  let {
+    cart,
     sessionId,
     applicationId,
     thingId,
     total,
     discount,
     paymentGatewayId,
-    cart,
     gateway
   } = body
+  if (typeof cart === 'string') {
+    user.assertCan('magic')
+    const magicConnections = user.connections
+      .map(possibleConnection => {
+        const foundConnection = require(`./CONNECTIONS/${possibleConnection.id}`)
+        return foundConnection.type === 'CONNECTION_TYPE_AI' ? foundConnection : undefined
+      })
+      .filter(_ => _)
+    assert(magicConnections.length > 0, 'Please connect an AI by going to Account > Connections. Choose AI Simulator to get started.')
+    assert(magicConnections.length === 1, 'You are connected to more than one AI in Account > Connections.')
+
+    const messageAsString = await connectionGo(
+      magicConnections[0],
+      'magic',
+      {
+        user,
+        partner,
+        body: {
+          systemMessage: 'You are a robot that parses paper receipts into JSON (strictly JSON). Produce JSON with a `total` key for the receipt total and `products` key which is an array of objects as follows. Each `products` element has `theirId` as product name and `quantity` as the quantity of that line item. Ignore what you believe are modifiers.',
+          userMessage: cart
+        },
+        rdic
+      }
+    )
+
+    const messageAsObject = JSON.parse(messageAsString)
+
+    global.rdic.logger.log({ user }, '[methodPayment]', { messageAsString, messageAsObject })
+
+    total = parseInt(parseFloat(messageAsObject.total) * 100, 10)
+  }
+
   assert(isUuid(sessionId) || sessionId === undefined, 'sessionId is not a UUID or undefined!')
   assert(isUuid(applicationId) || applicationId === undefined, 'applicationId is not a UUID or undefined!')
   assert(isUuid(thingId) || thingId === undefined, 'thingId is not a UUID or undefined!')
   assert(typeof total === 'number', 'total is not a number!')
   assert(typeof discount === 'number' || discount === undefined, 'discount is not a number or undefined!')
   assert(typeof paymentGatewayId === 'string' || paymentGatewayId === undefined, 'paymentGatewayId is not a string or undefined!')
-  cart !== undefined && isCartValid(cart)
 
-  const { user, rdic } = connectionContainer
-  const dlr = rdic.get('datalayerRelational')
+  if (typeof cart === 'object') {
+    assertIsCartValid(cart)
+  }
 
-  const finalCart = cart ? cart.map(_ => {
+  const finalCart = typeof cart === 'object' ? cart.map(_ => {
     return {
       ..._,
       productCurrency: user.currency,
