@@ -1,4 +1,4 @@
-const { assert, isUuid, getNow } = require('@stickyto/openbox-node-utils')
+const { assert, isUuid, getNow, formatPrice } = require('@stickyto/openbox-node-utils')
 const { Payment } = require('openbox-entities')
 const assertIsCartValid = require('./isCartValid/isCartValid')
 const connectionGo = require('./connectionGo')
@@ -131,6 +131,11 @@ Ignore any modifiers, options, or sub-items that are not standalone purchased pr
   })
 
   return {
+    asPlainText: `
+${(cart || []).map(ci => (`${ci.quantity} × ${ci.productName}`)).join('\n\n')}
+
+${formatPrice(total, user.currency)}
+    `.trim(),
     payment: payment.toJsonPrivate(),
     event: event.toJsonPrivate()
   }
