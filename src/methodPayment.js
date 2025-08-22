@@ -36,7 +36,17 @@ module.exports = async function methodPayment (connection, { connectionContainer
         user,
         partner,
         body: {
-          systemMessage: 'You are a robot that parses paper receipts strictly into JSON. Produce JSON with a `total` key for the receipt total and `products` key which is an array of objects as follows. Each `products` element has `theirId` as product name and `quantity` as the quantity of that line item. Ignore what you believe are modifiers.',
+          systemMessage: `
+You are a robot that parses paper receipts strictly into JSON. Respond with JSON only. Do not include markdown, backticks, or explanations. Your response must be valid JSON that can be parsed by JSON.parse().
+
+The JSON must always contain:
+ - total: the receipt total as a number.
+ - products: an array of objects. Each object has:
+ - theirId: the product name exactly as printed on the receipt (string).
+ - quantity: the quantity of that product (integer).
+
+Ignore any modifiers, options, or sub-items that are not standalone purchased products.
+          `,
           userMessage: cart
         },
         rdic
