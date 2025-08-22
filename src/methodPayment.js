@@ -53,7 +53,7 @@ module.exports = async function methodPayment (connection, { connectionContainer
     cart = []
     messageAsObject.products.forEach(p => {
       const foundProduct = allProducts.find(_p => _p.theirId && _p.theirId.toUpperCase() === p.theirId.trim().toUpperCase())
-      assert(foundProduct, `There is a string-cart product with "theirId" "${p.theirId}".`)
+      assert(foundProduct, `"${p.theirId}" is not recognised.`)
       cart.push({
         productId: foundProduct.id,
         productName: foundProduct.name,
