@@ -106,7 +106,8 @@ Ignore any modifiers, options, or sub-items that are not standalone purchased pr
       paymentGatewayExtra: connection,
       sessionPaidAt: getNow(),
       gateway: finalGateway,
-      cart: finalCart
+      cart: finalCart,
+      newStatusDone: false
     },
     user
   )
