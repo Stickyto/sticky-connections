@@ -203,7 +203,8 @@ async function eventHookLogic(config, connectionContainer) {
         'Vendor-Id': cVendorId,
         'Outlet-Id': ({
           'Waterfront Street Kitchen and Bar': '1a6ea3e2-d368-4912-bed4-c828c31eecb0',
-          'The Bridge Restaurant': 'fe6a4504-1b14-4664-abd5-aed5dcf5bcf8'
+          'The Bridge Restaurant': 'fe6a4504-1b14-4664-abd5-aed5dcf5bcf8',
+          'Aston Villa': 'e78a6a3f-3429-45ca-bb5d-a396464aa82c'
         })[user.name]
       },
       'POST',
