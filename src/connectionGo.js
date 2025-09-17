@@ -7,7 +7,7 @@ module.exports = async function connectionGo (foundConnection, method, { rdic, u
   const foundMethod = await foundConnection.methods[method]
   assert(typeof foundMethod === 'object', `${foundConnection.name} doesn't have a method called ${method}!`)
 
-  let config = {}
+  let config = []
 
   user && (() => {
     const foundConfigWrapper = user.connections.find(c => c.id === foundConnection.id)
