@@ -109,6 +109,10 @@ const CONNECTIONS = new Map([
     require('./CONNECTION_RINGCENTRAL')
   ],
   [
+    'CONNECTION_RIMINI',
+    require('./CONNECTION_RIMINI')
+  ],
+  [
     'CONNECTION_API',
     require('./CONNECTION_API')
   ],
