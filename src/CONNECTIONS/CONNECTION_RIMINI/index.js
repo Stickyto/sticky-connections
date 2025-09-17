@@ -1,44 +1,53 @@
 const Connection = require('../Connection')
 
-async function makeRequest (bearerToken, url, json) {
-  global.rdic.logger.log({}, '[CONNECTION_RIMINI] [makeRequest]', { bearerToken, url, json })
+async function makeRequest(bearerToken, url, body) {
+  global.rdic.logger.log({}, '[CONNECTION_RIMINI] [makeRequest] 1', { bearerToken, url, body })
   const response = await fetch(
     url,
     {
-      json,
+      method: 'post',
+      body: JSON.stringify(body),
       headers: {
-        'Authorization': `Bearer ${bearerToken}`
+        'Authorization': `Bearer ${bearerToken}`,
+        'Content-Type': 'application/json'
       }
     }
   )
-  try {
-    const body = await response.json()
-    global.rdic.logger.log({}, '[CONNECTION_RIMINI] [makeRequest] body', body)
-    return body
-  } catch (e) {
-    return undefined
+  global.rdic.logger.log({}, '[CONNECTION_RIMINI] [makeRequest] 2', { responseOk: response.ok, responseStatus: response.status })
+  if (!response.ok) {
+    const asJson = await response.json()
+    const asString = JSON.stringify(asJson, null, 2)
+    throw new Error(asString)
   }
+  global.rdic.logger.log({}, '[CONNECTION_RIMINI] [makeRequest] 3')
 }
 
-async function eventHookLogic (config, connectionContainer) {
-  const { user, payment, session } = connectionContainer
+async function eventHookLogic(config, connectionContainer) {
+  const { user, application, payment, session, createEvent } = connectionContainer
   const [cEndpoint, cBearerToken] = config
 
   const makeRequestBody = {
-    "amount": (payment.total / 100).toFixed(2),
+    "amount": Number((payment.total / 100).toFixed(2)),
     "customerAliasId": session.id,
     "cashierId": payment.userPaymentId,
     "referenceId": payment.userPaymentId,
     "paymentRequestId": payment.id
   }
 
-  global.rdic.logger.log({ user }, '[CONNECTION_RIMINI]', { makeRequestBody })
-
-  await makeRequest(
-    cBearerToken,
-    cEndpoint,
-    makeRequestBody
-  )
+  try {
+    await makeRequest(
+      cBearerToken,
+      cEndpoint,
+      makeRequestBody
+    )
+  } catch (e) {
+    createEvent({
+      type: 'CONNECTION_BAD',
+      userId: user.id,
+      applicationId: application ? application.id : undefined,
+      customData: { id: 'CONNECTION_RIMINI', message: e.message }
+    })
+  }
 }
 
 module.exports = new Connection({
