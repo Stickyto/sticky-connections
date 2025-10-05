@@ -122,66 +122,6 @@ module.exports = new Connection({
         "backgroundColour": "#ffffff",
         "icon": ""
       }
-    },
-    {
-      "id": "71d05208-3781-4c24-996e-c4c0d1c6b228",
-      "config": {
-        "what": "Play It Green plants a tree for every product bought that fits the 'Match products with a name containing' box. This box is case sensitive.\n\nFor example, if you set up a product called <strong>Save the planet (important)</strong>, type <strong>Save the planet</strong> in the box.",
-        "font": "#5CC239--center--100%--false",
-        "backgroundColour": "#ffffff",
-        "icon": ""
-      }
-    },
-    {
-      'id': 'd7e4ecf2-4886-4423-885d-2bb059494953',
-      'config': {}
-    },
-    {
-      'id': 'eab1198f-f924-442c-90d7-fca408ee9ef8',
-      'config': {
-        'colour': '#5CC239',
-        'what': 'New to Play It Green?'
-      }
-    },
-    {
-      "id": "71d05208-3781-4c24-996e-c4c0d1c6b228",
-      "config": {
-        "what": "Make your workforce climate positive, reduce your business footprint and take your next step to net zero.",
-        "font": "#5CC239--center--100%--false",
-        "backgroundColour": "#ffffff"
-      }
-    },
-    {
-      'id': '0e1f0565-5e05-471c-b855-bbe44c20527d',
-      'config': {
-        'label': 'Name',
-        'type': 'Consumer → Name'
-      }
-    },
-    {
-      'id': '0e1f0565-5e05-471c-b855-bbe44c20527d',
-      'config': {
-        'label': 'Email',
-        'type': 'Consumer → Email'
-      }
-    },
-    {
-      'id': '0e1f0565-5e05-471c-b855-bbe44c20527d',
-      'config': {
-        'label': 'Phone',
-        'type': 'Consumer → Phone'
-      }
-    },
-    {
-      'id': 'a21eddf2-aa86-4b6a-a2af-8ac279b246f7',
-      'config': {
-        'action': 'formSubmitPartner~~||~~',
-        'label': 'Send to Play It Green',
-        'colour': '#f69e05',
-        'foregroundColour': '#FFFFFF',
-        'icon': 'check',
-        'fullWidth': false
-      }
     }
   ]
 })
