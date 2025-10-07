@@ -16,7 +16,8 @@ module.exports = async function methodPayment (connection, { connectionContainer
     total,
     discount,
     paymentGatewayId,
-    gateway
+    gateway,
+    sessionPaidAt
   } = body
   if (typeof cart === 'string') {
     user.assertCan('magic')
@@ -104,7 +105,7 @@ Ignore any modifiers, options, or sub-items that are not standalone purchased pr
       discount,
       paymentGatewayId,
       paymentGatewayExtra: connection,
-      sessionPaidAt: getNow(),
+      sessionPaidAt: typeof sessionPaidAt === 'number' ? sessionPaidAt : getNow(),
       gateway: finalGateway,
       cart: finalCart,
       newStatusDone: false
@@ -114,22 +115,25 @@ Ignore any modifiers, options, or sub-items that are not standalone purchased pr
   const asDlr = payment.toDatalayerRelational()
   await dlr.create('payments', asDlr)
 
-  const event = await createEvent({
-    type: 'SESSION_CART_PAY',
-    userId: user.id,
-    applicationId,
-    thingId,
-    sessionId,
-    paymentId: payment.id,
-    customData: {
-      total: payment.total,
-      discount: payment.discount,
-      currency: payment.currency,
-      gateway: payment.gateway,
-      cart: finalCart,
-      tip: 0
-    }
-  })
+  const event = await createEvent(
+    {
+      type: 'SESSION_CART_PAY',
+      userId: user.id,
+      applicationId,
+      thingId,
+      sessionId,
+      paymentId: payment.id,
+      customData: {
+        total: payment.total,
+        discount: payment.discount,
+        currency: payment.currency,
+        gateway: payment.gateway,
+        cart: finalCart,
+        tip: 0
+      }
+    },
+    typeof sessionPaidAt === 'number' ? sessionPaidAt : undefined
+  )
 
   return {
     asPlainText: `
