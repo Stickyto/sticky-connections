@@ -46,6 +46,7 @@ async function eventHookLogic(config, connectionContainer) {
     'Payment recurring total': typeof payment.totalCpa === 'number' && payment.totalCpa > 0 ? (payment.totalCpa / 100).toFixed(2) : undefined,
     'Payment recurring period': typeof payment.cpaPeriod === 'string' ? payment.cpaPeriod : undefined,
     'Payment recurring maximum': typeof payment.cpaMaxLength === 'number' ? payment.cpaMaxLength : undefined,
+    'Payment recurring start': typeof payment.cpaInPeriod === 'number' ? formatTime(payment.cpaInPeriod, user.timezone, undefined, false) : undefined,
 
     'Payment name': payment.name || undefined,
     'Payment email': payment.email || undefined,
