@@ -3,6 +3,35 @@ const { Payment } = require('openbox-entities')
 const assertIsCartValid = require('./isCartValid/isCartValid')
 const connectionGo = require('./connectionGo')
 
+function handleTime (_) {
+  if (typeof _ === 'number') {
+    return _
+  }
+  if (typeof _ === 'string') {
+    return stringToUnixTime(_)
+  }
+  return getNow()
+}
+
+function stringToUnixTime (_) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(_)
+  assert(match, `Invalid date format: '${_}'; expected YYYY-MM-DD.`)
+
+  const [, yString, mString, dString] = match
+  const y = Number(yString), m = Number(mString), d = Number(dString)
+
+  const date = new Date(Date.UTC(y, m - 1, d, 12, 0, 0))
+
+  assert(
+    date.getUTCFullYear() === y &&
+    date.getUTCMonth() === m - 1 &&
+    date.getUTCDate() === d,
+    `Invalid calendar date: '${_}'.`
+  )
+
+  return Math.floor(date.getTime() / 1000)
+}
+
 module.exports = async function methodPayment (connection, { connectionContainer, body }) {
   const { user, partner, rdic, createEvent, getProducts } = connectionContainer
   global.rdic.logger.log({ user }, '[methodPayment]', { connection, body })
@@ -105,7 +134,7 @@ Ignore any modifiers, options, or sub-items that are not standalone purchased pr
       discount,
       paymentGatewayId,
       paymentGatewayExtra: connection,
-      sessionPaidAt: typeof sessionPaidAt === 'number' ? sessionPaidAt : getNow(),
+      sessionPaidAt: handleTime(sessionPaidAt),
       gateway: finalGateway,
       cart: finalCart,
       newStatusDone: false
@@ -132,7 +161,7 @@ Ignore any modifiers, options, or sub-items that are not standalone purchased pr
         tip: 0
       }
     },
-    typeof sessionPaidAt === 'number' ? sessionPaidAt : undefined
+    handleTime(sessionPaidAt)
   )
 
   return {
