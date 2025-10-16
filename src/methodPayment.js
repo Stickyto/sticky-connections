@@ -87,6 +87,8 @@ Ignore any modifiers, options, or sub-items that are not standalone purchased pr
 
     global.rdic.logger.log({ user }, '[methodPayment]', { messageAsString, messageAsObject })
 
+    assert(messageAsObject.products.length > 0, 'This payment doesn\'t have any products in it.')
+
     total = parseInt(parseFloat(messageAsObject.total) * 100, 10)
 
     const allProducts = await getProducts(rdic, user)
