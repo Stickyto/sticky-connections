@@ -145,7 +145,7 @@ module.exports = new Connection({
         "action": "url~~||~~https://r.loyverse.com/dashboard/#/integrations/tokens~~||~~false",
         "label": "Go to Loyverse access tokens",
         "colour": "#F3F5F7",
-        "foregroundColour": "#1A1F35",
+        "foregroundColour": "#202058",
         "icon": "",
         "fullWidth": false
       }
@@ -154,7 +154,7 @@ module.exports = new Connection({
       "id": "71d05208-3781-4c24-996e-c4c0d1c6b228",
       "config": {
         "what": "Go to <strong>Integrations</strong> → <strong>Access tokens</strong>.\n\nChoose <strong>ADD ACCESS TOKEN</strong>.",
-        "font": "#1A1F35--center--100%--false",
+        "font": "#202058--center--100%--false",
         "backgroundColour": "#ffffff",
         "icon": ""
       }
@@ -180,7 +180,7 @@ module.exports = new Connection({
       "id": "71d05208-3781-4c24-996e-c4c0d1c6b228",
       "config": {
         "what": "Name the access token \"<strong>Sticky</strong>\".\n\nUncheck <strong>Token has expiration date</strong>.\n\nChoose <strong>Save</strong>.",
-        "font": "#1A1F35--center--100%--false",
+        "font": "#202058--center--100%--false",
         "backgroundColour": "#ffffff",
         "icon": ""
       }
@@ -206,7 +206,7 @@ module.exports = new Connection({
       "id": "71d05208-3781-4c24-996e-c4c0d1c6b228",
       "config": {
         "what": "Copy the access token.\n\nPaste it into Sticky form field:\n\n<strong>PASTE HERE: Access token</strong>",
-        "font": "#1A1F35--center--100%--false",
+        "font": "#202058--center--100%--false",
         "backgroundColour": "#ffffff",
         "icon": ""
       }
@@ -234,7 +234,7 @@ module.exports = new Connection({
         "action": "url~~||~~https://r.loyverse.com/dashboard/#/settings/outlets~~||~~false",
         "label": "Go to Loyverse stores",
         "colour": "#F3F5F7",
-        "foregroundColour": "#1A1F35",
+        "foregroundColour": "#202058",
         "icon": "",
         "fullWidth": false
       }
@@ -243,7 +243,7 @@ module.exports = new Connection({
       "id": "71d05208-3781-4c24-996e-c4c0d1c6b228",
       "config": {
         "what": "Copy a store name.\n\nPaste it into Sticky form field:\n\n<strong>PASTE HERE: Store name</strong>",
-        "font": "#1A1F35--center--100%--false",
+        "font": "#202058--center--100%--false",
         "backgroundColour": "#ffffff",
         "icon": ""
       }
