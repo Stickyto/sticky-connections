@@ -74,7 +74,7 @@ module.exports = new Connection({
         "id": "71d05208-3781-4c24-996e-c4c0d1c6b228",
         "config": {
           "what": `Flow URL:\n\n<strong>${apiUrl}/go/flow/${foundApplication.id}</strong>\n\nPrivate key:\n\n<strong>${user.privateKey}</strong>`,
-          "font": "#202058--center--100%--false",
+          "font": "#211552--center--100%--false",
           "backgroundColour": "#ffffff",
           "icon": ""
         }

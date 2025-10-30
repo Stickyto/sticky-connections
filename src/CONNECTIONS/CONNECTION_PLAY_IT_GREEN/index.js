@@ -118,7 +118,7 @@ module.exports = new Connection({
       "id": "71d05208-3781-4c24-996e-c4c0d1c6b228",
       "config": {
         "what": "api.playitgreen.com/pig2/widget/garden/<strong>[ID]</strong>",
-        "font": "#202058--center--100%--true",
+        "font": "#211552--center--100%--true",
         "backgroundColour": "#ffffff",
         "icon": ""
       }
