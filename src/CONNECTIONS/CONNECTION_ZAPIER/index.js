@@ -1,5 +1,4 @@
 const { isUrl, assert, formatTime } = require('@stickyto/openbox-node-utils')
-const gateways = require('@stickyto/openbox-gateways')
 const Connection = require('../Connection')
 
 async function eventHookLogic(config, connectionContainer) {
@@ -26,7 +25,6 @@ async function eventHookLogic(config, connectionContainer) {
     return
   }
 
-  const gateway = gateways.getByName(payment.gateway)
   const json = {
     'Flow ID': application ? application.id : undefined,
     'Flow name': application ? application.name : undefined,
@@ -52,7 +50,6 @@ async function eventHookLogic(config, connectionContainer) {
     'Payment email': payment.email || undefined,
     'Payment phone': payment.phone || undefined,
 
-    'Payment provider': gateway ? gateway.name : 'Unknown',
     'Payment provider ID': payment.paymentGatewayId || undefined,
     'Paid with': payment.paymentGatewayExtra || undefined,
     ...payment.customDataPublic.getRaw()
