@@ -1,5 +1,5 @@
 const { assert, isUuid, getNow, formatPrice } = require('@stickyto/openbox-node-utils')
-const { Payment } = require('openbox-entities')
+const { Payment, Application } = require('openbox-entities')
 const assertIsCartValid = require('./isCartValid/isCartValid')
 const connectionGo = require('./connectionGo')
 
@@ -48,6 +48,30 @@ module.exports = async function methodPayment (connection, { connectionContainer
     gateway,
     sessionPaidAt
   } = body
+
+  let foundApplication
+  if (isUuid(applicationId)) {
+    const foundApplicationRaw = await rdic.get('datalayerRelational').readOne(
+      'applications',
+      {
+        user_id: user.id,
+        id: applicationId
+      }
+    )
+    assert(foundApplicationRaw, `You have provided a flow ID (${applicationId}) but there is no flow with this ID.`)
+    foundApplication = new Application({}).fromDatalayerRelational(foundApplicationRaw)
+  }
+
+  const payRejectCartEmpty = (() => {
+    if (!foundApplication) {
+      return false
+    }
+    if (typeof foundApplication.stickyretail.get('payRejectCartEmpty') !== 'boolean') {
+      return false
+    }
+    return foundApplication.stickyretail.get('payRejectCartEmpty')
+  })()
+
   if (typeof cart === 'string') {
     user.assertCan('magic')
     const magicConnections = user.connections
@@ -113,17 +137,20 @@ Ignore any modifiers, options, or sub-items that are not standalone purchased pr
   assert(typeof discount === 'number' || discount === undefined, 'discount is not a number or undefined!')
   assert(typeof paymentGatewayId === 'string' || paymentGatewayId === undefined, 'paymentGatewayId is not a string or undefined!')
 
-  if (typeof cart === 'object') {
-    assertIsCartValid(cart)
+  if (!Array.isArray(cart)) {
+    cart = []
   }
 
-  const finalCart = typeof cart === 'object' ? cart.map(_ => {
+  assertIsCartValid(cart)
+  payRejectCartEmpty && assert(Array.isArray(cart) && cart.length > 0, 'payRejectCartEmpty is true but you have sent an empty cart.')
+
+  const finalCart = cart.map(_ => {
     return {
       ..._,
       productCurrency: user.currency,
       questions: []
     }
-  }) : undefined
+  })
   const finalGateway = gateway || 'GATEWAY_NOOP'
   const payment = new Payment(
     {
@@ -168,7 +195,7 @@ Ignore any modifiers, options, or sub-items that are not standalone purchased pr
 
   return {
     asPlainText: `
-${(cart || []).map(ci => (`${ci.quantity} × ${ci.productName}`)).join('\n\n')}
+${cart.map(ci => (`${ci.quantity} × ${ci.productName}`)).join('\n\n')}
 
 ${formatPrice(total, user.currency)}
     `.trim(),
