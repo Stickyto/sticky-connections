@@ -1,11 +1,19 @@
 const CONNECTIONS = new Map([
   [
-    'CONNECTION_DELIVERECT',
-    require('./CONNECTION_DELIVERECT')
+    'CONNECTION_EXTERNAL_PAYMENT',
+    require('./CONNECTION_EXTERNAL_PAYMENT')
+  ],
+  [
+    'CONNECTION_OPENAI',
+    require('./CONNECTION_OPENAI')
   ],
   [
     'CONNECTION_PAX',
     require('./CONNECTION_PAX')
+  ],
+  [
+    'CONNECTION_DELIVERECT',
+    require('./CONNECTION_DELIVERECT')
   ],
   [
     'CONNECTION_SUMUP',
@@ -46,10 +54,6 @@ const CONNECTIONS = new Map([
   [
     'CONNECTION_TEVALIS',
     require('./CONNECTION_TEVALIS')
-  ],
-  [
-    'CONNECTION_EXTERNAL_PAYMENT',
-    require('./CONNECTION_EXTERNAL_PAYMENT')
   ],
   [
     'CONNECTION_ECOMMPAY',
@@ -123,10 +127,6 @@ const CONNECTIONS = new Map([
   [
     'CONNECTION_AI_SIMULATOR',
     require('./CONNECTION_AI_SIMULATOR')
-  ],
-  [
-    'CONNECTION_OPENAI',
-    require('./CONNECTION_OPENAI')
   ],
   [
     'CONNECTION_ROTUNDA',

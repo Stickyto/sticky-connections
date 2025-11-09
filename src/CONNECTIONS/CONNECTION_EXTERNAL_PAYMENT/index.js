@@ -5,7 +5,7 @@ module.exports = new Connection({
   id: 'CONNECTION_EXTERNAL_PAYMENT',
   type: 'CONNECTION_TYPE_POINT_OF_SALE',
   name: 'External payment',
-  color: '#3742FA',
+  color: '#211552',
   logo: cdn => `${cdn}/connections/CONNECTION_EXTERNAL_PAYMENT.svg`,
   configNames: [],
   configDefaults: [],
