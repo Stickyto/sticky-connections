@@ -1,7 +1,7 @@
 const { isUrl, assert, formatTime } = require('@stickyto/openbox-node-utils')
 const Connection = require('../Connection')
 
-async function eventHookLogic(config, connectionContainer) {
+async function eventHookLogic (config, connectionContainer) {
   const { user, application, thing, payment, event, customData, createEvent } = connectionContainer
 
   const whichFu = await rdic.dlGetFederatedUser({ userId: user.id, federatedUserId: payment.lastFederatedUserId })

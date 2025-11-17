@@ -2,7 +2,7 @@ const { assert, isEmailValid } = require('@stickyto/openbox-node-utils')
 const Connection = require('../Connection')
 const makeRequest = require('./makeRequest')
 
-async function eventHookLogic(config, connectionContainer) {
+async function eventHookLogic (config, connectionContainer) {
   const { user, application, thing, customData, createEvent } = connectionContainer
 
   const [configServer, configApiKey, configList] = config

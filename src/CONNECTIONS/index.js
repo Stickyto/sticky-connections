@@ -121,6 +121,10 @@ const CONNECTIONS = new Map([
     require('./CONNECTION_COMPLYCUBE')
   ],
   [
+    'CONNECTION_GUESTY',
+    require('./CONNECTION_GUESTY')
+  ],
+  [
     'CONNECTION_API',
     require('./CONNECTION_API')
   ],

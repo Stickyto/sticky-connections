@@ -22,7 +22,7 @@ async function makeRequest(bearerToken, url, body) {
   global.rdic.logger.log({}, '[CONNECTION_RIMINI] [makeRequest] 3')
 }
 
-async function eventHookLogic(config, connectionContainer) {
+async function eventHookLogic (config, connectionContainer) {
   const { user, application, payment, session, createEvent } = connectionContainer
   const [cEndpoint, cBearerToken] = config
 

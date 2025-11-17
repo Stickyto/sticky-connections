@@ -10,7 +10,7 @@ const CHANNEL_NAME = 'stickyconnections'
 const VALID_THING_PASSTHROUGHS = ['None', 'Your ID', 'Name', 'Number', 'Note']
 const processOrders = require('./lib/processOrders')
 
-async function eventHookLogic(config, connectionContainer) {
+async function eventHookLogic (config, connectionContainer) {
   const {user, application, thing, payment, event, customData, createEvent} = connectionContainer
 
   function goFail(e) {

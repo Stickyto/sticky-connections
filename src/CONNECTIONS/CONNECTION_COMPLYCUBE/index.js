@@ -24,7 +24,7 @@ async function makeRequest(apiKey, url, body) {
   return asJson
 }
 
-async function eventHookLogic(config, connectionContainer) {
+async function eventHookLogic (config, connectionContainer) {
   const { user, application, customData, createEvent } = connectionContainer
   const [cApiKey] = config
 

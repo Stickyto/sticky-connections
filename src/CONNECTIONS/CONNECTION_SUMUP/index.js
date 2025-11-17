@@ -19,7 +19,7 @@ async function getToken (cSubdomain, cUsername, cPassword) {
   return token
 }
 
-async function eventHookLogic(config, connectionContainer) {
+async function eventHookLogic (config, connectionContainer) {
   const {user, application, thing, payment, event, customData, createEvent} = connectionContainer
 
   if (!thing) {
