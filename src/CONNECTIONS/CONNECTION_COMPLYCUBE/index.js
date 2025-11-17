@@ -1,7 +1,7 @@
-const { assert } = require('@stickyto/openbox-node-utils')
+const { assert, services, isUrl, isEmailValid } = require('@stickyto/openbox-node-utils')
 const Connection = require('../Connection')
 
-async function makeRequest(apiKey, url, body) {
+async function makeRequest (apiKey, url, body) {
   global.rdic.logger.log({}, '[CONNECTION_COMPLYCUBE] [makeRequest] 1', { apiKey, url, body })
   const response = await fetch(
     `https://api.complycube.com/${url}`,
@@ -26,10 +26,13 @@ async function makeRequest(apiKey, url, body) {
 
 async function eventHookLogic (config, connectionContainer) {
   const { user, application, customData, createEvent } = connectionContainer
-  const [cApiKey] = config
+  const [cApiKey, cUrlSuccess, cUrlFailure] = config
 
   try {
-    [
+    assert(isUrl(cUrlSuccess), 'You need to set a "Success URL".')
+    assert(isUrl(cUrlFailure), 'You need to set a "Failure URL".')
+
+    ;[
       'Email',
       'First name',
       'Last name'
@@ -38,9 +41,12 @@ async function eventHookLogic (config, connectionContainer) {
         assert(typeof customData[k] === 'string', `Field with key ${k} is not in customData!`)
       })
 
+    const toEmail = customData['Email']
+    assert(isEmailValid(toEmail), '"Email" field was not an email.')
+
     const makeRequestBody = {
       'type': 'person',
-      'email': customData['Email'],
+      'email': toEmail,
       'personDetails': {
         'firstName': customData['First name'],
         'lastName': customData['Last name']
@@ -55,16 +61,40 @@ async function eventHookLogic (config, connectionContainer) {
 
     const { redirectUrl } = await makeRequest(
       cApiKey,
-      'flow/sessions',
+      'v1/flow/sessions',
       {
         'clientId': clientId,
         'checkTypes': ['extensive_screening_check', 'identity_check', 'document_check'],
-        'successUrl': 'https://www.yoursite.com/success',
-        'cancelUrl': 'https://www.yoursite.com/cancel'
+        'successUrl': cUrlSuccess,
+        'cancelUrl': cUrlFailure
       }
     )
 
     console.warn('xxx clientId', clientId)
+    console.warn('xxx redirectUrl', redirectUrl)
+
+    const subject = `${user.name} has sent you a secure link to verify your identity`
+    const message =
+`
+<p>${user.name} has sent you a secure link to verify your identity.</p>
+<p><a href="${redirectUrl}"><strong>Verify your identify now</strong></a></p>
+`
+
+    services.mail.quickSend(rdic, { user, subject, message, to: toEmail })
+
+    createEvent(
+      rdic,
+      'DESTINATION',
+      req,
+      {
+        user,
+        customData: {
+          type: 'Email',
+          destination: toEmail
+        }
+      }
+    )
+
   } catch (e) {
     createEvent({
       type: 'CONNECTION_BAD',
@@ -81,8 +111,8 @@ module.exports = new Connection({
   type: 'CONNECTION_TYPE_ERP',
   color: '#1683FB',
   logo: cdn => `${cdn}/connections/CONNECTION_COMPLYCUBE.svg`,
-  configNames: ['API key'],
-  configDefaults: [''],
+  configNames: ['API key', 'Success URL', 'Failure URL'],
+  configDefaults: ['', '', ''],
   eventHooks: {
     'LD_V2': eventHookLogic
   }
