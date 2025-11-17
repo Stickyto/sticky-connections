@@ -48,7 +48,6 @@ async function eventHookLogic(wasSuccessful, config, connectionContainer,) {
 
 module.exports = new Connection({
   id: 'CONNECTION_SHOPIFY',
-  type: 'CONNECTION_TYPE_ERP',
   name: 'Shopify',
   color: '#95BF47',
   logo: cdn => `${cdn}/connections/CONNECTION_SHOPIFY.svg`,
