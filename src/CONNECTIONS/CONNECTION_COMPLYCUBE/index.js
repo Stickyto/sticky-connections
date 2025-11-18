@@ -70,9 +70,6 @@ async function eventHookLogic (config, connectionContainer) {
       }
     )
 
-    console.warn('xxx clientId', clientId)
-    console.warn('xxx redirectUrl', redirectUrl)
-
     const subject = `${user.name} has sent you a secure link to verify your identity`
     const message =
 `

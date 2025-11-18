@@ -139,6 +139,10 @@ const CONNECTIONS = new Map([
   [
     'CONNECTION_ROTUNDA',
     require('./CONNECTION_ROTUNDA')
+  ],
+  [
+    'CONNECTION_NEON',
+    require('./CONNECTION_NEON')
   ]
 ])
 
