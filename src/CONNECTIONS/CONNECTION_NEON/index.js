@@ -4,13 +4,13 @@ const Connection = require('../Connection')
 
 const insecureAgent = new Agent({ connect: { rejectUnauthorized: false } })
 
-async function getToken ({ configHost, configUsername, configPassword }) {
+async function getToken ({ configHost, configClientId, configUsername, configPassword }) {
   const body = new URLSearchParams()
   body.append('grant_type', 'password')
   body.append('username', configUsername)
   body.append('password', configPassword)
   body.append('scope', 'neon_customersearch_api')
-  body.append('client_id', 'thirdparty')
+  body.append('client_id', configClientId)
 
   const url = `https://identity.${configHost}/server/connect/token`
   const response = await fetch(
@@ -25,7 +25,7 @@ async function getToken ({ configHost, configUsername, configPassword }) {
     }
   )
 
-  assert(response.status === 200, `Request failed with status ${response.status}; check password for ${configUsername}@${configHost} is correct.`)
+  assert(response.status === 200, `Request failed with status ${response.status}; check password for ${configUsername}@${configHost} (client ID ${configClientId}) is correct.`)
   const { access_token: token } = await response.json()
   return token
 }
@@ -36,15 +36,15 @@ module.exports = new Connection({
   type: 'CONNECTION_TYPE_ERP',
   color: '#0088cc',
   logo: cdn => `${cdn}/connections/CONNECTION_NEON.svg`,
-  configNames: ['Host', 'Username', 'Password'],
-  configDefaults: ['thirdparty.neon.casino', '', ''],
+  configNames: ['Host', 'Client ID', 'Username', 'Password'],
+  configDefaults: ['thirdparty.neon.casino', 'thirdparty', '', ''],
   methods: {
     validate: {
       name: 'Validate',
       logic: async ({ connectionContainer, body, config }) => {
         const { customerNumber, firstName } = body
-        const [configHost, configUsername, configPassword] = config
-        const token = await getToken({ configHost, configUsername, configPassword })
+        const [configHost, configClientId, configUsername, configPassword] = config
+        const token = await getToken({ configHost, configClientId, configUsername, configPassword })
         const response = await fetch(
           `https://customer.${configHost}/search/api/CustomerSearch?CustomerNo=${encodeURIComponent(customerNumber)}&Forename=${encodeURIComponent(firstName)}`,
           {
