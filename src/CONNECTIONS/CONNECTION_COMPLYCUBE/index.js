@@ -64,7 +64,7 @@ async function eventHookLogic (config, connectionContainer) {
       'v1/flow/sessions',
       {
         'clientId': clientId,
-        'checkTypes': ['extensive_screening_check', 'identity_check', 'document_check'],
+        'checkTypes': ['extensive_screening_check', 'identity_check', 'document_check', 'proof_of_address_check'],
         'successUrl': cUrlSuccess,
         'cancelUrl': cUrlFailure
       }
