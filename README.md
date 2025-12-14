@@ -1,2 +1,1 @@
-# Connections
-Integrate your service with Sticky by submitting a pull request.
+Integrate your service by submitting a pull request.
