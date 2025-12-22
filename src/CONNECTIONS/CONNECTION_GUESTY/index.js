@@ -1,19 +1,5 @@
 const Connection = require('../Connection')
 
-async function eventHookLogic (config, connectionContainer) {
-  const { user, application, payment, createEvent } = connectionContainer
-
-  try {
-  } catch (e) {
-    createEvent({
-      type: 'CONNECTION_BAD',
-      userId: user.id,
-      applicationId: application ? application.id : undefined,
-      customData: { id: 'CONNECTION_GUESTY', message: e.message }
-    })
-  }
-}
-
 module.exports = new Connection({
   id: 'CONNECTION_GUESTY',
   name: 'Guesty',
@@ -22,7 +8,14 @@ module.exports = new Connection({
   logo: cdn => `${cdn}/connections/CONNECTION_GUESTY.svg`,
   configNames: [],
   configDefaults: [],
-  eventHooks: {
-    'SESSION_CART_PAY': eventHookLogic
+  methods: {
+    'reservation': {
+      name: 'Reservation',
+      logic: async ({ connectionContainer, config, body }) => {
+        const { user } = connectionContainer
+        global.rdic.logger.log({ user }, '[CONNECTION_GUESTY] [methods->reservation]', body)
+        return 'methods->reservation is working!'
+      }
+    }
   }
 })
