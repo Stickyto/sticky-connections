@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "dependencies": {
     "@google-cloud/firestore": "^7.10.0",
-    "@stickyto/openbox-node-utils": "11.5.0",
+    "@stickyto/openbox-node-utils": "11.8.0",
     "adal-node": "^0.2.4",
     "dotenv": "^17.2.3",
     "html-entities": "^2.5.2",
