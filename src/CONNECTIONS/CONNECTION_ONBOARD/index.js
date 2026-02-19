@@ -137,8 +137,6 @@ async function validatePublicHttpsUrl (input) {
 
 const extensionPath = path.resolve(__dirname, './extensions/I-Still-Dont-Care-About-Cookies')
 
-console.warn('xxx extensionPath', extensionPath)
-
 module.exports = new Connection({
   id: 'CONNECTION_ONBOARD',
   name: 'Onboard',
@@ -153,108 +151,178 @@ module.exports = new Connection({
         const { url } = body
         const finalUrl = await validatePublicHttpsUrl(url)
 
-        const browser = await puppeteer.launch({
-          headless: false,
-          args: [
-            '--no-sandbox',
-            '--disable-setuid-sandbox',
-            `--disable-extensions-except=${extensionPath}`,
-            `--load-extension=${extensionPath}`
-          ]
-        })
+        let browser
 
-        const page = await browser.newPage()
-
-        await page.setViewport({
-          width: 1280,
-          height: 1024,
-          deviceScaleFactor: 2
-        })
-
-        await page.goto(
-          finalUrl,
-          {
-            waitUntil: 'networkidle2',
-            timeout: 10 * 1000
-          }
-        )
-
-        await page.evaluate(() => window.scrollTo(0, 0))
-
-        const name = await page.evaluate(() => {
-          const og = document.querySelector('meta[property="og:site_name"]')
-          if (og && og.content) return og.content.trim()
-
-          const title = document.querySelector('title')
-          if (title) return title.innerText.split('|')[0].trim()
-
-          return null
-        })
-
-        const logoUrl = await (async () => {
-          const handle = await page.evaluateHandle(() => {
-            const homepageLinks = [...document.querySelectorAll('a')]
-              .filter(a => a.href === window.location.href)
-
-            if (homepageLinks.length) return homepageLinks[0]
-
-            const logoImg = [...document.images]
-              .find(img => img.src.toLowerCase().includes('logo'))
-
-            if (logoImg) return logoImg
-
-            const topImg = [...document.images]
-              .find(img => {
-                const rect = img.getBoundingClientRect()
-                return rect.top < 300 && rect.width > 40 && rect.height > 20
-              })
-
-            if (topImg) return topImg
+        try {
+          browser = await puppeteer.launch({
+            headless: false,
+            args: [
+              '--no-sandbox',
+              '--disable-setuid-sandbox',
+              `--disable-extensions-except=${extensionPath}`,
+              `--load-extension=${extensionPath}`
+            ]
           })
 
-          const element = handle?.asElement()
-          if (!element) return
+          const page = await browser.newPage()
 
-          const raw = await element.screenshot({ type: 'png' })
-          const buffer = Buffer.from(raw)
+          await page.setViewport({
+            width: 1280,
+            height: 1024,
+            deviceScaleFactor: 2
+          })
 
-          const logoUrl = await uploadBuffer({
+          await page.goto(
+            finalUrl,
+            {
+              waitUntil: 'networkidle2',
+              timeout: 10 * 1000
+            }
+          )
+
+          await page.evaluate(() => {
+            window.scrollTo(0, 0)
+
+            const toLower = s => (s || '').toLowerCase()
+
+            // 1️⃣ Try clicking obvious consent buttons
+            const acceptKeywords = [
+              'accept',
+              'agree',
+              'i understand',
+              'allow all'
+            ]
+
+            const buttons = [...document.querySelectorAll('button, a, input[type="button"], input[type="submit"]')]
+
+            for (const btn of buttons) {
+              const text = toLower(btn.innerText || btn.value)
+              const foundAk = acceptKeywords.find(k => text.includes(k))
+              if (foundAk) {
+                try { btn.click() } catch {}
+              }
+            }
+
+            // 2️⃣ Remove known consent containers
+            const consentSelectors = [
+              '[id*="cookie"]',
+              '[class*="cookie"]',
+              '[id*="consent"]',
+              '[class*="consent"]',
+              '[id*="gdpr"]',
+              '[class*="gdpr"]',
+              '[id*="fupi"]',
+              '[class*="fupi"]'
+            ]
+
+            document.querySelectorAll(consentSelectors.join(',')).forEach(el => {
+              const style = window.getComputedStyle(el)
+
+              const isOverlay =
+                style.position === 'fixed' ||
+                style.position === 'sticky' ||
+                parseInt(style.zIndex || '0') > 1000
+
+              if (isOverlay) {
+                el.remove()
+              }
+            })
+
+            // 3️⃣ Remove full-screen overlays / blockers
+            document.querySelectorAll('div').forEach(el => {
+              const style = window.getComputedStyle(el)
+
+              const highZ = parseInt(style.zIndex || '0') > 1000
+              const fixed = style.position === 'fixed'
+              const tall = el.offsetHeight > window.innerHeight * 0.25
+
+              if (fixed && highZ && tall) {
+                el.remove()
+              }
+            })
+          })
+
+          await new Promise(r => setTimeout(r, 1 * 1000))
+
+          const name = await page.evaluate(() => {
+            const og = document.querySelector('meta[property="og:site_name"]')
+            if (og && og.content) return og.content.trim()
+
+            const title = document.querySelector('title')
+            if (title) return title.innerText.split('|')[0].trim()
+
+            return null
+          })
+
+          const logoUrl = await (async () => {
+            const handle = await page.evaluateHandle(() => {
+              const homepageLinks = [...document.querySelectorAll('a')]
+                .filter(a => a.href === window.location.href)
+
+              if (homepageLinks.length) return homepageLinks[0]
+
+              const logoImg = [...document.images]
+                .find(img => img.src.toLowerCase().includes('logo'))
+
+              if (logoImg) return logoImg
+
+              const topImg = [...document.images]
+                .find(img => {
+                  const rect = img.getBoundingClientRect()
+                  return rect.top < 300 && rect.width > 40 && rect.height > 20
+                })
+
+              if (topImg) return topImg
+            })
+
+            const element = handle?.asElement()
+            if (!element) return
+
+            const raw = await element.screenshot({ type: 'png' })
+            const buffer = Buffer.from(raw)
+
+            const logoUrl = await uploadBuffer({
+              bucket: BUCKET_NAME,
+              buffer,
+              extension: 'png',
+              mimetype: 'image/png'
+            })
+
+            return logoUrl
+          })()
+
+          const wholePageRaw = await page.screenshot()
+          const wholePageBuffer = Buffer.from(wholePageRaw)
+
+          const wholePageUrl = await uploadBuffer({
             bucket: BUCKET_NAME,
-            buffer,
+            buffer: wholePageBuffer,
             extension: 'png',
             mimetype: 'image/png'
           })
 
-          return logoUrl
-        })()
+          const colors = await (async () => {
+            const palette = await Vibrant.from(wholePageBuffer).getPalette()
+            return Object
+              .values(palette)
+              .filter(Boolean)
+              .sort((a, b) => b.population - a.population)
+              .slice(0, 10)
+              .map(p => p.hex)
+          })()
 
-        const wholePageRaw = await page.screenshot()
-        const wholePageBuffer = Buffer.from(wholePageRaw)
-
-        const wholePageUrl = await uploadBuffer({
-          bucket: BUCKET_NAME,
-          buffer: wholePageBuffer,
-          extension: 'png',
-          mimetype: 'image/png'
-        })
-
-        const colors = await (async () => {
-          const palette = await Vibrant.from(wholePageBuffer).getPalette()
-          return Object
-            .values(palette)
-            .filter(Boolean)
-            .sort((a, b) => b.population - a.population)
-            .slice(0, 10)
-            .map(p => p.hex)
-        })()
-
-        await browser.close()
-
-        return {
-          name,
-          logoUrl,
-          wholePageUrl,
-          colors
+          return {
+            name,
+            logoUrl,
+            wholePageUrl,
+            colors
+          }
+        } finally {
+          if (browser) {
+            try {
+              await browser.close();
+            } catch (_) {}
+          }
         }
       }
     }
