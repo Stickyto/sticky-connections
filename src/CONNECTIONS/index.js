@@ -137,6 +137,10 @@ const CONNECTIONS = new Map([
     require('./CONNECTION_AI_SIMULATOR')
   ],
   [
+    'CONNECTION_ONBOARD',
+    require('./CONNECTION_ONBOARD')
+  ],
+  [
     'CONNECTION_ROTUNDA',
     require('./CONNECTION_ROTUNDA')
   ],
