@@ -6,7 +6,7 @@
   "dependencies": {
     "@google-cloud/firestore": "^7.10.0",
     "@google-cloud/storage": "^7.19.0",
-    "@stickyto/openbox-node-utils": "11.8.3",
+    "@stickyto/openbox-node-utils": "11.9.0",
     "adal-node": "^0.2.4",
     "dns": "^0.2.2",
     "dotenv": "^17.3.1",
