@@ -35,7 +35,7 @@ async function eventHookLogic (config, connectionContainer) {
     'Team member name': whichFu ? whichFu.name : undefined,
     'Team member email': whichFu ? whichFu.email : undefined,
 
-    'Paid at': formatTime(payment.sessionPaidAt, user.timezone),
+    'Paid at': formatTime(payment.sessionPaidAt, user.timezone, user.country),
     [`${user.name} reference`]: payment.userPaymentId ? payment.userPaymentId : undefined,
     'Payment reference': payment.consumerIdentifier,
     'Payment total': (payment.total / 100).toFixed(2),
