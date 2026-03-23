@@ -8,6 +8,10 @@ const CONNECTIONS = new Map([
     require('./CONNECTION_OPENAI')
   ],
   [
+    'CONNECTION_CB911',
+    require('./CONNECTION_CB911')
+  ],
+  [
     'CONNECTION_PAX',
     require('./CONNECTION_PAX')
   ],
