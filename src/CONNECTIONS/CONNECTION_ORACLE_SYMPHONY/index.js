@@ -195,8 +195,8 @@ module.exports = new Connection({
   name: 'Symphony',
   color: '#E32124',
   logo: cdn => `${cdn}/connections/CONNECTION_ORACLE_SYMPHONY.svg`,
-  configNames: ['Client ID', 'Username', 'Password', 'Org short ID'],
-  configDefaults: ['', '', '', ''],
+  configNames: ['Client ID', 'Username', 'Password', 'Org short ID', 'Location'],
+  configDefaults: ['', '', '', '', ''],
   eventHooks: {
     'SESSION_CART_PAY': eventHookLogic
   }
