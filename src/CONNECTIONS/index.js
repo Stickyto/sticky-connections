@@ -12,6 +12,10 @@ const CONNECTIONS = new Map([
     require('./CONNECTION_CB911')
   ],
   [
+    'CONNECTION_ORACLE_SYMPHONY',
+    require('./CONNECTION_ORACLE_SYMPHONY')
+  ],
+  [
     'CONNECTION_PEOPLEVINE',
     require('./CONNECTION_PEOPLEVINE')
   ],
