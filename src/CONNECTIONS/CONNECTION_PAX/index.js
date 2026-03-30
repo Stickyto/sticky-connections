@@ -24,7 +24,7 @@ module.exports = new Connection({
       'config': {
         'what': [
           'Press "..." (three dots) icon at top right',
-          'Press "Pair"'
+          'Press the relevant "Pair" button for the terminal index you are working on - if unsure, "Pair 0" is the one to choose.'
         ]
           .join('\n\n'),
         'font': `${COLOR}--center--100%--false`
@@ -53,7 +53,52 @@ module.exports = new Connection({
     {
       "id": "a21eddf2-aa86-4b6a-a2af-8ac279b246f7",
       "config": {
-        "label": "Pair",
+        "label": "Pair 0",
+        "action": "~~||~~~~||~~false",
+        "colour": COLOR,
+        "foregroundColour": "#FFFFFF",
+        "icon": "loading",
+        "fullWidth": false,
+        "dropShadowAndRoundedCorners": true,
+        "letterSpacing": 1,
+        "backgroundImage": "",
+        "bottomMargin": 16
+      }
+    },
+    {
+      "id": "a21eddf2-aa86-4b6a-a2af-8ac279b246f7",
+      "config": {
+        "label": "Pair 1",
+        "action": "~~||~~~~||~~false",
+        "colour": COLOR,
+        "foregroundColour": "#FFFFFF",
+        "icon": "loading",
+        "fullWidth": false,
+        "dropShadowAndRoundedCorners": true,
+        "letterSpacing": 1,
+        "backgroundImage": "",
+        "bottomMargin": 16
+      }
+    },
+    {
+      "id": "a21eddf2-aa86-4b6a-a2af-8ac279b246f7",
+      "config": {
+        "label": "Pair 2",
+        "action": "~~||~~~~||~~false",
+        "colour": COLOR,
+        "foregroundColour": "#FFFFFF",
+        "icon": "loading",
+        "fullWidth": false,
+        "dropShadowAndRoundedCorners": true,
+        "letterSpacing": 1,
+        "backgroundImage": "",
+        "bottomMargin": 16
+      }
+    },
+    {
+      "id": "a21eddf2-aa86-4b6a-a2af-8ac279b246f7",
+      "config": {
+        "label": "Pair 3",
         "action": "~~||~~~~||~~false",
         "colour": COLOR,
         "foregroundColour": "#FFFFFF",
