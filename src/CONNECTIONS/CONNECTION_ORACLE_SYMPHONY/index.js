@@ -160,33 +160,52 @@ async function eventHookLogic (config, connectionContainer) {
   const { event, payment, user, application, thing, session, createEvent } = connectionContainer
   const [configClientId, configUsername, configPassword, configOrgName] = config
 
-  const auth = await abstractedPkceAuthorize(configClientId)
+  try {
+    const auth = await abstractedPkceAuthorize(configClientId)
 
-  const code = await abstractedSignIn({
-    cookieHeader: auth.cookies,
-    username: configUsername,
-    password: configPassword,
-    orgname: configOrgName
-  })
+    const code = await abstractedSignIn({
+      cookieHeader: auth.cookies,
+      username: configUsername,
+      password: configPassword,
+      orgname: configOrgName
+    })
 
-  const token = await abstractedToken({
-    cookieHeader: auth.cookies,
-    clientId: configClientId,
-    codeVerifier: auth.codeVerifier,
-    authCode: code
-  })
+    const token = await abstractedToken({
+      cookieHeader: auth.cookies,
+      clientId: configClientId,
+      codeVerifier: auth.codeVerifier,
+      authCode: code
+    })
 
-  console.log('\n--- FINAL TOKEN RESPONSE ---')
-  console.log(token)
+    console.log('\n--- FINAL TOKEN RESPONSE ---')
+    console.log(token)
 
-  const locations = await getLocations({
-    basePath: HOST_API,
-    orgShortName: configOrgName,
-    accessToken: token.access_token
-  })
+    const locations = await getLocations({
+      basePath: HOST_API,
+      orgShortName: configOrgName,
+      accessToken: token.access_token
+    })
 
-  console.log('\n--- FINAL LOCATIONS RESPONSE ---')
-  console.log(locations)
+    console.log('\n--- FINAL LOCATIONS RESPONSE ---')
+    console.log(locations)
+
+    createEvent({
+      type: 'CONNECTION_GOOD',
+      userId: user.id,
+      applicationId: application ? application.id : undefined,
+      thingId: thing ? thing.id : undefined,
+      customData: { id: 'CONNECTION_ORACLE_SYMPHONY' }
+    })
+  } catch (e) {
+    payment.onSessionFail(rdic, user, { whichConnection: 'CONNECTION_ORACLE_SYMPHONY' }, { customSubject: '⚠️ Your {name} order was not successful', customMessage: '<p>We are sorry but your {name} order was not successful.</p>' })
+    createEvent({
+      type: 'CONNECTION_BAD',
+      userId: user.id,
+      applicationId: application ? application.id : undefined,
+      thingId: thing ? thing.id : undefined,
+      customData: { id: 'CONNECTION_ORACLE_SYMPHONY', message: e.message }
+    })
+  }
 }
 
 module.exports = new Connection({
