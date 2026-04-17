@@ -11,7 +11,7 @@ module.exports = async function connectionGo (foundConnection, method, { rdic, u
 
   user && (() => {
     const foundConfigWrapper = user.connections.find(c => c.id === foundConnection.id)
-    assert(typeof foundConfigWrapper === 'object', `${foundConnection.name} isn't configured!`)
+    assert(typeof foundConfigWrapper === 'object', `${foundConnection.name} isn't configured for user id ${user.id} (UC=${user.connections.map(_ => _.id).join('/')})!`)
     config = foundConfigWrapper.config
   })()
 
