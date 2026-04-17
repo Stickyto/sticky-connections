@@ -48,10 +48,6 @@ const CONNECTIONS = new Map([
     require('./CONNECTION_DVLA')
   ],
   [
-    'CONNECTION_JUSTEAT',
-    require('./CONNECTION_JUSTEAT')
-  ],
-  [
     'CONNECTION_BLUE_MESH',
     require('./CONNECTION_BLUE_MESH')
   ],
