@@ -2,6 +2,7 @@ const path = require('path')
 const dns = require('dns').promises
 const net = require('net')
 const puppeteer = require('puppeteer')
+const Xvfb = require('xvfb')
 const { Vibrant } = require('node-vibrant/node')
 const { assert, uuid } = require('@stickyto/openbox-node-utils')
 const Connection = require('../Connection')
@@ -10,6 +11,11 @@ const BUCKET_NAME = 'sticky-uploads'
 const { Storage } = require('@google-cloud/storage')
 const storage = new Storage({
   projectId: process.env.GOOGLE_PROJECT_ID
+})
+
+const xvfb = new Xvfb({
+  silent: true,
+  xvfb_args: ['-screen', '0', '1280x1024x24', '-ac']
 })
 
 const uploadBuffer = async ({
@@ -150,6 +156,8 @@ module.exports = new Connection({
       logic: async ({ connectionContainer, config, body }) => {
         const { url } = body
         const finalUrl = await validatePublicHttpsUrl(url)
+
+        xvfb.startSync()
 
         let browser
 
@@ -323,6 +331,7 @@ module.exports = new Connection({
               await browser.close();
             } catch (_) {}
           }
+          xvfb.stopSync()
         }
       }
     }
