@@ -157,7 +157,7 @@ module.exports = new Connection({
         const { url } = body
         const finalUrl = await validatePublicHttpsUrl(url)
 
-        xvfb && xvfb.startSync()
+        // xvfb.startSync()
 
         let browser
 
@@ -331,7 +331,7 @@ module.exports = new Connection({
               await browser.close();
             } catch (_) {}
           }
-          xvfb && xvfb.stopSync()
+          // xvfb.stopSync()
         }
       }
     }
