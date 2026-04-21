@@ -36,7 +36,7 @@ function doFail (rdic, createEvent, message, { user }) {
     rdic,
     {
       subject: `GoCardless: ${message}`,
-      message: `<p>GoCardless:</p><p>${message}</p><p>Dashboard ID: ${user.id}</p>`,
+      message: `<p>GoCardless: ${message}</p><p>Dashboard ID: ${user.id}</p>`,
       to: EMAIL_TO
     }
   )
@@ -77,10 +77,10 @@ module.exports = new Connection({
           const { customers: customerObject } = json
           global.rdic.logger.log({ user }, '[CONNECTION_GOCARDLESS] [4]', { json, customerObject })
 
-          assert(isEmailValid(customerObject.email), `GoCardless object ${customerObject.id} email ${customerObject.email} does not pass our isEmailValid function.`)
+          assert(isEmailValid(customerObject.email), `Object ${customerObject.id} email ${customerObject.email} does not pass our isEmailValid function.`)
 
           const { rows: [rawFinalUser] } = await rdic.get('datalayerRelational')._.sql(`SELECT * FROM users WHERE email='${customerObject.email}' OR billing_email='${customerObject.email}'`)
-          assert(rawFinalUser, `A new GoCardless sign up with ID ${customerObject.id} and email ${customerObject.email} (${[customerObject.company_name, customerObject.given_name, customerObject.family_name].filter(_ => _).join(' ')}) did not match any dashboards. Please connect manually.`)
+          assert(rawFinalUser, `A new sign up with ID ${customerObject.id} and email ${customerObject.email} (${[customerObject.company_name, customerObject.given_name, customerObject.family_name].filter(_ => _).join(' ')}) did not match any dashboards. Please connect manually.`)
 
           const finalUser = new User({}).fromDatalayerRelational(rawFinalUser)
           finalUser.directDebitRef = customerObject.id
