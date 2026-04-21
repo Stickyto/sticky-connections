@@ -105,7 +105,6 @@ async function eventHookLogic (config, connectionContainer) {
 module.exports = new Connection({
   id: 'CONNECTION_COMPLYCUBE',
   name: 'ComplyCube',
-  type: 'CONNECTION_TYPE_ERP',
   color: '#1683FB',
   logo: cdn => `${cdn}/connections/CONNECTION_COMPLYCUBE.svg`,
   configNames: ['API key', 'Success URL', 'Failure URL'],

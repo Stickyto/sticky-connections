@@ -14,6 +14,10 @@ class Connection {
     this.type = this.type || 'CONNECTION_TYPE_GENERIC'
   }
 
+  logo (cdn) {
+    return `${cdn}/connections/CONNECTION_UNKNOWN.svg`
+  }
+
   isAMatch(userId, partnerName) {
     if (!partnerName && Array.isArray(this.partnerNames)) {
       return false

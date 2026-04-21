@@ -2,7 +2,6 @@ const Connection = require('../Connection')
 
 module.exports = new Connection({
   id: 'CONNECTION_CB911',
-  type: 'CONNECTION_TYPE_ERP',
   name: 'Chargebacks911',
   color: '#B90000',
   logo: cdn => `${cdn}/connections/CONNECTION_CB911.svg`,

@@ -146,8 +146,7 @@ const extensionPath = path.resolve(__dirname, './extensions/I-Still-Dont-Care-Ab
 module.exports = new Connection({
   id: 'CONNECTION_ONBOARD',
   name: 'Onboard',
-  color: '#9F89AE',
-  logo: cdn => `${cdn}/connections/CONNECTION_AI_SIMULATOR.png`,
+  color: '#211552',
   configNames: [],
   configDefaults: [],
   methods: {

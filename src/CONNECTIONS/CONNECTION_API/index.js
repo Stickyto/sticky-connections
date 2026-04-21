@@ -2,7 +2,7 @@ const Connection = require('../Connection')
 const makeRequest = require('./makeRequest')
 const { deserialize } = require('@stickyto/openbox-node-utils')
 
-const COLOR = '#322CBE'
+const COLOR = '#211552'
 
 function doFail (createEvent, message, { user, application }) {
   createEvent({
@@ -169,7 +169,6 @@ module.exports = new Connection({
   name: 'Create dashboard',
   shortName: 'API',
   color: COLOR,
-  logo: cdn => `${cdn}/connections/CONNECTION_API.svg`,
   configNames: [],
   configDefaults: [],
   instructions: ({ rdic, user, applications }) => [
