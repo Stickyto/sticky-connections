@@ -48,6 +48,10 @@ const CONNECTIONS = new Map([
     require('./CONNECTION_DVLA')
   ],
   [
+    'CONNECTION_GOCARDLESS',
+    require('./CONNECTION_GOCARDLESS')
+  ],
+  [
     'CONNECTION_BLUE_MESH',
     require('./CONNECTION_BLUE_MESH')
   ],
