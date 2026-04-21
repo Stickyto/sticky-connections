@@ -1,5 +1,30 @@
-const { assert, services } = require('@stickyto/openbox-node-utils')
+const { assert, services, isEmailValid } = require('@stickyto/openbox-node-utils')
+const { User } = require('openbox-entities')
 const Connection = require('../Connection')
+
+const EMAIL_TO = 'accounts@sticky.to'
+
+function doSucceed (rdic, createEvent, { customerObject, user, finalUser }) {
+  const message = `GoCardless ${customerObject.id} connection to ${finalUser.name} successful!`
+  createEvent({
+    type: 'CONNECTION_GOOD',
+    userId: user.id,
+    customData: { id: 'CONNECTION_GOCARDLESS', message }
+  })
+  services.mail.quickSend(
+    rdic,
+    {
+      subject: message,
+      message: `
+<p>GoCardless ID: ${customerObject.id}</p>
+<p>GoCardless data: ${[customerObject.company_name, customerObject.given_name, customerObject.family_name].filter(_ => _).join(' ')}</p>
+<p>Dashboard name: ${finalUser.name}</p>
+<p>Dashboard ID: ${finalUser.id}</p>
+`,
+      to: EMAIL_TO
+    }
+  )
+}
 
 function doFail (rdic, createEvent, message, { user }) {
   createEvent({
@@ -12,7 +37,7 @@ function doFail (rdic, createEvent, message, { user }) {
     {
       subject: `GoCardless: ${message}`,
       message: `<p>GoCardless:</p><p>${message}</p><p>Dashboard ID: ${user.id}</p>`,
-      to: 'accounts@sticky.to'
+      to: EMAIL_TO
     }
   )
 }
@@ -28,7 +53,7 @@ module.exports = new Connection({
     in: {
       name: 'In',
       logic: async ({ connectionContainer, config, body }) => {
-        const { user } = connectionContainer
+        const { user, updateUser } = connectionContainer
         const [apiKey] = config
         global.rdic.logger.log({ user }, '[CONNECTION_GOCARDLESS] [1]', { config, body })
         try {
@@ -37,47 +62,36 @@ module.exports = new Connection({
           const { links: { customer: customerId } } = applicableBodyElement
           global.rdic.logger.log({ user }, '[CONNECTION_GOCARDLESS] [3]', { customerId })
 
-          throw new Error('[WIP]')
-
           const res = await fetch(
             `https://api.gocardless.com/customers/${customerId}`,
             {
               method: 'GET',
               headers: {
                 'GoCardless-Version': '2015-07-06',
-                'Authorization': `Bearer apiKey`
+                'Authorization': `Bearer ${apiKey}`
               }
             }
           )
           const json = await res.json()
-          const { customers: customerObject } = res
-          global.rdic.logger.log({ user }, '[CONNECTION_GOCARDLESS] [4]', { customerObject })
+          assert(!json.error, json.error ? JSON.stringify(json.error) : '???')
+          const { customers: customerObject } = json
+          global.rdic.logger.log({ user }, '[CONNECTION_GOCARDLESS] [4]', { json, customerObject })
 
-          // {
-          //   "customers": {
-          //     "id": "CU01M132ZQ7XCN",
-          //     "created_at": "2026-04-21T19:29:41.589Z",
-          //     "email": "test_1@sticky.to",
-          //     "given_name": "GN",
-          //     "family_name": "FN",
-          //     "company_name": null,
-          //     "address_line1": "18 X Street",
-          //     "address_line2": null,
-          //     "address_line3": null,
-          //     "city": "Brighouse",
-          //     "region": null,
-          //     "postal_code": "ABC DEF",
-          //     "country_code": "GB",
-          //     "language": "en",
-          //     "swedish_identity_number": null,
-          //     "danish_identity_number": null,
-          //     "phone_number": null,
-          //     "metadata": {}
-          //   }
-          // }
+          assert(isEmailValid(customerObject.email), `GoCardless object ${customerObject.id} email ${customerObject.email} does not pass our isEmailValid function.`)
+
+          const { rows: [rawFinalUser] } = await rdic.get('datalayerRelational')._.sql(`SELECT * FROM users WHERE email='${customerObject.email}' OR billing_email='${customerObject.email}'`)
+          assert(rawFinalUser, `A new GoCardless sign up with ID ${customerObject.id} and email ${customerObject.email} (${[customerObject.company_name, customerObject.given_name, customerObject.family_name].filter(_ => _).join(' ')}) did not match any dashboards. Please connect manually.`)
+
+          const finalUser = new User({}).fromDatalayerRelational(rawFinalUser)
+          finalUser.directDebitRef = customerObject.id
+          finalUser.billingEmail = customerObject.email
+          await updateUser(finalUser)
+
+          doSucceed(rdic, connectionContainer.createEvent, { customerObject, user, finalUser })
 
         } catch ({ message }) {
-          doFail(rdic, connectionContainer.createEvent, `Query failed (${message})`, { user })
+          doFail(rdic, connectionContainer.createEvent, message, { user })
+          throw new Error(message)
         }
       }
     }
