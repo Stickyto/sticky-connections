@@ -6,7 +6,7 @@
   "dependencies": {
     "@google-cloud/firestore": "^7.10.0",
     "@google-cloud/storage": "^7.19.0",
-    "@stickyto/openbox-node-utils": "11.9.0",
+    "@stickyto/openbox-node-utils": "11.9.1",
     "adal-node": "^0.2.4",
     "dns": "^0.2.2",
     "dotenv": "^17.3.1",
@@ -14,10 +14,11 @@
     "joi": "^17.13.3",
     "jsdom": "^25.0.1",
     "node-vibrant": "^4.0.4",
-    "puppeteer": "^23.11.1",
+    "puppeteer": "^24.42.0",
     "safe-eval": "^0.4.1",
     "undici": "^7.22.0",
-    "xml2json": "^0.12.0"
+    "xml2json": "^0.12.0",
+    "xvfb": "^0.4.0"
   },
   "devDependencies": {
     "eslint": "^9.38.0",

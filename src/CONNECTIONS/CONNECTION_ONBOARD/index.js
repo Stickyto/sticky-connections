@@ -12,11 +12,11 @@ const storage = new Storage({
   projectId: process.env.GOOGLE_PROJECT_ID
 })
 
-// const Xvfb = require('xvfb')
-// const xvfb = new Xvfb({
-//   silent: true,
-//   xvfb_args: ['-screen', '0', '1280x1024x24', '-ac']
-// })
+const Xvfb = require('xvfb')
+const xvfb = new Xvfb({
+  silent: true,
+  xvfb_args: ['-screen', '0', '1280x1024x24', '-ac']
+})
 
 const uploadBuffer = async ({
   bucket,
@@ -156,7 +156,7 @@ module.exports = new Connection({
         const { url } = body
         const finalUrl = await validatePublicHttpsUrl(url)
 
-        // xvfb.startSync()
+        xvfb.startSync()
 
         let browser
 
@@ -330,7 +330,7 @@ module.exports = new Connection({
               await browser.close();
             } catch (_) {}
           }
-          // xvfb.stopSync()
+          xvfb.stopSync()
         }
       }
     }
