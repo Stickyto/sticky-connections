@@ -59,6 +59,9 @@ module.exports = new Connection({
         try {
           const applicableBodyElement = body.events.find(_ => _.resource_type === 'billing_requests' && _.action === 'fulfilled')
           global.rdic.logger.log({ user }, '[CONNECTION_GOCARDLESS] [2]', { applicableBodyElement })
+          if (!applicableBodyElement) {
+            return
+          }
           const { links: { customer: customerId } } = applicableBodyElement
           global.rdic.logger.log({ user }, '[CONNECTION_GOCARDLESS] [3]', { customerId })
 
