@@ -86,7 +86,7 @@ module.exports = new Connection({
           assert(rawFinalUser, `A new sign up with ID ${customerObject.id} and email ${customerObject.email} (${[customerObject.company_name, customerObject.given_name, customerObject.family_name].filter(_ => _).join(' ')}) did not match any dashboards. Please connect manually.`)
 
           const finalUser = new User({}).fromDatalayerRelational(rawFinalUser)
-          finalUser.billingReference = customerObject.id
+          finalUser.directDebitRef = customerObject.id
           finalUser.billingEmail = customerObject.email
           await updateUser(finalUser)
 
