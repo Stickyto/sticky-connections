@@ -123,7 +123,7 @@ module.exports = new Connection({
         'Team member email': whichFu ? whichFu.email : undefined,
 
         'Refunded at': formatTime(payment.refundedAt, user.timezone, user.country),
-        'Refunded': (payment.refundedTotal / 100).toFixed(2),
+        'Refunded total': (payment.refundedTotal / 100).toFixed(2),
 
         'Paid at': formatTime(payment.sessionPaidAt, user.timezone, user.country),
         [`${user.name} reference`]: payment.userPaymentId ? payment.userPaymentId : undefined,
