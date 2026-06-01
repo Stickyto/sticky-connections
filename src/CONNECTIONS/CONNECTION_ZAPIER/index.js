@@ -122,8 +122,8 @@ module.exports = new Connection({
         'Team member name': whichFu ? whichFu.name : undefined,
         'Team member email': whichFu ? whichFu.email : undefined,
 
-        'Refunded at': formatTime(payment.refundedAt, user.timezone, user.country),
-        'Refunded total': (payment.refundedTotal / 100).toFixed(2),
+        'Refunded at': formatTime(event.createdAt, user.timezone, user.country),
+        'Refunded total': (event.customData.get('refundAmount') / 100).toFixed(2),
 
         'Paid at': formatTime(payment.sessionPaidAt, user.timezone, user.country),
         [`${user.name} reference`]: payment.userPaymentId ? payment.userPaymentId : undefined,
