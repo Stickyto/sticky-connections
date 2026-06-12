@@ -1,10 +1,7 @@
 const crypto = require('crypto')
 const Connection = require('../Connection')
 
-const HOST_AUTHORIZE = 'https://mte4-ohra-idm.oracleindustry.com'
-const HOST_API = 'https://mte4-sts.oraclecloud.com'
-
-async function abstractedPkceAuthorize (clientId) {
+async function abstractedPkceAuthorize ({ configHostAuthorize, clientId }) {
   console.log('--- STEP 1: Generate PKCE verifier ---')
   const codeVerifier = crypto.randomBytes(32)
     .toString('base64')
@@ -30,8 +27,7 @@ async function abstractedPkceAuthorize (clientId) {
     code_challenge: codeChallenge,
     code_challenge_method: 'S256'
   })
-  const authorizeUrl =
-    `${HOST_AUTHORIZE}/oidc-provider/v1/oauth2/authorize?${params.toString()}`
+  const authorizeUrl = `${configHostAuthorize}/oidc-provider/v1/oauth2/authorize?${params.toString()}`
   console.log('authorize_url:', authorizeUrl)
   console.log('\n--- STEP 4: Call authorize endpoint ---')
   const res = await fetch(authorizeUrl, {
@@ -61,13 +57,14 @@ async function abstractedPkceAuthorize (clientId) {
 }
 
 async function abstractedSignIn ({
+  configHostAuthorize,
   cookieHeader,
   username,
   password,
   orgname
 }) {
   console.log('\n--- STEP 7: POST /signin ---')
-  const url = `${HOST_AUTHORIZE}/oidc-provider/v1/oauth2/signin`
+  const url = `${configHostAuthorize}/oidc-provider/v1/oauth2/signin`
   const body = new URLSearchParams({
     username,
     password,
@@ -98,6 +95,7 @@ async function abstractedSignIn ({
 }
 
 async function abstractedToken ({
+  configHostAuthorize,
   cookieHeader,
   clientId,
   codeVerifier,
@@ -105,7 +103,7 @@ async function abstractedToken ({
   redirectUri = 'apiaccount://callback'
 }) {
   console.log('\n--- STEP 8: POST /token ---')
-  const url = `${HOST_AUTHORIZE}/oidc-provider/v1/oauth2/token`
+  const url = `${configHostAuthorize}/oidc-provider/v1/oauth2/token`
   const body = new URLSearchParams({
     scope: 'openid',
     grant_type: 'authorization_code',
@@ -158,12 +156,16 @@ async function getLocations ({
 
 async function eventHookLogic (config, connectionContainer) {
   const { event, payment, user, application, thing, session, createEvent } = connectionContainer
-  const [configClientId, configUsername, configPassword, configOrgName] = config
+  const [configClientId, configUsername, configPassword, configOrgName, configHostAuthorize, configHostApi] = config
 
   try {
-    const auth = await abstractedPkceAuthorize(configClientId)
+    const auth = await abstractedPkceAuthorize({
+      configHostAuthorize,
+      clientId: configClientId
+    })
 
     const code = await abstractedSignIn({
+      configHostAuthorize,
       cookieHeader: auth.cookies,
       username: configUsername,
       password: configPassword,
@@ -171,6 +173,7 @@ async function eventHookLogic (config, connectionContainer) {
     })
 
     const token = await abstractedToken({
+      configHostAuthorize,
       cookieHeader: auth.cookies,
       clientId: configClientId,
       codeVerifier: auth.codeVerifier,
@@ -181,7 +184,7 @@ async function eventHookLogic (config, connectionContainer) {
     console.log(token)
 
     const locations = await getLocations({
-      basePath: HOST_API,
+      basePath: configHostApi,
       orgShortName: configOrgName,
       accessToken: token.access_token
     })
@@ -211,7 +214,7 @@ async function eventHookLogic (config, connectionContainer) {
 module.exports = new Connection({
   id: 'CONNECTION_ORACLE_SYMPHONY',
   type: 'CONNECTION_TYPE_POINT_OF_SALE',
-  name: 'Symphony',
+  name: 'Simphony',
   color: '#E32124',
   logo: cdn => `${cdn}/connections/CONNECTION_ORACLE_SYMPHONY.svg`,
   configNames: ['Client ID', 'Username', 'Password', 'Org short ID', 'Location'],
