@@ -5,7 +5,7 @@ const Connection = require('../Connection')
 const EMAIL_TO = 'accounts@sticky.to'
 
 function doSucceed (rdic, createEvent, { customerObject, user, finalUser }) {
-  const message = `GoCardless ${customerObject.id} connection to ${finalUser.name} successful!`
+  const message = `[SUCCESS] [GoCardless] ${customerObject.id} connection to ${finalUser.name}`
   createEvent({
     type: 'CONNECTION_GOOD',
     userId: user.id,
@@ -35,7 +35,7 @@ function doFail (rdic, createEvent, message, { user }) {
   services.mail.quickSend(
     rdic,
     {
-      subject: `GoCardless: ${message}`,
+      subject: `[ACTION REQUIRED] [GoCardless] ${message}`,
       message: `<p>GoCardless: ${message}</p><p>Dashboard ID: ${user.id}</p>`,
       to: EMAIL_TO
     }
