@@ -55,50 +55,5 @@ module.exports = new Connection({
   logo: cdn => `${cdn}/connections/CONNECTION_ECOMMPAY.svg`,
   configNames: ['Project ID', 'Secret key'],
   configDefaults: ['', ''],
-  methods: {
-    'private--oct-done': {
-      name: 'OCT -> Done',
-      logic: async calledWith => {
-
-      }
-    },
-    'oct': {
-      name: 'OCT',
-      logic: async calledWith => {
-        let { config: [projectId, secretKey] } = calledWith
-        projectId = parseInt(projectId, 10)
-
-        const { body: { total, eventId, eventIp, vaultItem }, connectionContainer: { rdic, user } } = calledWith
-        const { apiUrl } = rdic.get('environment')
-
-        const payload = {
-          general: {
-            project_id: projectId,
-            payment_id: eventId,
-            merchant_callback_url: `${apiUrl}/v2/connectionhook/${user.privateKey}/CONNECTION_ECOMMPAY/private--oct-done`
-          },
-          card: {
-            "pan": vaultItem.number,
-            "year": parseInt(`${new Date().getFullYear().toString().substring(0, 2)}${parseInt(vaultItem.expires.split('/')[1])}`, 10),
-            "month": parseInt(vaultItem.expires.split('/')[0], 10),
-            "card_holder": vaultItem.name
-          },
-          payment: {
-            amount: total,
-            currency: user.currency,
-            description: 'Payout'
-          },
-          customer: {
-            id: user.id,
-            email: user.email,
-            ip_address: eventIp
-          }
-        }
-
-        const r = await makeRequest('https://api.ecommpay.com/v2/payment/card/payout', payload, secretKey)
-
-        return {}
-      }
-    }
-  }
+  methods: {}
 })
