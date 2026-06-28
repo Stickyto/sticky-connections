@@ -73,7 +73,7 @@ module.exports = new Connection({
   logo: cdn => `${cdn}/connections/CONNECTION_ROTUNDA.png`,
   configNames: ['URL', 'API key', 'Flow IDs'],
   configDefaults: ['deluxe.rotunda.systems', '', ''],
-  userIds: ['3e43c939-1d76-4238-b51d-a6e27a425677'],
+  userIds: ['3e43c939-1d76-4238-b51d-a6e27a425677', 'e89241cd-b730-49de-a588-4d6b4b4ddeb2'],
   methods: {
     validate: {
       name: 'Validate',
