@@ -13,7 +13,7 @@ module.exports = new Connection({
       name: 'Magic',
       logic: async ({ connectionContainer, config, body }) => {
         const [configModel, configApiKey] = config
-        const r1 = await await fetch(
+        const r1 = await fetch(
           'https://api.openai.com/v1/responses',
           {
             method: 'POST',
