@@ -61,7 +61,7 @@ module.exports = new Connection({
       {
         "id": "a21eddf2-aa86-4b6a-a2af-8ac279b246f7",
         "config": {
-          "action": "url~~||~~https://cdn.sticky.to/plugins/sticky-woocommerce-plugin.zip",
+          "action": "url~~||~~https://cdn.sticky.to/plugins/sticky-woocommerce-plugin-1-4.zip",
           "label": "Download plug in",
           "colour": "#7f54b3",
           "foregroundColour": "#ffffff",
