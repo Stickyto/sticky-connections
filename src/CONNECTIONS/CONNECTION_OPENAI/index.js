@@ -1,6 +1,7 @@
 const path = require('node:path')
 
-const { assert, uuid } = require('@stickyto/openbox-node-utils')
+const { assert, uuid, getNow } = require('@stickyto/openbox-node-utils')
+const { FederatedUser, Event, MagicBucket } = require('openbox-entities')
 const Connection = require('../Connection')
 
 module.exports = new Connection({
@@ -11,6 +12,138 @@ module.exports = new Connection({
   logo: cdn => `${cdn}/connections/CONNECTION_OPENAI.svg`,
   configNames: ['Model', 'API key'],
   configDefaults: ['gpt-5', 'sk-proj-'],
+
+  eventHooks: {
+    'MESSAGE': async function (config, connectionContainer) {
+      const { rdic, user, application, thing, customData, createEvent } = connectionContainer
+      const [configModel, configApiKey] = config
+
+      assert(user, 'There is no dashboard attached to this MESSAGE event. You have been warned.')
+      assert(application, 'There is no flow attached to this MESSAGE event. You have been warned.')
+
+      const rawRecentEvents = await rdic.get('datalayerRelational').read(
+        'events',
+        {
+          user_id: user.id,
+          application_id: application.id,
+          type: 'MESSAGE'
+        },
+        'created_at ASC',
+        10
+      )
+
+      const allMagicBuckets = (await rdic.get('datalayerRelational').read('magic_buckets', {}, 'created_at ASC')).map(_ => new MagicBucket().fromDatalayerRelational(_))
+
+      const recentEvents = rawRecentEvents.map(_ => new Event().fromDatalayerRelational(_))
+
+      const chatFederatedUsersQuery = { user_id: user.id, id: customData.chatFederatedUserIds, magic_buckets: '!!!{}' }
+      const rawChatFederatedUsers = await rdic.get('datalayerRelational').read(
+        'federated_users',
+        chatFederatedUsersQuery,
+        'created_at ASC'
+      )
+      const chatFederatedUsers = rawChatFederatedUsers.map(rawFu => new FederatedUser().fromDatalayerRelational(rawFu))
+
+      for (let i = 0; i < chatFederatedUsers.length; i++) {
+        const currentFu = chatFederatedUsers[i]
+        const executeBody = {
+          "model": configModel,
+          "instructions": `You are a conversational assistant.
+
+The attached vector stores are the authoritative source of information. When answering questions about their contents, rely exclusively on the information contained within them.
+
+Do not supplement, expand, correct, normalize, or "fill in" missing details using your own general knowledge, training data, assumptions, or common industry practices.
+
+When the attached vector stores contain structured information such as menus, specifications, procedures, product details, recipes or reference material, preserve the original content as closely as possible. Keep the original quantities, units, terminology, ordering, abbreviations, and formatting where practical.
+
+Do not convert units, standardize terminology, or rewrite instructions into a canonical form. Do not add ingredients, steps, explanations, variations, or background information that are not present in the vector stores.
+
+If the retrieved information is abbreviated or incomplete, present it as-is and, if necessary, explain that no further information was available.
+
+Treat the vector stores as intentionally authored, even if their contents differ from common practice or your prior knowledge.
+
+Respond naturally and conversationally, but ensure that every factual statement about the subject is supported by the attached vector stores.`,
+          "tools": [
+            {
+              "type": "file_search",
+              "vector_store_ids": currentFu.magicBuckets.toArray().map(_ => allMagicBuckets.find(__ => __.id === _)).filter(_ => _).map(_ => _.magicConnectionId),
+              "max_num_results": 10
+            }
+          ],
+          input: [
+            ...recentEvents.map(re => ({
+              role: re.customData.get('align') === 'right' ? 'user' : 'assistant',
+              content: `Previous message from ${re.customData.get('fromName')}: ${re.customData.get('message')}`
+            })),
+            {
+              role: 'user',
+              content: `Current message from ${customData.fromName}: ${customData.message}`
+            }
+          ]
+        }
+        console.warn('[DebugLater70] executeBody', JSON.stringify(executeBody, null, 2))
+
+        const r1 = await fetch(
+          'https://api.openai.com/v1/responses',
+          {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${configApiKey}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(executeBody)
+          }
+        )
+
+        const data1 = await r1.json()
+        const output = Array.isArray(data1.output) ? data1.output : []
+        const texts = []
+
+        for (const item of output) {
+          if (!item || item.type !== 'message') continue
+          if (item.role && item.role !== 'assistant') continue
+
+          const content = Array.isArray(item.content)
+            ? item.content
+            : []
+
+          for (const part of content) {
+            if (!part || part.type !== 'output_text') continue
+            if (typeof part.text !== 'string') continue
+            texts.push(part.text)
+          }
+        }
+
+        const finalMessage = texts.join('\n\n').trim()
+
+        console.warn('[DebugLater70] finalMessage', finalMessage)
+
+        createEvent(
+          {
+            type: 'MESSAGE',
+            userId: user.id,
+            applicationId: application.id,
+            thingId: thing ? thing.id : undefined,
+            federatedUserId: currentFu.id,
+            customData: {
+              'fromName': currentFu.name,
+              'fromColorForeground': customData.fromColorForeground,
+              'fromColorBackground': customData.fromColorBackground,
+              'align': 'left',
+              'message': finalMessage,
+              'showResponseCorrect': false,
+              'showResponseNotCorrect': false,
+              'chatFederatedUserIds': [
+                '04b5f6d7-eccd-4867-a336-a3a89205b2d4'
+              ]
+            }
+          },
+          getNow() + 1
+        )
+      }
+    }
+  },
+
   methods: {
     magicBucketAdd: {
       name: 'Knowledge pack -> Add',
@@ -43,7 +176,7 @@ module.exports = new Connection({
       logic: async ({ connectionContainer, config, body }) => {
         const [configModel, configApiKey] = config
         const r1 = await fetch(
-          `https://api.openai.com/v1/vector_stores/${body.magicConnectionId}`,
+          `https://api.openai.com/v1/vector_stores/${body.magicBucket.magicConnectionId}`,
           {
             method: 'DELETE',
             headers: {
