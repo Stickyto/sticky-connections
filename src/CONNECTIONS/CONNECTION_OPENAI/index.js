@@ -132,13 +132,9 @@ Respond naturally and conversationally, but ensure that every factual statement 
               'align': 'left',
               'message': finalMessage,
               'showResponseCorrect': false,
-              'showResponseNotCorrect': false,
-              'chatFederatedUserIds': [
-                '04b5f6d7-eccd-4867-a336-a3a89205b2d4'
-              ]
+              'showResponseNotCorrect': false
             }
-          },
-          getNow() + 1
+          }
         )
       }
     }
