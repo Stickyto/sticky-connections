@@ -1,3 +1,5 @@
+const { assert } = require('@stickyto/openbox-node-utils')
+
 const crypto = require('crypto')
 const Connection = require('../Connection')
 
@@ -134,11 +136,11 @@ async function abstractedToken ({
 }
 
 async function getLocations ({
-  basePath,
-  orgShortName,
+  configHostApi,
+  configOrgName,
   accessToken
 }) {
-  const url = `${basePath}/api/v1/organizations/${orgShortName}/locations`
+  const url = `${configHostApi}/api/v1/organizations/${configOrgName}/locations`
   console.log('\n--- GET LOCATIONS ---')
   console.log('url:', url)
   const res = await fetch(url, {
@@ -147,6 +149,107 @@ async function getLocations ({
       'authorization': `Bearer ${accessToken}`,
       'accept': 'application/json'
     }
+  })
+  console.log('status:', res.status)
+  const json = await res.json()
+  console.log('response:', json)
+  return json
+}
+
+async function getEmployees ({
+  configHostApi,
+  configLocation,
+  accessToken
+}) {
+  const url = `${configHostApi}/api/v1/employees?locRef=${encodeURIComponent(configLocation)}`
+  console.log('\n--- GET EMPLOYEES ---')
+  console.log('url:', url)
+  const res = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'authorization': `Bearer ${accessToken}`,
+      'accept': 'application/json'
+    }
+  })
+  console.log('status:', res.status)
+  const json = await res.json()
+  console.log('response:', json)
+  return json
+}
+
+async function getRevenueCenters ({
+  configHostApi,
+  configOrgName,
+  configLocation,
+  accessToken
+}) {
+  const url = `${configHostApi}/api/v1/organizations/${encodeURIComponent(configOrgName)}/locations/${encodeURIComponent(configLocation)}/revenueCenters`
+  console.log('\n--- GET REV CENS ---')
+  console.log('url:', url)
+  const res = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'authorization': `Bearer ${accessToken}`,
+      'accept': 'application/json'
+    }
+  })
+  console.log('status:', res.status)
+  const json = await res.json()
+  console.log('response:', json)
+  return json
+}
+
+async function getChecks ({
+  configHostApi,
+  configOrgName,
+  configLocation,
+  accessToken,
+  revenueCenter,
+}) {
+  const url = `${configHostApi}/api/v1/checks`
+  console.log('\n--- GET CHECKS ---')
+  console.log('url:', url)
+  const x = {
+    method: 'GET',
+    headers: {
+      'authorization': `Bearer ${accessToken}`,
+      'accept': 'application/json',
+      'Simphony-LocRef': configLocation,
+      'Simphony-OrgShortName': configOrgName,
+      'Simphony-RvcRef': revenueCenter
+    }
+  }
+  console.warn('xxx x', x)
+  const res = await fetch(url, x)
+  console.log('status:', res.status)
+  const json = await res.json()
+  console.log('response:', json)
+  return json
+}
+
+async function placeOrder ({
+  configHostApi,
+  configOrgName,
+  configLocation,
+  accessToken,
+  revenueCenter,
+  payload
+}) {
+  const url = `${configHostApi}/api/v1/checks`
+  console.log('\n--- PLACE ORDER ---')
+  console.log('url:', url)
+  console.log('payload:', JSON.stringify(payload, null, 2))
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'authorization': `Bearer ${accessToken}`,
+      'content-type': 'application/json',
+      'Simphony-LocRef': configLocation,
+      'Simphony-OrgShortName': configOrgName,
+      'Simphony-RvcRef': revenueCenter
+    },
+    body: JSON.stringify(payload)
   })
   console.log('status:', res.status)
   const json = await res.json()
@@ -184,13 +287,118 @@ async function eventHookLogic (config, connectionContainer) {
     console.log(token)
 
     const locations = await getLocations({
-      basePath: configHostApi,
-      orgShortName: configOrgName,
+      configHostApi,
+      configOrgName,
       accessToken: token.access_token
     })
 
     console.log('\n--- FINAL LOCATIONS RESPONSE ---')
     console.log(locations)
+
+    const foundLocation = locations.items.find(_ => _.locRef === configLocation)
+    assert(foundLocation, `There is no location with locRef "${configLocation}". The valid locRefs are [${locations.items.map(_ => _.locRef).join(' / ')}].`)
+
+    assert(application.theirId, `You must set the "External system ID" field for flow "${application.name}" as your revenue center.`)
+
+    const revenueCenters = await getRevenueCenters({
+      configHostApi,
+      configOrgName,
+      configLocation,
+      configOrgName,
+      accessToken: token.access_token,
+      revenueCenter: application.theirId,
+    })
+
+    console.log('\n--- FINAL REV CEN RESPONSE ---')
+    console.log(revenueCenters)
+
+    const checks = await getChecks({
+      configHostApi,
+      configOrgName,
+      configLocation,
+      configOrgName,
+      accessToken: token.access_token,
+      revenueCenter: application.theirId,
+    })
+
+    console.log('\n--- FINAL CHECKS RESPONSE ---')
+    console.log(checks)
+
+    // const employees = await getEmployees({
+    //   configHostApi,
+    //   configLocation,
+    //   accessToken: token.access_token
+    // })
+
+    // console.log('\n--- FINAL EMPLOYEES RESPONSE ---')
+    // console.log(employees)
+
+    await placeOrder({
+      configHostApi,
+      configOrgName,
+      configLocation,
+      configOrgName,
+      accessToken: token.access_token,
+      revenueCenter: application.theirId,
+      payload: {
+        'header': {
+          'rvcRef': parseInt(application.theirId, 10),
+          'orgShortName': configOrgName,
+          'locRef': configLocation,
+          'checkRef': payment.id,
+          'checkEmployeeRef': 1,
+          'orderTypeRef': 1,
+          'orderChannelRef': 1,
+          'tableName': '1',
+          'status': 'open',
+          'IdempotencyId': payment.id,
+          // 'checkNumber': 20122326,
+          // 'tableGroupNumber': 11,
+          // 'openTime': '2026-03-30T14:47:40.743',
+          // 'preparationStatus': 'Submitted'
+        },
+        'menuItems': [
+          {
+            'menuItemId': 200010047,
+            'definitionSequence': 1,
+            'name': 'Tasty Pizza',
+            'quantity': 1,
+            'unitPrice': 8.0000,
+            'priceSequence': 1,
+            'total': 8.0000,
+            'seat': 1,
+            'surcharge': 0,
+            'condiments': []
+          }
+        ]
+        // 'totals': {
+        //   'subtotal': 7.5000,
+        //   'subtotalDiscountTotal': 0,
+        //   'autoServiceChargeTotal': 1.01,
+        //   'serviceChargeTotal': 0,
+        //   'taxTotal': 0,
+        //   'paymentTotal': 0,
+        //   'totalDue': 8.5100
+        // }
+        // 'extensions': [],
+        // 'taxes': [
+        //   {
+        //     'taxRateId': 1,
+        //     'name': 'VAT 20%',
+        //     'total': 1.25
+        //   }
+        // ],
+        // 'tenders': [
+        //   {
+        //     'tenderId': 1,
+        //     'name': 'string',
+        //     'total': 0,
+        //     'chargedTipTotal': 0,
+        //     'referenceText': 'string'
+        //   }
+        // ]
+      }
+    })
 
     createEvent({
       type: 'CONNECTION_GOOD',
