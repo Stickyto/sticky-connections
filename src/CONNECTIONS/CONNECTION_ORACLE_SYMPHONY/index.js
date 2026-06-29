@@ -156,7 +156,7 @@ async function getLocations ({
 
 async function eventHookLogic (config, connectionContainer) {
   const { event, payment, user, application, thing, session, createEvent } = connectionContainer
-  const [configClientId, configUsername, configPassword, configOrgName, configHostAuthorize, configHostApi] = config
+  const [configClientId, configUsername, configPassword, configOrgName, configLocation, configHostAuthorize, configHostApi] = config
 
   try {
     const auth = await abstractedPkceAuthorize({
@@ -217,8 +217,8 @@ module.exports = new Connection({
   name: 'Simphony',
   color: '#E32124',
   logo: cdn => `${cdn}/connections/CONNECTION_ORACLE_SYMPHONY.svg`,
-  configNames: ['Client ID', 'Username', 'Password', 'Org short ID', 'Location'],
-  configDefaults: ['', '', '', '', ''],
+  configNames: ['Client ID', 'Username', 'Password', 'Org short ID', 'Location', 'Authorization host', 'API host'],
+  configDefaults: ['', '', '', '', '', '', ''],
   eventHooks: {
     'SESSION_CART_PAY': eventHookLogic
   }
