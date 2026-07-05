@@ -95,8 +95,7 @@ module.exports = new Connection({
   //                     }))
   //                   }
   //                 ],
-  //                 description: p.description,
-  //                 oneTapCheckout: p.description.length === 0
+  //                 description: p.description
   //               })
   //               createdPis.push(createdPId)
   //             }

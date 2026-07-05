@@ -219,7 +219,6 @@ async function getChecks ({
       'Simphony-RvcRef': revenueCenter
     }
   }
-  console.warn('xxx x', x)
   const res = await fetch(url, x)
   console.log('status:', res.status)
   const json = await res.json()
