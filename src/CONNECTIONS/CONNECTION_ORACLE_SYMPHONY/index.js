@@ -194,9 +194,32 @@ async function getRevenueCenters ({
     }
   })
   console.log('status:', res.status)
-  const json = await res.json()
-  console.log('response:', json)
-  return json
+  const { items } = await res.json()
+  console.log('response:', items)
+  return items
+}
+
+async function getTenders ({
+  configHostApi,
+  configOrgName,
+  configLocation,
+  revenueCenter,
+  accessToken
+}) {
+  const url = `${configHostApi}/api/v1/tenders/collection?orgShortName=${configOrgName}&locRef=${configLocation}&rvcRef=${revenueCenter}`
+  console.log('\n--- GET REV CENS ---')
+  console.log('url:', url)
+  const res = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'authorization': `Bearer ${accessToken}`,
+      'accept': 'application/json'
+    }
+  })
+  console.log('status:', res.status)
+  const { items } = await res.json()
+  console.log('response:', items)
+  return items
 }
 
 async function getChecks ({
@@ -230,6 +253,7 @@ async function placeOrder ({
   configHostApi,
   configOrgName,
   configLocation,
+  configEmployeeNumber,
   accessToken,
   revenueCenter,
   payload
@@ -257,8 +281,11 @@ async function placeOrder ({
 }
 
 async function eventHookLogic (config, connectionContainer) {
-  const { event, payment, user, application, thing, session, createEvent } = connectionContainer
-  const [configClientId, configUsername, configPassword, configOrgName, configLocation, configHostAuthorize, configHostApi] = config
+  const { event, payment, user, application, thing, session, createEvent, customData } = connectionContainer
+  const [configClientId, configUsername, configPassword, configOrgName, configLocation, configHostAuthorize, configHostApi, configEmployeeNumber, configTender] = config
+
+  assert(application, 'There is no flow.')
+  assert(customData.cart.length > 0, 'The bag is empty.')
 
   try {
     const auth = await abstractedPkceAuthorize({
@@ -293,35 +320,46 @@ async function eventHookLogic (config, connectionContainer) {
 
     console.log('\n--- FINAL LOCATIONS RESPONSE ---')
     console.log(locations)
-
     const foundLocation = locations.items.find(_ => _.locRef === configLocation)
     assert(foundLocation, `There is no location with locRef "${configLocation}". The valid locRefs are [${locations.items.map(_ => _.locRef).join(' / ')}].`)
-
-    assert(application.theirId, `You must set the "External system ID" field for flow "${application.name}" as your revenue center.`)
 
     const revenueCenters = await getRevenueCenters({
       configHostApi,
       configOrgName,
       configLocation,
-      configOrgName,
       accessToken: token.access_token,
       revenueCenter: application.theirId,
     })
-
     console.log('\n--- FINAL REV CEN RESPONSE ---')
-    console.log(revenueCenters)
+    console.log(JSON.stringify(revenueCenters, null, 2))
+    assert(application.theirId, `You must set the "External system ID" field for flow "${application.name}" as your revenue center.`)
+    const foundRevenueCenter = revenueCenters.find(_ => _.rvcRef.toString() === application.theirId)
+    assert(foundRevenueCenter, `There is no revenue center with rvcRef "${application.theirId}". The valid revenue centers are [${revenueCenters.map(_ => `${_.rvcRef} (${_.name})`).join(' / ')}].`)
+    assert(foundRevenueCenter.orderTypes.length > 0, `Revenue center with rvcRef "${application.theirId}" does not contain any orderTypes.`)
 
-    const checks = await getChecks({
+    const tenders = await getTenders({
       configHostApi,
       configOrgName,
       configLocation,
-      configOrgName,
-      accessToken: token.access_token,
       revenueCenter: application.theirId,
+      accessToken: token.access_token
     })
+    console.log('\n--- FINAL TENDERS RESPONSE ---')
+    console.log(tenders)
+    const foundTender = tenders.find(_ => _.tenderId.toString() === configTender)
+    assert(foundTender, `There is no tender with tenderId "${configTender}". The valid tenders are [${tenders.map(_ => `${_.tenderId} (${_.name})`).join(' / ')}].`)
 
-    console.log('\n--- FINAL CHECKS RESPONSE ---')
-    console.log(checks)
+    // const checks = await getChecks({
+    //   configHostApi,
+    //   configOrgName,
+    //   configLocation,
+    //   configOrgName,
+    //   accessToken: token.access_token,
+    //   revenueCenter: application.theirId,
+    // })
+
+    // console.log('\n--- FINAL CHECKS RESPONSE ---')
+    // console.log(checks)
 
     // const employees = await getEmployees({
     //   configHostApi,
@@ -332,72 +370,148 @@ async function eventHookLogic (config, connectionContainer) {
     // console.log('\n--- FINAL EMPLOYEES RESPONSE ---')
     // console.log(employees)
 
+    // HEADER: 'checkNumber': 20122326,
+    // HEADER: 'tableGroupNumber': 11,
+    // HEADER: 'openTime': '2026-03-30T14:47:40.743',
+    // HEADER: 'preparationStatus': 'Submitted' // [ "Uninitialized", "Submitted", "Prepared", "AllPrepared", "Packaged" ]
+    // HEADER: 'status': 'closed' // [ "open", "closed" ] // TRY: customData.gateway !== 'GATEWAY_NOOP'
+
+    const poPayload = {
+      'header': {
+        'rvcRef': parseInt(application.theirId, 10),
+        'orgShortName': configOrgName,
+        'locRef': configLocation,
+        'checkRef': payment.id,
+        'checkEmployeeRef': configEmployeeNumber,
+        'orderTypeRef': foundRevenueCenter.orderTypes[0].orderTypeRef,
+        'tableName': thing ? thing.name : '(No sticky)',
+        'IdempotencyId': payment.id,
+        'status': 'closed',
+        'orderChannelRef': 1
+      },
+      'tenders': [
+        {
+          'tenderId': foundTender.tenderId,
+          'name': foundTender.name,
+          'total': payment.total,
+          'chargedTipTotal': payment.tip,
+          'referenceText': payment.id
+        }
+      ],
+      'menuItems': customData.cart
+        .filter(ci => ci.productTheirId)
+        .map((ci, i) => ([
+          {
+            'menuItemId': parseInt(ci.productTheirId, 10),
+            'definitionSequence': (i + 1),
+            'name': ci.productName,
+            'quantity': ci.quantity,
+            'unitPrice': ci.productPrice,
+            'priceSequence': (i + 1),
+            'total': (ci.productPrice * ci.quantity),
+            'seat': 1,
+            'surcharge': 0,
+            'condiments': []
+          }
+        ]))
+    }
+
+    console.warn('[DebugOracle] customData.cart', JSON.stringify(customData.cart, null, 2))
+    console.warn('[DebugOracle] poPayload', JSON.stringify(poPayload, null, 2))
+
     await placeOrder({
       configHostApi,
       configOrgName,
       configLocation,
       configOrgName,
+      configEmployeeNumber,
       accessToken: token.access_token,
       revenueCenter: application.theirId,
-      payload: {
-        'header': {
-          'rvcRef': parseInt(application.theirId, 10),
-          'orgShortName': configOrgName,
-          'locRef': configLocation,
-          'checkRef': payment.id,
-          'checkEmployeeRef': 1,
-          'orderTypeRef': 1,
-          'orderChannelRef': 1,
-          'tableName': '1',
-          'status': 'open',
-          'IdempotencyId': payment.id,
-          // 'checkNumber': 20122326,
-          // 'tableGroupNumber': 11,
-          // 'openTime': '2026-03-30T14:47:40.743',
-          // 'preparationStatus': 'Submitted'
-        },
-        'menuItems': [
-          {
-            'menuItemId': 200010047,
-            'definitionSequence': 1,
-            'name': 'Tasty Pizza',
-            'quantity': 1,
-            'unitPrice': 8.0000,
-            'priceSequence': 1,
-            'total': 8.0000,
-            'seat': 1,
-            'surcharge': 0,
-            'condiments': []
-          }
-        ]
-        // 'totals': {
-        //   'subtotal': 7.5000,
-        //   'subtotalDiscountTotal': 0,
-        //   'autoServiceChargeTotal': 1.01,
-        //   'serviceChargeTotal': 0,
-        //   'taxTotal': 0,
-        //   'paymentTotal': 0,
-        //   'totalDue': 8.5100
-        // }
-        // 'extensions': [],
-        // 'taxes': [
-        //   {
-        //     'taxRateId': 1,
-        //     'name': 'VAT 20%',
-        //     'total': 1.25
-        //   }
-        // ],
-        // 'tenders': [
-        //   {
-        //     'tenderId': 1,
-        //     'name': 'string',
-        //     'total': 0,
-        //     'chargedTipTotal': 0,
-        //     'referenceText': 'string'
-        //   }
-        // ]
-      }
+      payload: poPayload
     })
+
+    // {
+    //     productId: 'f105cff1-def8-4379-bd4b-4a6719d896db',
+    //     productName: 'Test Coffee',
+    //     productPrice: 1,
+    //     productCurrency: 'GBP',
+    //     productTheirId: '200060062',
+    //     quantity: 1,
+    //     questions: []
+    //   }
+
+    // {
+    //     "description":"Check condiment items.\n<p>When default condiments are included on a menu item when creating or appending to a check they will be flagged appropriately allowing OPS/order device/receipt output to choose to display or not display the items based on configuration (default condiments on menu item definition Option Bits, option 1 - select to display defaults, deselect to not display defaults)</p>\n",
+    //     "type":"object",
+    //     "required":[
+    //         "condimentId",
+    //         "definitionSequence"
+    //     ],
+    //     "properties":{
+    //         "condimentId":{
+    //             "description":"The menu item's POS identifier.",
+    //             "type":"integer"
+    //         },
+    //         "prefixes":{
+    //             "description":"Array of prefixes applied to the condiment.<p>First available version: STS Gen2 1.7.1</p>",
+    //             "type":"array",
+    //             "items":{
+    //                 "$ref":"#/definitions/prefixes"
+    //             }
+    //         },
+    //         "definitionSequence":{
+    //             "description":"The menu item definition sequence identifier. Indicates the definition of item that is used. This value is ignored on Oracle.RES platform.",
+    //             "type":"integer"
+    //         },
+    //         "name":{
+    //             "description":"The name of the menu item defined in the POS.",
+    //             "type":"string"
+    //         },
+    //         "quantity":{
+    //             "description":"The quantity of this item. If present minimum value is 1.",
+    //             "type":"number"
+    //         },
+    //         "unitPrice":{
+    //             "description":"The price that should be used for the item.",
+    //             "type":"number"
+    //         },
+    //         "priceSequence":{
+    //             "description":"The price sequence number to set the appropriate price level.",
+    //             "type":"integer"
+    //         },
+    //         "total":{
+    //             "description":"Amount of item for the specified quantity.",
+    //             "type":"number"
+    //         },
+    //         "seat":{
+    //             "description":"Seat number of item on the check. <p>Seat is ignored when set for comboItem, mainItem, and sideItems. Response will always return \"seat\": 0. Seat for the combo meals should be defined at the comboMeal level.</p>",
+    //             "type":"integer"
+    //         },
+    //         "referenceText":{
+    //             "description":"Additional text associated with the item.  ",
+    //             "type":"string"
+    //         },
+    //         "surcharge":{
+    //             "description":"Surcharge amount.",
+    //             "type":"number"
+    //         },
+    //         "isDefault":{
+    //             "description":"Flag indicating if condiment prefix is default. (response only) <p>First available version: STS Gen2 1.7.1</p>",
+    //             "type":"boolean"
+    //         },
+    //         "atDefaultSetting":{
+    //             "description":"Flag indicating if condiment prefix was added by default by the configuration Default Count in Simphony. (response only) <p>First available version: STS Gen2 1.7.1</p>",
+    //             "type":"boolean"
+    //         },
+    //         "itemDiscounts":{
+    //             "description":"Array of discounts applied to the menu item.",
+    //             "type":"array",
+    //             "items":{
+    //                 "$ref":"#/definitions/CheckDiscountItem"
+    //             }
+    //         }
+    //     }
+    // }
 
     createEvent({
       type: 'CONNECTION_GOOD',
@@ -424,8 +538,8 @@ module.exports = new Connection({
   name: 'Simphony',
   color: '#E32124',
   logo: cdn => `${cdn}/connections/CONNECTION_ORACLE_SYMPHONY.svg`,
-  configNames: ['Client ID', 'Username', 'Password', 'Org short ID', 'Location', 'Authorization host', 'API host'],
-  configDefaults: ['', '', '', '', '', '', ''],
+  configNames: ['Client ID', 'Username', 'Password', 'Org short ID', 'Location', 'Authorization host', 'API host', 'Employee number', 'Tender number'],
+  configDefaults: ['', '', '', '', '', '', '', '', ''],
   eventHooks: {
     'SESSION_CART_PAY': eventHookLogic
   }
