@@ -583,5 +583,20 @@ module.exports = new Connection({
   configDefaults: ['', '', ''],
   eventHooks: {
     'SESSION_CART_PAY': eventHookLogic
+  },
+  instructions: ({ rdic, user, applications }) => {
+    const { apiUrl } = rdic.get('environment')
+    const foundApplication = applications.find(_ => _.baseSettingsRender === 'stickypay' && !_.stickyretail.get('isMoto')) || { id: 'VALID_FLOW_NOT_SET_UP' }
+    return [
+      {
+        "id": "71d05208-3781-4c24-996e-c4c0d1c6b228",
+        "config": {
+          "what": `Your custom URL:\n\n<strong>${apiUrl}/go/flow/${foundApplication.id}?total=[AMOUNTDUE]&amp;currency=${user.currency}&amp;userPaymentId=[INVOICENUMBER]</strong>`,
+          "font": "#211552--center--100%--false",
+          "backgroundColour": "#ffffff",
+          "icon": ""
+        }
+      }
+    ]
   }
 })
