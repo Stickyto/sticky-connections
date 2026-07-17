@@ -55,18 +55,19 @@ module.exports = new Connection({
   configNames: ['Domain', 'Success order status', 'Failure order status'],
   configDefaults: ['example.com', 'processing', 'failed'],
   instructions: ({ rdic, user, applications }) => {
-    const { apiUrl } = rdic.get('environment')
+    const { apiUrl, cdnUrl } = rdic.get('environment')
     const foundApplication = applications.find(_ => _.baseSettingsRender === 'stickypay' && !_.stickyretail.get('isMoto')) || { id: 'VALID_FLOW_NOT_SET_UP' }
     return [
       {
         "id": "a21eddf2-aa86-4b6a-a2af-8ac279b246f7",
         "config": {
-          "action": "url~~||~~https://cdn.sticky.to/plugins/sticky-woocommerce-plugin-1-4.zip",
+          "action": `url~~||~~${cdnUrl}/plugins/sticky-woocommerce-plugin-1-4.zip`,
           "label": "Download plug in",
           "colour": "#7f54b3",
           "foregroundColour": "#ffffff",
           "icon": "arrowDown",
-          "fullWidth": false
+          "fullWidth": false,
+          "veryRoundedCorners": true
         }
       },
       {"id":"6121bb17-a3b4-4df4-b64e-1149ce4d7140","config":{}},

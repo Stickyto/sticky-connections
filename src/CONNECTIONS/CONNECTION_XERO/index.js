@@ -585,16 +585,32 @@ module.exports = new Connection({
     'SESSION_CART_PAY': eventHookLogic
   },
   instructions: ({ rdic, user, applications }) => {
-    const { apiUrl } = rdic.get('environment')
-    const foundApplication = applications.find(_ => _.baseSettingsRender === 'stickypay' && !_.stickyretail.get('isMoto')) || { id: 'VALID_FLOW_NOT_SET_UP' }
+    const { apiUrl, docsUrl } = rdic.get('environment')
+    const applicationUrls = applications
+      .filter(_ => _.baseSettingsRender === 'stickypay' && !_.stickyretail.get('isMoto'))
+      .map(_ => `${_.name}:\n\n<strong>${apiUrl}/go/flow/${_.id}?total=[AMOUNTDUE]&amp;currency=${user.currency}&amp;userPaymentId=[INVOICENUMBER]</strong>`)
+      .join('\n\n')
+    const what = applicationUrls.length > 0 ? applicationUrls : 'There are no valid flows set up.'
     return [
       {
         "id": "71d05208-3781-4c24-996e-c4c0d1c6b228",
         "config": {
-          "what": `Your custom URL:\n\n<strong>${apiUrl}/go/flow/${foundApplication.id}?total=[AMOUNTDUE]&amp;currency=${user.currency}&amp;userPaymentId=[INVOICENUMBER]</strong>`,
+          "what": what,
           "font": "#211552--center--100%--false",
           "backgroundColour": "#ffffff",
           "icon": ""
+        }
+      },
+      {
+        "id": "a21eddf2-aa86-4b6a-a2af-8ac279b246f7",
+        "config": {
+          "action": `url~~||~~/developer/keys?docsRoute=%2Fxero`,
+          "label": "Documentation",
+          "colour": "#1AB4D7",
+          "foregroundColour": "#ffffff",
+          "icon": "arrowRight",
+          "fullWidth": false,
+          "veryRoundedCorners": true
         }
       }
     ]
