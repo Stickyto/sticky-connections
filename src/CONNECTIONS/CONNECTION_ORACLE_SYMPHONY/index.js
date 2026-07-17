@@ -1,6 +1,6 @@
 const { assert } = require('@stickyto/openbox-node-utils')
 
-const crypto = require('crypto')
+const crypto = require('node:crypto')
 const Connection = require('../Connection')
 
 async function abstractedPkceAuthorize ({ configHostAuthorize, clientId }) {
@@ -260,8 +260,8 @@ async function placeOrder ({
 }) {
   const url = `${configHostApi}/api/v1/checks`
   console.log('\n--- PLACE ORDER ---')
-  console.log('url:', url)
-  console.log('payload:', JSON.stringify(payload, null, 2))
+  console.log('[placeOrder] url:', url)
+  console.log('[placeOrder] payload:', JSON.stringify(payload, null, 2))
 
   const res = await fetch(url, {
     method: 'POST',
@@ -274,9 +274,10 @@ async function placeOrder ({
     },
     body: JSON.stringify(payload)
   })
-  console.log('status:', res.status)
+  console.log('[placeOrder] status:', res.status)
   const json = await res.json()
-  console.log('response:', json)
+  console.log('[placeOrder] response:', json)
+  assert(res.status === 200, JSON.stringify(json, null, 2))
   return json
 }
 
@@ -400,26 +401,20 @@ async function eventHookLogic (config, connectionContainer) {
       ],
       'menuItems': customData.cart
         .filter(ci => ci.productTheirId)
-        .map((ci, i) => ([
-          {
-            'menuItemId': parseInt(ci.productTheirId, 10),
-            'definitionSequence': (i + 1),
-            'name': ci.productName,
-            'quantity': ci.quantity,
-            'unitPrice': ci.productPrice,
-            'priceSequence': (i + 1),
-            'total': (ci.productPrice * ci.quantity),
-            'seat': 1,
-            'surcharge': 0,
-            'condiments': []
-          }
-        ]))
+        .map(ci => ({
+          'menuItemId': parseInt(ci.productTheirId, 10),
+          'name': ci.productName,
+          'quantity': ci.quantity,
+          'unitPrice': ci.productPrice,
+          'total': (ci.productPrice * ci.quantity),
+          'condiments': []
+        }))
     }
 
     console.warn('[DebugOracle] customData.cart', JSON.stringify(customData.cart, null, 2))
     console.warn('[DebugOracle] poPayload', JSON.stringify(poPayload, null, 2))
 
-    await placeOrder({
+    const { header: { checkNumber, checkRef } } = await placeOrder({
       configHostApi,
       configOrgName,
       configLocation,
@@ -518,7 +513,7 @@ async function eventHookLogic (config, connectionContainer) {
       userId: user.id,
       applicationId: application ? application.id : undefined,
       thingId: thing ? thing.id : undefined,
-      customData: { id: 'CONNECTION_ORACLE_SYMPHONY' }
+      customData: { id: 'CONNECTION_ORACLE_SYMPHONY', theirId: `${checkNumber} / ${checkRef}` }
     })
   } catch (e) {
     payment.onSessionFail(rdic, user, { whichConnection: 'CONNECTION_ORACLE_SYMPHONY' }, { customSubject: '⚠️ Your {name} order was not successful', customMessage: '<p>We are sorry but your {name} order was not successful.</p>' })
