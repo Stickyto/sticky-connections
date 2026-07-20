@@ -263,17 +263,20 @@ async function placeOrder ({
   console.log('[placeOrder] url:', url)
   console.log('[placeOrder] payload:', JSON.stringify(payload, null, 2))
 
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'authorization': `Bearer ${accessToken}`,
-      'content-type': 'application/json',
-      'Simphony-LocRef': configLocation,
-      'Simphony-OrgShortName': configOrgName,
-      'Simphony-RvcRef': revenueCenter
-    },
-    body: JSON.stringify(payload)
-  })
+  const res = await fetch(
+    url,
+    {
+      method: 'POST',
+      headers: {
+        'authorization': `Bearer ${accessToken}`,
+        'content-type': 'application/json',
+        'Simphony-LocRef': configLocation,
+        'Simphony-OrgShortName': configOrgName,
+        'Simphony-RvcRef': revenueCenter
+      },
+      body: JSON.stringify(payload)
+    }
+  )
   console.log('[placeOrder] status:', res.status)
   const json = await res.json()
   console.log('[placeOrder] response:', json)
@@ -394,8 +397,8 @@ async function eventHookLogic (config, connectionContainer) {
         {
           'tenderId': foundTender.tenderId,
           'name': foundTender.name,
-          'total': payment.total,
-          'chargedTipTotal': payment.tip,
+          'total': payment.total / 100,
+          'chargedTipTotal': payment.tip / 100,
           'referenceText': payment.id
         }
       ],
@@ -405,8 +408,8 @@ async function eventHookLogic (config, connectionContainer) {
           'menuItemId': parseInt(ci.productTheirId, 10),
           'name': ci.productName,
           'quantity': ci.quantity,
-          'unitPrice': ci.productPrice,
-          'total': (ci.productPrice * ci.quantity),
+          'unitPrice': ci.productPrice / 100,
+          'total': ((ci.productPrice / 100) * ci.quantity),
           'condiments': []
         }))
     }
