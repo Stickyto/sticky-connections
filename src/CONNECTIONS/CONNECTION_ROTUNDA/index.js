@@ -21,8 +21,9 @@ async function eventHookLogic (config, connectionContainer) {
     return
   }
 
+  let session, rBody
   try {
-    const session = await rdic.dlGetSession(payment.sessionId)
+    session = await rdic.dlGetSession(payment.sessionId)
     assert(session, `Payment has session ID ${payment.sessionId} which does not exist; this is very bad.`)
 
     if (configApplicationIds.length > 0) {
@@ -33,25 +34,26 @@ async function eventHookLogic (config, connectionContainer) {
     }
     const token = await getToken({ configUrl, configApiKey })
     const userSector = session.userSectors.readFrom(user.id)
-    const rBody = {
+    rBody = JSON.stringify({
       member: userSector.readFrom(`${user.name} membership number`),
       pin: userSector.readFrom(`${user.name} pin`),
       value: payment.total.toFixed(2),
       transaction_id: payment.id
-    }
+    })
     const response = await fetch(`https://${configUrl}/api/sticky/record_transaction`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(rBody)
+      body: rBody
     })
     const json = await response.json()
-    assert(json.success === true, `Sorry, that's not right:\n\n${json.message}.`)
+    assert(json.success === true, `json.success for payment ID ${payment.id} and session ID ${session.id} was not true: ${json.message}`)
     createEvent({
       type: 'CONNECTION_GOOD',
       userId: user.id,
+      sessionId: session.id,
       applicationId: application ? application.id : undefined,
       thingId: thing ? thing.id : undefined,
       customData: { id: 'CONNECTION_ROTUNDA' }
@@ -61,9 +63,10 @@ async function eventHookLogic (config, connectionContainer) {
     createEvent({
       type: 'CONNECTION_BAD',
       userId: user.id,
+      sessionId: session.id,
       applicationId: application ? application.id : undefined,
       thingId: thing ? thing.id : undefined,
-      customData: { id: 'CONNECTION_ROTUNDA', message: e.message }
+      customData: { id: 'CONNECTION_ROTUNDA', message: `${e.message}\n\n${rBody}` }
     })
   }
 }
