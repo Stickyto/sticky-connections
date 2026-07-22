@@ -14,7 +14,7 @@ async function getToken ({ configUrl, configApiKey }) {
 }
 
 async function eventHookLogic (config, connectionContainer) {
-  const { rdic, user, application, thing, payment, customData, session, createEvent } = connectionContainer
+  const { rdic, user, application, thing, payment, customData, createEvent } = connectionContainer
   const [configUrl, configApiKey, configApplicationIds = ''] = config
 
   if (!application) {
@@ -22,6 +22,9 @@ async function eventHookLogic (config, connectionContainer) {
   }
 
   try {
+    const session = await rdic.dlGetSession(payment.sessionId)
+    assert(session, `Payment has session ID ${payment.sessionId} which does not exist; this is very bad.`)
+
     if (configApplicationIds.length > 0) {
       const realConfigApplicationIds = configApplicationIds.split(',')
       if (!realConfigApplicationIds.includes(application.id)) {

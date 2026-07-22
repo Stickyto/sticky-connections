@@ -23,12 +23,12 @@ async function makeRequest(bearerToken, url, body) {
 }
 
 async function eventHookLogic (config, connectionContainer) {
-  const { user, application, payment, session, createEvent } = connectionContainer
+  const { user, application, payment, createEvent } = connectionContainer
   const [cEndpoint, cBearerToken] = config
 
   const makeRequestBody = {
     "amount": Number((payment.total / 100).toFixed(2)),
-    "customerAliasId": session.id,
+    "customerAliasId": payment.sessionId,
     "cashierId": payment.userPaymentId,
     "referenceId": payment.userPaymentId,
     "paymentRequestId": payment.id

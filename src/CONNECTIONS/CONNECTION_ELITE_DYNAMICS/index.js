@@ -10,7 +10,11 @@ const forceArray = require('./forceArray/forceArray')
 
 
 async function eventHookLogic (config, connectionContainer) {
-  const { event, payment, user, application, thing, session, createEvent } = connectionContainer
+  const { rdic, event, payment, user, application, thing, createEvent } = connectionContainer
+
+  const session = await rdic.dlGetSession(payment.sessionId)
+  assert(session, `Payment has session ID ${payment.sessionId} which does not exist; this is very bad.`)
+
   const userSector = session ? session.userSectors.readFrom(user.id) : undefined
   const ownerId = userSector.readFrom('EliteParks owner')
 

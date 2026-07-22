@@ -533,7 +533,7 @@ function assertNonEmptyString (value, name) {
 }
 
 async function eventHookLogic (config, connectionContainer) {
-  const { event, payment, user, application, thing, session, createEvent, customData } = connectionContainer
+  const { event, payment, user, application, thing, createEvent, customData } = connectionContainer
   const [configClientId, configClientSecret, configAccountName] = config
 
   try {

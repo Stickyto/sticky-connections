@@ -285,7 +285,7 @@ async function placeOrder ({
 }
 
 async function eventHookLogic (config, connectionContainer) {
-  const { event, payment, user, application, thing, session, createEvent, customData } = connectionContainer
+  const { event, payment, user, application, thing, createEvent, customData } = connectionContainer
   const [configClientId, configUsername, configPassword, configOrgName, configLocation, configHostAuthorize, configHostApi, configEmployeeNumber, configTender] = config
 
   assert(application, 'There is no flow.')
