@@ -99,7 +99,7 @@ module.exports = new Connection({
           })
         })
         const json = await response.json()
-        assert(json.success === true, `Sorry, that's not right:\n\n${json.message}.`)
+        assert(json.success === true, `Sorry, that's not right:\n\n${json.message} (${membershipNumber}).`)
         return [json.data.first_name, json.data.surname].filter(_ => _).join(' ')
       }
     }
