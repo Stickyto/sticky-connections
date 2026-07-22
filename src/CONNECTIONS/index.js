@@ -105,10 +105,6 @@ const CONNECTIONS = new Map([
     require('./CONNECTION_WOOCOMMERCE')
   ],
   [
-    'CONNECTION_TRUSTIST_INGEST',
-    require('./CONNECTION_TRUSTIST_INGEST')
-  ],
-  [
     'CONNECTION_SHOPIFY',
     require('./CONNECTION_SHOPIFY')
   ],
