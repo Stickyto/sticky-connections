@@ -20,6 +20,10 @@ const CONNECTIONS = new Map([
     require('./CONNECTION_ORACLE_SYMPHONY')
   ],
   [
+    'CONNECTION_SWIFTPOS',
+    require('./CONNECTION_SWIFTPOS')
+  ],
+  [
     'CONNECTION_PEOPLEVINE',
     require('./CONNECTION_PEOPLEVINE')
   ],
