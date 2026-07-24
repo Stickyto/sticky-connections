@@ -177,6 +177,29 @@ async function getEmployees ({
   return json
 }
 
+async function getServiceCharges ({
+  configHostApi,
+  configLocation,
+  configOrgName,
+  revenueCenter,
+  accessToken
+}) {
+  const url = `${configHostApi}/api/v1/serviceCharges/collection?orgShortName=${encodeURIComponent(configOrgName)}&locRef=${configLocation}&rvcRef=${revenueCenter}`
+  console.log('\n--- GET SERVICE CHARGES ---')
+  console.log('url:', url)
+  const res = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'authorization': `Bearer ${accessToken}`,
+      'accept': 'application/json'
+    }
+  })
+  console.log('status:', res.status)
+  const { items } = await res.json()
+  console.log('response:', items)
+  return items
+}
+
 async function getRevenueCenters ({
   configHostApi,
   configOrgName,
@@ -286,7 +309,7 @@ async function placeOrder ({
 
 async function eventHookLogic (config, connectionContainer) {
   const { event, payment, user, application, thing, createEvent, customData } = connectionContainer
-  const [configClientId, configUsername, configPassword, configOrgName, configLocation, configHostAuthorize, configHostApi, configEmployeeNumber, configTender] = config
+  const [configClientId, configUsername, configPassword, configOrgName, configLocation, configHostAuthorize, configHostApi, configEmployeeNumber, configTender, configServiceCharge] = config
 
   assert(application, 'There is no flow.')
   assert(customData.cart.length > 0, 'The bag is empty.')
@@ -365,6 +388,16 @@ async function eventHookLogic (config, connectionContainer) {
     // console.log('\n--- FINAL CHECKS RESPONSE ---')
     // console.log(checks)
 
+    const serviceCharges = await getServiceCharges({
+      configHostApi,
+      configLocation,
+      configOrgName,
+      revenueCenter: application.theirId,
+      accessToken: token.access_token
+    })
+    const foundServiceCharge = serviceCharges.find(_ => _.serviceChargeId.toString() === configServiceCharge)
+    assert(foundServiceCharge, `There is no service charge with serviceChargeId "${configServiceCharge}". The valid service charges are [${serviceCharges.map(_ => `${_.serviceChargeId} (${_.name})`).join(' / ')}].`)
+
     // const employees = await getEmployees({
     //   configHostApi,
     //   configLocation,
@@ -393,6 +426,11 @@ async function eventHookLogic (config, connectionContainer) {
         'status': 'closed',
         'orderChannelRef': 1
       },
+      'serviceCharges': [
+        {
+          "serviceChargeId": foundServiceCharge.serviceChargeId
+        }
+      ],
       'tenders': [
         {
           'tenderId': foundTender.tenderId,
@@ -536,8 +574,8 @@ module.exports = new Connection({
   name: 'Simphony',
   color: '#E32124',
   logo: cdn => `${cdn}/connections/CONNECTION_ORACLE_SYMPHONY.svg`,
-  configNames: ['Client ID', 'Username', 'Password', 'Org short ID', 'Location', 'Authorization host', 'API host', 'Employee number', 'Tender number'],
-  configDefaults: ['', '', '', '', '', '', '', '', ''],
+  configNames: ['Client ID', 'Username', 'Password', 'Org short ID', 'Location', 'Authorization host', 'API host', 'Employee number', 'Tender number', 'Service charge number'],
+  configDefaults: ['', '', '', '', '', '', '', '', '', ''],
   eventHooks: {
     'SESSION_CART_PAY': eventHookLogic
   }
