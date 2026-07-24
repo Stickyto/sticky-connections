@@ -388,7 +388,7 @@ async function eventHookLogic (config, connectionContainer) {
         'checkRef': payment.id,
         'checkEmployeeRef': configEmployeeNumber,
         'orderTypeRef': foundRevenueCenter.orderTypes[0].orderTypeRef,
-        'tableName': thing ? thing.name : '(No sticky)',
+        'tableName': thing ? (thing.theirId || thing.name) : '(No sticky)',
         'IdempotencyId': payment.id,
         'status': 'closed',
         'orderChannelRef': 1
