@@ -1,5 +1,9 @@
 const CONNECTIONS = new Map([
   [
+    'CONNECTION_TRAFFIC_LIGHT_STATUS',
+    require('./CONNECTION_TRAFFIC_LIGHT_STATUS')
+  ],
+  [
     'CONNECTION_EXTERNAL_PAYMENT',
     require('./CONNECTION_EXTERNAL_PAYMENT')
   ],
@@ -137,14 +141,6 @@ const CONNECTIONS = new Map([
     require('./CONNECTION_COMPLYCUBE')
   ],
   [
-    'CONNECTION_GUESTY',
-    require('./CONNECTION_GUESTY')
-  ],
-  [
-    'CONNECTION_API',
-    require('./CONNECTION_API')
-  ],
-  [
     'CONNECTION_SENDGRID_INBOUND',
     require('./CONNECTION_SENDGRID_INBOUND')
   ],
@@ -153,16 +149,20 @@ const CONNECTIONS = new Map([
     require('./CONNECTION_AI_SIMULATOR')
   ],
   [
-    'CONNECTION_ONBOARD',
-    require('./CONNECTION_ONBOARD')
-  ],
-  [
     'CONNECTION_ROTUNDA',
     require('./CONNECTION_ROTUNDA')
   ],
   [
     'CONNECTION_NEON',
     require('./CONNECTION_NEON')
+  ],
+  [
+    'CONNECTION_API',
+    require('./CONNECTION_API')
+  ],
+  [
+    'CONNECTION_ONBOARD',
+    require('./CONNECTION_ONBOARD')
   ]
 ])
 
