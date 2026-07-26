@@ -24,7 +24,7 @@ module.exports = new Connection({
         // assert(table === configTableId, `Config 2 does not match (table ${table} vs ${configTableId}).`)
 
         // const rawThing = await dlr.readOne('things', { user_id: user.id, name: stickyName.trim() })
-        // assert(rawThing, `There is no sticky with name "${stickyName}".`)
+        // assert(rawThing, `There is no touchpoint with name "${stickyName}".`)
 
         // const thing = new Thing({}, user).fromDatalayerRelational(rawThing, user)
         // thing.applicationId = configApplicationId
