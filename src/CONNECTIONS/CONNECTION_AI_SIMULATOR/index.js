@@ -14,7 +14,23 @@ module.exports = new Connection({
       logic: async ({ connectionContainer, config, body }) => {
         return 'The AI Simulator is working!'
       }
-    }
+    },
+    magicBucketAdd: {
+      name: 'Knowledge pack -> Add',
+      logic: async ({ connectionContainer, config, body }) => {
+        return '???'
+      }
+    },
+    magicBucketDelete: {
+      name: 'Knowledge pack -> Delete',
+      logic: async ({ connectionContainer, config, body }) => {}
+    },
+    magicBucketAddItem: {
+      name: 'Knowledge pack -> Add item',
+      logic: async ({ connectionContainer, config, body }) => {
+        return '???'
+      }
+    },
   }
 })
 
