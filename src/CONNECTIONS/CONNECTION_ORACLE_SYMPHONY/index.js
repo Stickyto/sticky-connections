@@ -307,6 +307,37 @@ async function placeOrder ({
   return json
 }
 
+async function calculateOrder ({
+  configHostApi,
+  configOrgName,
+  configLocation,
+  accessToken,
+  revenueCenter,
+  payload
+}) {
+  const url = `${configHostApi}/api/v1/checks/calculator`
+  console.log('\n--- CALCULATE ORDER ---')
+  console.log('[calculateOrder] url:', url)
+  console.log('[calculateOrder] payload:', JSON.stringify(payload, null, 2))
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'authorization': `Bearer ${accessToken}`,
+      'content-type': 'application/json',
+      'Simphony-LocRef': configLocation,
+      'Simphony-OrgShortName': configOrgName,
+      'Simphony-RvcRef': revenueCenter
+    },
+    body: JSON.stringify(payload)
+  })
+  console.log('[calculateOrder] status:', res.status)
+  const json = await res.json()
+  console.log('[calculateOrder] response:', json)
+  assert(res.status === 200, JSON.stringify(json, null, 2))
+  return json
+}
+
 async function tenderOrder ({
   configHostApi,
   configOrgName,
@@ -478,6 +509,19 @@ async function eventHookLogic (config, connectionContainer) {
 
     console.warn('[DebugOracle] customData.cart', JSON.stringify(customData.cart, null, 2))
     console.warn('[DebugOracle] poPayload', JSON.stringify(poPayload, null, 2))
+
+    const calculatedOrder = await calculateOrder({
+      configHostApi,
+      configOrgName,
+      configLocation,
+      accessToken: token.access_token,
+      revenueCenter: application.theirId,
+      payload: poPayload
+    })
+    const calculatedServiceCharge = calculatedOrder.serviceCharges.find(_ => _.serviceChargeId === foundServiceCharge.serviceChargeId)
+    assert(calculatedServiceCharge, `Oracle calculator did not apply service charge ${foundServiceCharge.serviceChargeId}.`)
+    assert(calculatedServiceCharge.total === payment.tip / 100, `Oracle calculator applied service charge ${foundServiceCharge.serviceChargeId} with total ${calculatedServiceCharge.total} instead of ${payment.tip / 100}.`)
+    assert(Math.round(calculatedOrder.totals.totalDue * 100) === payment.total, `Oracle calculated ${calculatedOrder.totals.totalDue} due, but payment ${payment.id} collected ${payment.total / 100}.`)
 
     const placedOrder = await placeOrder({
       configHostApi,
