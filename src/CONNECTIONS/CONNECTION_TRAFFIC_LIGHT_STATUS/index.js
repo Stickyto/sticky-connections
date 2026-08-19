@@ -51,5 +51,31 @@ module.exports = new Connection({
         "backgroundColour": "#FFFFFF"
       }
     }
-  ]
+  ],
+  eventHooks: {
+    'LD_V2': async function (config, connectionContainer) {
+      const { rdic, event, user, application, thing, customData, createEvent } = connectionContainer
+      const ignoreThing = !thing || !thing.customData.get('Traffic Light Status system')
+      if (ignoreThing) {
+        return
+      }
+      const whichFu = await rdic.dlGetFederatedUser({ userId: user.id, federatedUserId: event.federatedUserId })
+      console.warn('[DebugLaterTls] event', event)
+      console.warn('[DebugLaterTls] whichFu', whichFu)
+      console.warn('[DebugLaterTls] customData', customData)
+      createEvent({
+        type: 'TRAFFIC_LIGHT_STATUS_INCIDENT',
+        userId: user.id,
+        applicationId: application ? application.id : undefined,
+        thingId: thing ? thing.id : undefined,
+        federatedUserId: whichFu ? whichFu.id : undefined,
+        linearData: [thing.customData.get('Traffic Light Status system')],
+        customData: {
+          'Priority': customData['This is a...'],
+          'Photo': customData['What can you see?'],
+          'Description': customData['Anything else we should know?'],
+        }
+      })
+    }
+  }
 })
