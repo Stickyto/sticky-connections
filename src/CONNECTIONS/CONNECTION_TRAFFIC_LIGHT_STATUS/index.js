@@ -30,6 +30,16 @@ const SYSTEMS = [
     id: 'LEVY',
     name: 'Levy',
     color: '#000000'
+  },
+  {
+    id: 'MU_IT',
+    name: '44187 [MU] IT',
+    color: '#C50317'
+  },
+  {
+    id: 'MU_NETWORK',
+    name: '44187 [MU] Network',
+    color: '#C50317'
   }
 ]
 
