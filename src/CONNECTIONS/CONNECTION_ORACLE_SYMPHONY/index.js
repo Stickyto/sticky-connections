@@ -439,7 +439,21 @@ async function eventHookLogic (config, connectionContainer) {
           'quantity': ci.quantity,
           'unitPrice': ci.productPrice / 100,
           'total': ((ci.productPrice / 100) * ci.quantity),
-          'condiments': []
+          'condiments': (ci.questions || []).flatMap(question => {
+            const answers = Array.isArray(question.answer) ? question.answer : [question.answer]
+
+            return answers
+              .map(answer => question.options.find(option => option.name === answer))
+              .filter(option => option && (option.theirId || question.theirId))
+              .map(option => ({
+                'condimentId': parseInt(option.theirId || question.theirId, 10),
+                'definitionSequence': 1,
+                'name': option.name,
+                'quantity': 1,
+                'unitPrice': option.delta / 100,
+                'total': option.delta / 100
+              }))
+          })
         }))
     }
 
