@@ -4,7 +4,7 @@ const Connection = require('../Connection')
 const getToken = require('./lib/getToken')
 const getEnvironment = require('./lib/getEnvironment')
 const makeRequest = require('./lib/makeRequest')
-const {assert, getNow, uuid} = require('@stickyto/openbox-node-utils')
+const {assert, uuid} = require('@stickyto/openbox-node-utils')
 const {aggregateCartsByProduct} = require('./lib/aggregateCartsByProduct')
 const CHANNEL_NAME = 'stickyconnections'
 const VALID_THING_PASSTHROUGHS = ['None', 'Your ID', 'Name', 'Number', 'Note']
@@ -175,23 +175,23 @@ module.exports = new Connection({
     busy: require('./busy'),
     status: require('./status')
   },
-  crons: [
-    {
-      id: 'generic',
-      frequency: '* * * * *',
-      logic: async function (user, cronContainer) {
-        const { config } = user.connections.find(c => c.id === 'CONNECTION_DELIVERECT');
+  // crons: [
+  //   {
+  //     id: 'generic',
+  //     frequency: '* * * * *',
+  //     logic: async function (user, cronContainer) {
+  //       const { config } = user.connections.find(c => c.id === 'CONNECTION_DELIVERECT');
 
-        const groupTime = parseInt(config.at(4) || '0', 10);
+  //       const groupTime = parseInt(config.at(4) || '0', 10);
 
-        if (groupTime === 0) {
-          return
-        }
+  //       if (groupTime === 0) {
+  //         return
+  //       }
 
-        await processOrders(cronContainer, groupTime)
-      }
-    }
-  ],
+  //       await processOrders(cronContainer, groupTime)
+  //     }
+  //   }
+  // ],
   eventHooks: {
     'SESSION_CART_PAY': eventHookLogic
   }
