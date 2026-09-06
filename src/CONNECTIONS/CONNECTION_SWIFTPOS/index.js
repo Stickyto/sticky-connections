@@ -16,6 +16,14 @@ function kitchenInstructionsFor (cart) {
 
 async function eventHookLogic (config, connectionContainer) {
   const { user, application, thing, payment, customData, createEvent } = connectionContainer
+
+  if (!application) {
+    return
+  }
+  if (customData.cart.length === 0) {
+    return
+  }
+
   const [
     apiHost,
     posId,
@@ -30,7 +38,6 @@ async function eventHookLogic (config, connectionContainer) {
   try {
     assert(posId, 'POS ID is not configured.')
     assert(encryptedKey, 'Connect encrypted key is not configured.')
-    assert(customData.cart.length > 0, 'The bag is empty.')
 
     const tableId = (() => {
       if (!thing) {
@@ -75,7 +82,7 @@ async function eventHookLogic (config, connectionContainer) {
       serviceChargeAmount: 0,
       tableID: tableId
     }
-    assert(payload.items.length > 0, 'No cart items have an external SwiftPOS menu item ID.')
+    assert(payload.items.length > 0, 'No bag items have "Your ID" set.')
 
     const httpResponse = await fetch(
       `${apiHost.replace(/\/$/, '')}/pos/${encodeURIComponent(posId)}/orders`,

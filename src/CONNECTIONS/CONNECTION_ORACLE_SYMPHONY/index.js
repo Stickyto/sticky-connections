@@ -308,11 +308,15 @@ async function placeOrder ({
 }
 
 async function eventHookLogic (config, connectionContainer) {
-  const { event, payment, user, application, thing, createEvent, customData } = connectionContainer
+  const { payment, user, application, thing, createEvent, customData } = connectionContainer
   const [configClientId, configUsername, configPassword, configOrgName, configLocation, configHostAuthorize, configHostApi, configEmployeeNumber, configTender, configServiceCharge] = config
 
-  assert(application, 'There is no flow.')
-  assert(customData.cart.length > 0, 'The bag is empty.')
+  if (!application) {
+    return
+  }
+  if (customData.cart.length === 0) {
+    return
+  }
 
   try {
     const auth = await abstractedPkceAuthorize({
@@ -457,8 +461,8 @@ async function eventHookLogic (config, connectionContainer) {
         }))
     }
 
-    console.warn('[DebugOracle] customData.cart', JSON.stringify(customData.cart, null, 2))
-    console.warn('[DebugOracle] poPayload', JSON.stringify(poPayload, null, 2))
+    console.warn('[DebugLater1023] customData.cart', JSON.stringify(customData.cart, null, 2))
+    console.warn('[DebugLater1023] poPayload', JSON.stringify(poPayload, null, 2))
 
     const placedOrder = await placeOrder({
       configHostApi,
