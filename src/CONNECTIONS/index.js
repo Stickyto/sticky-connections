@@ -28,6 +28,10 @@ const CONNECTIONS = new Map([
     require('./CONNECTION_SWIFTPOS')
   ],
   [
+    'CONNECTION_KAPPTURE',
+    require('./CONNECTION_KAPPTURE')
+  ],
+  [
     'CONNECTION_PEOPLEVINE',
     require('./CONNECTION_PEOPLEVINE')
   ],
