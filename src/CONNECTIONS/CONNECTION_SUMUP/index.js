@@ -2,7 +2,7 @@
 const { Payment } = require('openbox-entities')
 const Connection = require('../Connection')
 const makeRequest = require('./makeRequest')
-const { assert, getNow, asyncSeries, services } = require('@stickyto/openbox-node-utils')
+const { assert, services } = require('@stickyto/openbox-node-utils')
 const VALID_THING_PASSTHROUGHS = ['None', 'Your ID', 'Name', 'Number', 'Note']
 
 async function getToken (cSubdomain, cUsername, cPassword) {
@@ -48,18 +48,6 @@ async function eventHookLogic (config, connectionContainer) {
         }
         services.mail.quickSend(rdic, toEmail)
       })
-    // createEvent({
-    //   type: 'TO_DO',
-    //   userId: user.id,
-    //   paymentId: event.paymentId,
-    //   applicationId: application ? application.id : undefined,
-    //   thingId: thing ? thing.id : undefined,
-    //   customData: {
-    //     what: `SumUp failure: ${e.message}`,
-    //     colour: '#F0003C',
-    //     foregroundColor: '#ffffff'
-    //   }
-    // })
   }
 
   let [cSubdomain, cUsername, cPassword, cVendorId, cThingPassthrough, cSendOrder] = config
@@ -222,12 +210,8 @@ async function eventHookLogic (config, connectionContainer) {
   }
 }
 
-function getFinalName (___) {
-  return ___.display_name || ___.product_name
-}
-
-function getFinalPrice (___) {
-  return Math.floor(parseFloat(___.selling_price) * 100)
+function getFinalName (_) {
+  return _.display_name || _.product_name
 }
 
 module.exports = new Connection({
@@ -246,7 +230,7 @@ module.exports = new Connection({
     getLocations: {
       name: 'Pull',
       uiPlaces: ['products'],
-      logic: async ({ connectionContainer, config, body }) => {
+      logic: async ({ config }) => {
         const [cSubdomain, cUsername, cPassword, _1, _2, _3, cOutletName] = config
 
         const token = await getToken(cSubdomain, cUsername, cPassword)
@@ -263,45 +247,6 @@ module.exports = new Connection({
         const foundOutlet = outlets.find(o => o.outlet_name === cOutletName)
         assert(foundOutlet, `There is no outlet with name "${cOutletName}". The outlet names are:\n\n${outlets.map(o => o.outlet_name).join('\n\n')}`)
 
-        const { rdic, user } = connectionContainer
-        const startTime = getNow()
-
-        // const suProductCategoriesData = await makeRequest(
-        //   {
-        //     'Authorization': `Bearer ${token}`
-        //   },
-        //   'GET',
-        //   'https://api.thegoodtill.com/api/categories'
-        // )
-        // assert(suProductCategoriesData.status)
-        // const { data: suProductCategories } = suProductCategoriesData
-        // const existingPcs = await connectionContainer.getProductCategories(rdic, user, { connection: 'CONNECTION_SUMUP' })
-        // const pcAsyncFunctions = suProductCategories.map((suPc, nextIPc) => {
-        //   return () => {
-        //     const existingPc = existingPcs.find(pc => pc.theirId === suPc.id)
-        //     if (existingPc) {
-        //       existingPc.name = suPc.name
-        //       existingPc.description = suPc.description || ''
-        //       existingPc.isEnabled = suPc.active === 1
-        //       return connectionContainer.updateProductCategory(existingPc, ['name', 'description', 'is_enabled'])
-        //     } else {
-        //       return connectionContainer.createProductCategory(
-        //         {
-        //           name: suPc.name,
-        //           userId: user.id,
-        //           theirId: suPc.id,
-        //           description: suPc.description || '',
-        //           createdAt: startTime + nextIPc,
-        //           connection: 'CONNECTION_SUMUP',
-        //           isEnabled: suPc.active === 1
-        //         },
-        //         user
-        //       )
-        //     }
-        //   }
-        // })
-        // await asyncSeries(pcAsyncFunctions)
-
         const suProductsData = await makeRequest(
           {
             'Authorization': `Bearer ${token}`,
@@ -311,147 +256,10 @@ module.exports = new Connection({
           'https://api.thegoodtill.com/api/products'
         )
         assert(suProductsData.status)
-        let { data: suProducts } = suProductsData
-        suProducts = suProducts.filter(_ => _.outlet_id === foundOutlet.id)
-        // require('fs').writeFileSync('./products.json', JSON.stringify(suProducts, null, 2), 'utf-8')
-
-        const existingPs = await connectionContainer.getProducts(rdic, user, { connection: 'CONNECTION_SUMUP' })
-
-        const pAsyncFunctions = suProducts.map((suP, nextIP) => {
-          const finalName = getFinalName(suP)
-          const finalPrice = getFinalPrice(suP)
-          const finalMedia = suP.image ? [{ type: 'image', url: suP.image }] : []
-
-          const suSubProducts = suProducts.filter(_suPQ => _suPQ.parent_product_id === suP.id)
-
-          const finalQuestions = suSubProducts.length > 0 ? [
-            {
-              type: 'option',
-              question: ' ',
-              connectionHandleAsProduct: true,
-              options: suSubProducts.map(suSubP => ({
-                name: getFinalName(suSubP),
-                delta: getFinalPrice(suSubP) - finalPrice,
-                forSale: suSubP.active === 1,
-                theirId: suSubP.id
-              })),
-              answer: getFinalName(suSubProducts[0]),
-            }
-          ] : []
-
-          if (suP.parent_product_id) {
-            // it's a modifier
-            return () => {}
-          }
-
-          return () => {
-            const existingP = existingPs.find(p => p.theirId === suP.id)
-            if (existingP) {
-              existingP.patch({
-                name: finalName,
-                isEnabled: suP.active === 1,
-                price: finalPrice,
-                questions: finalQuestions,
-                media: finalMedia
-              })
-              return connectionContainer.updateProduct(existingP, ['name', 'is_enabled', 'price', 'questions', 'media'])
-            } else {
-              return connectionContainer.createProduct(
-                {
-                  userId: user.id,
-                  createdAt: startTime + nextIP,
-                  connection: 'CONNECTION_SUMUP',
-                  theirId: suP.id,
-                  name: finalName,
-                  isEnabled: suP.active === 1,
-                  currency: user.currency,
-                  price: finalPrice,
-                  media: finalMedia,
-                  questions: finalQuestions
-                }
-              )
-            }
-          }
-        })
-        await asyncSeries(pAsyncFunctions)
-
-        return 'All ok!'
+        return suProductsData.data
+          .filter(product => product.outlet_id === foundOutlet.id)
+          .map(product => ({ id: product.id, name: getFinalName(product) }))
       }
     }
   }
 })
-
-// createEvent: [AsyncFunction: createEvent]
-// getProducts: [AsyncFunction: getProducts]
-// createProduct: [AsyncFunction: createProduct]
-// updateProduct: [AsyncFunction: updateProduct]
-// getProductCategories: [AsyncFunction: getProductCategories]
-// createProductCategory: [AsyncFunction: createProductCategory]
-// updateProductCategory: [AsyncFunction: updateProductCategory]
-
-// "print_on_drink": 0,
-// "print_on_other": 0,
-
-// OUTLET KEYS
-// id: 'UUID',
-// outlet_name: 'WF - K & B',
-// outlet_address: null,
-// outlet_city: null,
-// outlet_county: null,
-// outlet_postcode: null,
-// outlet_country: 'GBR',
-// store_tag: 'WF',
-// status: 'Active',
-// active: 1
-
-// PRODUCT KEYS
-// "id": "UUID",
-// "product_name": "V ",
-// "product_sku": "V_B__CAPS",
-// "display_name": "V B",
-// "parent_product_id": null,
-// "purchase_price": "0.000",
-// "supplier_purchase_price": "0.000",
-// "outlet_id": "UUID",
-// "shareable": 1,
-// "has_variant": 1,
-// "active": 1,
-// "category_id": "UUID",
-// "brand_id": null,
-// "supplier_id": null,
-// "has_ingredient_stock": 0,
-// "take_stock_from_parent": 0,
-// "stock_quantifier": "1.000",
-// "unit_conversion": "1.000",
-// "store_unit": null,
-// "supplier_unit": null,
-// "selling_price": "2.500",
-// "track_inventory": 1,
-// "inventory": null,
-// "alert_on": 0,
-// "alert_below": null,
-// "delivery_reorder_on": 0,
-// "delivery_reorder_point": null,
-// "print_on_receipt": 1,
-// "print_on_kitchen": 0,
-// "ticket_printer_1": 0,
-// "ticket_printer_2": 0,
-// "ticket_printer_3": 0,
-// "ticket_printer_4": 0,
-// "min_stock": "0.000",
-// "takeaway_override_price": 0,
-// "takeaway_selling_price": "0.000",
-// "oc_override_price": 0,
-// "oc_selling_price": "0.000",
-// "oc_collection_selling_price": null,
-// "oc_delivery_selling_price": null,
-// "oc_dropoff_selling_price": null,
-// "takeaway_vat_code": null,
-// "oc_collection_vat_code": null,
-// "oc_delivery_vat_code": null,
-// "oc_dropoff_vat_code": null,
-// "created_at": "2024-08-28 13:37:18",
-// "updated_at": "2024-08-28 13:37:18",
-// "top_level_product": true,
-// "can_change_product": true,
-// "image": "URL"

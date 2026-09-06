@@ -16,10 +16,10 @@ function money (value) {
   return value / 100
 }
 
-async function request (host, path, apiKey, { method = 'GET', token, body } = {}) {
+async function request (path, apiKey, { method = 'GET', token, body } = {}) {
   const headers = { 'content-type': 'application/json', 'x-api-key': apiKey }
   if (token) headers.authorization = `Bearer ${token}`
-  const res = await fetch(`${host}/${path}`, {
+  const res = await fetch(`${API_HOST}/${path}`, {
     method,
     headers,
     ...(body ? { body: JSON.stringify(body) } : {})
@@ -35,7 +35,7 @@ async function request (host, path, apiKey, { method = 'GET', token, body } = {}
 
 async function eventHookLogic (config, connectionContainer) {
   const { rdic, payment, user, application, thing, createEvent, customData } = connectionContainer
-  const [apiKey, apiSecret, configTerminalId, configPriceBandId, configSessionId, configHostApi = API_HOST] = config
+  const [apiKey, apiSecret, configTerminalId, configPriceBandId, configSessionId] = config
 
   if (!application) {
     return
@@ -54,7 +54,6 @@ async function eventHookLogic (config, connectionContainer) {
   let reference
   try {
     assert(apiKey && apiSecret, 'Kappture API key and API secret are required.')
-    const host = (configHostApi || API_HOST).replace(/\/+$/, '')
     const terminalId = integer(configTerminalId, 'Terminal ID')
     const priceBandId = integer(configPriceBandId, 'Price band ID', 32767)
     const sessionId = integer(configSessionId, 'Kappture session ID')
@@ -68,7 +67,11 @@ async function eventHookLogic (config, connectionContainer) {
       .map(row => new Product().fromDatalayerRelational(row))
     const products = []
     for (const item of customData.cart) {
-      const plu = integer(item.productTheirId, `Kappture PLU for '${item.productName}'`)
+      const ids = String(item.productTheirId).split('---')
+      assert(ids.length <= 2, `Invalid Kappture product mapping for '${item.productName}'.`)
+      const productMapping = ids.length === 2
+        ? { productId: integer(ids[0], 'Product ID'), productGroupId: integer(ids[1], 'Product group ID') }
+        : { plu: integer(item.productTheirId, `Kappture PLU for '${item.productName}'`), productId: 0, productGroupId: 0 }
       const quantity = integer(item.quantity, `Quantity for '${item.productName}'`, 32767)
       const price = money(item.productPrice)
       const product = cartProducts.find(product => product.id === item.productId)
@@ -79,10 +82,8 @@ async function eventHookLogic (config, connectionContainer) {
       const taxRate = !vatTag || vatTag === 'vat--no' ? 0 : vatTag === 'vat--125' ? 12.5 : Number(vatTag.slice(5))
       integer(taxRate, `Tax rate for '${item.productName}'`, 100, 0)
       products.push({
-        plu,
+        ...productMapping,
         productName: item.productName,
-        productId: 0,
-        productGroupId: 0,
         quantity,
         price,
         priceBandId,
@@ -102,14 +103,14 @@ async function eventHookLogic (config, connectionContainer) {
     }
     if (thing && thing.theirId) order.tableNumber = integer(thing.theirId, 'Table number', 32767, 0)
 
-    const auth = await request(host, 'auth', apiKey, {
+    const auth = await request('auth', apiKey, {
       method: 'POST',
       body: { api_key: apiKey, api_secret: apiSecret }
     })
     assert(auth && typeof auth.token === 'string' && auth.token.trim(), 'Kappture authentication returned no token.')
-    const tenders = await request(host, 'tender', apiKey, { token: auth.token })
+    const tenders = await request('tender', apiKey, { token: auth.token })
     assert(Array.isArray(tenders) && tenders.some(tender => tender.id === tenderId), `Kappture tender ${tenderId} was not found among enabled tenders.`)
-    const result = await request(host, 'transaction', apiKey, {
+    const result = await request('transaction', apiKey, {
       method: 'PUT',
       token: auth.token,
       body: { orders: [order] }
@@ -137,8 +138,39 @@ module.exports = new Connection({
   name: 'Kappture',
   color: '#e72278',
   logo: cdn => `${cdn}/connections/CONNECTION_KAPPTURE.svg`,
-  configNames: ['API key', 'API secret', 'Terminal number', 'Price band number', 'Session number', 'API host'],
-  configDefaults: ['', '', '', '', '', API_HOST],
+  configNames: ['API key', 'API secret', 'Terminal number', 'Price band number', 'Session number'],
+  configDefaults: ['', '', '', '', ''],
+  methods: {
+    getLocations: {
+      name: 'Pull',
+      uiPlaces: ['products'],
+      logic: async ({ config }) => {
+        const [apiKey, apiSecret] = config
+        assert(apiKey && apiSecret, 'Kappture API key and API secret are required.')
+        const auth = await request('auth', apiKey, {
+          method: 'POST',
+          body: { api_key: apiKey, api_secret: apiSecret }
+        })
+        assert(auth && typeof auth.token === 'string' && auth.token.trim(), 'Kappture authentication returned no token.')
+
+        const products = []
+        let page = 1
+        let totalPages
+        do {
+          const result = await request(`product?count=100&page=${page}`, apiKey, { token: auth.token })
+          assert(result && Array.isArray(result.product), 'Kappture returned an invalid product list.')
+          assert(result.page === page, 'Kappture returned an unexpected product page.')
+          totalPages = integer(result.totalPages, 'Product total pages', 2147483647, 0)
+          products.push(...result.product.map(product => ({
+            id: `${integer(product.id, 'Product ID')}---${integer(product.productGroupId, 'Product group ID')}`,
+            name: product.name
+          })))
+          page++
+        } while (page <= totalPages)
+        return products
+      }
+    }
+  },
   eventHooks: {
     'SESSION_CART_PAY': eventHookLogic
   }

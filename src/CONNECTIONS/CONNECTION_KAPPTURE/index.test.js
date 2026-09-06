@@ -5,7 +5,7 @@ jest.mock('openbox-entities', () => ({
 
 const connection = require('./index')
 
-const config = ['key', 'secret', '10', '2', '7', 'https://kappture.example/']
+const config = ['key', 'secret', '10', '2', '7']
 const hook = connection.eventHooks.SESSION_CART_PAY
 const originalFetch = global.fetch
 
@@ -34,13 +34,13 @@ afterEach(() => { global.fetch = originalFetch })
 
 it('authenticates, validates the tender and submits the paid cart using the documented PUT schema', async () => {
   await hook(config, container)
-  expect(fetch.mock.calls[0]).toEqual(['https://kappture.example/auth', {
+  expect(fetch.mock.calls[0]).toEqual(['https://api.eu-west-1.kappture.com/auth', {
     method: 'POST', headers: { 'content-type': 'application/json', 'x-api-key': 'key' },
     body: JSON.stringify({ api_key: 'key', api_secret: 'secret' })
   }])
-  expect(fetch.mock.calls[1][0]).toBe('https://kappture.example/tender')
+  expect(fetch.mock.calls[1][0]).toBe('https://api.eu-west-1.kappture.com/tender')
   const [url, request] = fetch.mock.calls[2]
-  expect(url).toBe('https://kappture.example/transaction')
+  expect(url).toBe('https://api.eu-west-1.kappture.com/transaction')
   expect(request.method).toBe('PUT')
   expect(request.headers.authorization).toBe('Bearer jwt')
   const { orders: [order] } = JSON.parse(request.body)
@@ -72,8 +72,8 @@ it('uses UUID digits even with a payment reference, and supports zero VAT, free 
   expect(order.products[0]).toMatchObject({ price: 0, taxValue: 0, taxRate: 0 })
 })
 
-it.each([undefined, { cart: [] }])('skips absent or empty carts', async customData => {
-  container.customData = customData
+it('skips empty carts', async () => {
+  container.customData = { cart: [] }
   await hook(config, container)
   expect(fetch).not.toHaveBeenCalled()
   expect(container.createEvent).not.toHaveBeenCalled()
@@ -135,4 +135,47 @@ it('does not fail an accepted sale if writing the success event rejects', async 
   container.createEvent.mockRejectedValue(new Error('Database unavailable'))
   await expect(hook(config, container)).rejects.toThrow('Database unavailable')
   expect(container.payment.onSessionFail).not.toHaveBeenCalled()
+})
+
+it('pulls every product page as flat JSON and uses the returned mapping in orders', async () => {
+  fetch.mockReset()
+    .mockResolvedValueOnce(response({ token: 'jwt' }))
+    .mockResolvedValueOnce(response({ product: [{ id: 123, productGroupId: 45, name: 'Coffee', price: 6 }], page: 1, count: 1, totalPages: 2 }))
+    .mockResolvedValueOnce(response({ product: [{ id: 456, productGroupId: 78, name: 'Tea' }], page: 2, count: 1, totalPages: 2 }))
+  const result = await connection.methods.getLocations.logic({ config })
+  expect(result).toEqual([{ id: '123---45', name: 'Coffee' }, { id: '456---78', name: 'Tea' }])
+  expect(fetch.mock.calls.map(([url]) => url)).toEqual([
+    'https://api.eu-west-1.kappture.com/auth',
+    'https://api.eu-west-1.kappture.com/product?count=100&page=1',
+    'https://api.eu-west-1.kappture.com/product?count=100&page=2'
+  ])
+  expect(fetch.mock.calls[2][1]).toMatchObject({ method: 'GET', headers: { authorization: 'Bearer jwt', 'x-api-key': 'key' } })
+  expect(container.rdic.get).not.toHaveBeenCalled()
+  expect(container.createEvent).not.toHaveBeenCalled()
+
+  container.customData.cart[0].productTheirId = result[0].id
+  fetch.mockReset()
+    .mockResolvedValueOnce(response({ token: 'jwt' }))
+    .mockResolvedValueOnce(response([{ id: 3 }]))
+    .mockResolvedValueOnce(response({ processCount: 1 }))
+  await hook(config, container)
+  const product = JSON.parse(fetch.mock.calls[2][1].body).orders[0].products[0]
+  expect(product).toMatchObject({ productId: 123, productGroupId: 45 })
+  expect(product.plu).toBeUndefined()
+})
+
+it('returns an empty list for an empty catalogue', async () => {
+  fetch.mockReset()
+    .mockResolvedValueOnce(response({ token: 'jwt' }))
+    .mockResolvedValueOnce(response({ product: [], page: 1, count: 0, totalPages: 0 }))
+  await expect(connection.methods.getLocations.logic({ config })).resolves.toEqual([])
+  expect(fetch).toHaveBeenCalledTimes(2)
+})
+
+it('rejects a failed later page rather than returning a partial catalogue', async () => {
+  fetch.mockReset()
+    .mockResolvedValueOnce(response({ token: 'jwt' }))
+    .mockResolvedValueOnce(response({ product: [{ id: 123, productGroupId: 45, name: 'Coffee' }], page: 1, totalPages: 2 }))
+    .mockResolvedValueOnce(response('Unavailable', 503))
+  await expect(connection.methods.getLocations.logic({ config })).rejects.toThrow('503')
 })

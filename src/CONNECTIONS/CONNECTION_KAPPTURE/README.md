@@ -9,7 +9,8 @@ Configuration, in order:
 3. Terminal number (the original draft incorrectly labelled this “Tender number”)
 4. Price band number
 5. Kappture session number (required; this is not a Sticky session ID)
-6. API host (defaults to `https://api.eu-west-1.kappture.com`)
+
+All requests use `https://api.eu-west-1.kappture.com`.
 
 Set the flow's **External system ID** to the Kappture tender ID returned by
 `GET /tender`. Set each product's **Your ID** to its Kappture **PLU**. All cart
@@ -38,3 +39,9 @@ Run the isolated mocked integration tests without the repository's environment-d
 ```sh
 npx jest src/CONNECTIONS/CONNECTION_KAPPTURE/index.test.js --runInBand --config '{"testEnvironment":"node","setupFiles":[]}'
 ```
+
+The products **Pull** action authenticates and reads `/product?count=100&page=1`,
+following `totalPages`. It returns a flat JSON array of `{ id, name }` and performs
+no local writes. Each returned `id` is `productId---productGroupId`, which order
+injection accepts as a Kappture product/group mapping. Existing numeric PLU
+mappings remain supported. Pull does not assign or change any product's Your ID.
