@@ -9,72 +9,69 @@ const SYSTEMS = [
     color: '#e72077',
     sla: 1200,
     emails: [
-      'zee.karim@levy.co.uk',
-      'harry.ridley@levy.co.uk',
-      'kappture@sticky.to'
     ]
   },
   {
     id: 'BRISK',
     name: 'Brisk',
     color: '#e72077',
+    sla: 1200,
     emails: [
-      'zee.karim@levy.co.uk',
-      'harry.ridley@levy.co.uk'
     ]
   },
   {
     id: 'LINNEY',
     name: 'Linney',
     color: '#333333',
+    sla: 1200,
     emails: [
-      'zee.karim@levy.co.uk',
-      'harry.ridley@levy.co.uk'
     ]
   },
   {
     id: 'BOXBAR',
     name: 'Boxbar',
     color: '#ff00bf',
+    sla: 1200,
     emails: [
-      'zee.karim@levy.co.uk',
-      'harry.ridley@levy.co.uk'
     ]
   },
   {
     id: 'STICKY',
     name: 'Sticky',
     color: '#211552',
+    sla: 1200,
     emails: [
-      'zee.karim@levy.co.uk',
-      'harry.ridley@levy.co.uk'
     ]
   },
   {
     id: 'LEVY',
     name: 'Levy',
     color: '#000000',
+    sla: 1200,
     emails: [
-      'zee.karim@levy.co.uk',
-      'harry.ridley@levy.co.uk'
+    ]
+  },
+  {
+    id: 'LEAD',
+    name: 'Lead',
+    color: '#322cbe',
+    emails: [
     ]
   },
   {
     id: 'MU_IT',
     name: '44187 [MU] IT',
     color: '#C50317',
+    sla: 1200,
     emails: [
-      'zee.karim@levy.co.uk',
-      'harry.ridley@levy.co.uk'
     ]
   },
   {
     id: 'MU_NETWORK',
     name: '44187 [MU] Network',
     color: '#C50317',
+    sla: 1200,
     emails: [
-      'zee.karim@levy.co.uk',
-      'harry.ridley@levy.co.uk'
     ]
   }
 ]
