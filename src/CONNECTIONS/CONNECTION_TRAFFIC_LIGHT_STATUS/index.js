@@ -89,7 +89,7 @@ module.exports = new Connection({
     {
       "id": "71d05208-3781-4c24-996e-c4c0d1c6b228",
       "config": {
-        "what": JSON.stringify(SYSTEMS.map(_ => ({ id: _.id, name: _.name, color: _.color, sla: _.sla })), null, 2),
+        "what": JSON.stringify(SYSTEMS.map(_ => ({ id: _.id, name: _.name, color: _.color, sla: _.sla, slaAcknowledgement: typeof _.slaAcknowledgement === 'number' ? _.slaAcknowledgement : _.sla, slaResolve: typeof _.slaResolve === 'number' ? _.slaResolve : _.sla })), null, 2),
         "font": "#1e272e--left--80%--false",
         "backgroundColour": "#FFFFFF"
       }
@@ -116,14 +116,14 @@ module.exports = new Connection({
         federatedUserId: whichFu ? whichFu.id : undefined,
         linearData: [systemId],
         customData: {
-          'Priority': customData['This is a...'],
+          'Priority': (customData['This is a...'] || 'P0').slice(0, 2),
           'Photo': customData['What can you see?'],
           'Description': customData['Anything else we should know?']
         }
       })
       if (system && Array.isArray(system.emails)) {
         const emails = [...new Set([...system.emails, whichFu && whichFu.email].filter(_ => _))]
-        const priority = customData['This is a...'] || 'New'
+        const priority = (customData['This is a...'] || 'P0').slice(0, 2)
         const description = customData['Anything else we should know?'] || 'No description supplied.'
         const photoUrl = deserialize(customData['What can you see?'], user, true)
         const photoLink = typeof photoUrl === 'string' && isUrl(photoUrl)
