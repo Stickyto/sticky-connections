@@ -18,21 +18,14 @@ class Connection {
     return `${cdn}/connections/CONNECTION_UNKNOWN.svg`
   }
 
-  isAMatch(userId, partnerName) {
-    if (!partnerName && Array.isArray(this.partnerNames)) {
-      return false
+  isAMatch (userId, partnerName) {
+    if (Array.isArray(this.partnerNames)) {
+      return this.partnerNames.includes(partnerName)
     }
-    if (!userId && this.userIds.length > 0) {
-      return false
+    if (this.userIds.length > 0) {
+      return this.userIds.includes(userId)
     }
-    let doesUserMatch = true, doesPartnerMatch = true
-    if (userId && this.userIds.length > 0) {
-      doesUserMatch = this.userIds.includes(userId)
-    }
-    if (partnerName && Array.isArray(this.partnerNames)) {
-      doesPartnerMatch = this.partnerNames.includes(partnerName)
-    }
-    return (doesUserMatch && doesPartnerMatch)
+    return true
   }
 
   toJson({ rdic, user, applications }) {
