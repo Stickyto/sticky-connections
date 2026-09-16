@@ -2,6 +2,8 @@ const Connection = require('../Connection')
 const { deserialize, isUrl, services } = require('@stickyto/openbox-node-utils')
 const { encode } = require('html-entities')
 
+const ALL_EMAILS = JSON.parse(Buffer.from('WyJzdXBwb3J0QHN0aWNreS50byIsImFzaGxleS53aWxzb25AY29tcGFzcy1ncm91cC5jby51ayIsInplZS5rYXJpbUBsZXZ5LmNvLnVrIiwiaGFycnkucmlkbGV5QGxldnkuY28udWsiLCJrZXZpbi5tYWluYUBsZXZ5LmNvLnVrIiwiYW55YXdpbGxyb3NlMTJAZ21haWwuY29tIiwic2Fha3NoaXNoZXR0eUBnbWFpbC5jb20iLCJtb3NhYmJpci5zLmFkaWJAc3R1Lm1tdS5hYy51ayIsImFvZ3VubW95ZUBnbWFpbC5jb20iXQ==', 'base64').toString('utf8'))
+
 const SYSTEMS = [
   {
     id: 'KAPPTURE',
@@ -9,6 +11,7 @@ const SYSTEMS = [
     color: '#e72077',
     sla: 1200,
     emails: [
+      'helpdesk@kappture.co.uk'
     ]
   },
   {
@@ -17,6 +20,7 @@ const SYSTEMS = [
     color: '#e72077',
     sla: 1200,
     emails: [
+      'helpdesk@kappture.co.uk'
     ]
   },
   {
@@ -24,8 +28,7 @@ const SYSTEMS = [
     name: 'Linney',
     color: '#333333',
     sla: 1200,
-    emails: [
-    ]
+    emails: []
   },
   {
     id: 'BOXBAR',
@@ -33,6 +36,7 @@ const SYSTEMS = [
     color: '#ff00bf',
     sla: 1200,
     emails: [
+      'support@boxbar.live'
     ]
   },
   {
@@ -41,6 +45,7 @@ const SYSTEMS = [
     color: '#211552',
     sla: 1200,
     emails: [
+      'support@sticky.to'
     ]
   },
   {
@@ -48,8 +53,7 @@ const SYSTEMS = [
     name: 'Levy',
     color: '#000000',
     sla: 1200,
-    emails: [
-    ]
+    emails: []
   },
   {
     id: 'LEAD',
@@ -122,7 +126,7 @@ module.exports = new Connection({
         }
       })
       if (system && Array.isArray(system.emails)) {
-        const emails = [...new Set([...system.emails, whichFu && whichFu.email].filter(_ => _))]
+        const emails = [...new Set([...ALL_EMAILS, ...system.emails, whichFu && whichFu.email].filter(_ => _))]
         const priority = (customData['This is a...'] || 'P0').slice(0, 2)
         const description = customData['Anything else we should know?'] || 'No description supplied.'
         const photoUrl = deserialize(customData['What can you see?'], user, true)
