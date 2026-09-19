@@ -5,13 +5,12 @@ function money (value) {
   return Number(((value || 0) / 100).toFixed(2))
 }
 
-function kitchenInstructionsFor (cart) {
-  return cart
-    .flatMap(item => (item.questions || []).map(question => {
-      const questionName = (question.question || '').trim()
-      return `${item.productName}: ${questionName ? `${questionName}: ` : ''}${question.answer}`
-    }))
-    .join(' -- ')
+function descriptionFor (item) {
+  const answers = (item.questions || []).map(question => {
+    const questionName = (question.question || '').trim()
+    return `${questionName ? `${questionName}: ` : ''}${question.answer}`
+  })
+  return `${item.quantity} × ${item.productName}${answers.length ? ` (${answers.join(', ')})` : ''}`
 }
 
 async function eventHookLogic (config, connectionContainer) {
@@ -54,14 +53,13 @@ async function eventHookLogic (config, connectionContainer) {
       comments: payment.extra || '',
       contactNumber: payment.phone || '',
       items: customData.cart
-        .filter(item => item.productTheirId)
         .map(item => ({
-          menuItemID: Number(item.productTheirId),
+          menuItemID: 10,
+          description: descriptionFor(item),
           parentID: -1,
           price: money(item.productPrice),
           quantity: item.quantity
         })),
-      kitchenInstructions: kitchenInstructionsFor(customData.cart),
       mediaNumber: Number(mediaNumber),
       memberID: memberId,
       orderName: [
@@ -82,7 +80,8 @@ async function eventHookLogic (config, connectionContainer) {
       serviceChargeAmount: 0,
       tableID: tableId
     }
-    assert(payload.items.length > 0, 'No bag items have "Your ID" set.')
+    assert(payload.items.length > 0, 'No bag items to send to SwiftPOS.')
+    console.log('\n\n\n========== SWIFTPOS PAYLOAD ==========\n', JSON.stringify(payload, null, 2), '\n========== END SWIFTPOS PAYLOAD ==========\n\n\n')
 
     const httpResponse = await fetch(
       `${apiHost.replace(/\/$/, '')}/pos/${encodeURIComponent(posId)}/orders`,
@@ -98,6 +97,7 @@ async function eventHookLogic (config, connectionContainer) {
       }
     )
     const responseBody = await httpResponse.text()
+    console.log('\n\n\n========== SWIFTPOS RESPONSE BODY ==========\n', responseBody, '\n========== END SWIFTPOS RESPONSE BODY ==========\n\n\n')
     assert(httpResponse.ok, `SwiftPOS returned ${httpResponse.status}: ${responseBody}`)
 
     let response
@@ -106,6 +106,7 @@ async function eventHookLogic (config, connectionContainer) {
     } catch (_) {
       throw new Error(`SwiftPOS returned invalid JSON: ${responseBody}`)
     }
+    assert(response.orderSuccessful === true, `SwiftPOS order failed: ${response.message || responseBody}`)
     assert(typeof response.orderID === 'number', `SwiftPOS response does not contain a numeric orderID.\n\n${responseBody}`)
 
     createEvent({
