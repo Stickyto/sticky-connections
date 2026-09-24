@@ -5,15 +5,6 @@ function money (value) {
   return Number(((value || 0) / 100).toFixed(2))
 }
 
-function kitchenInstructionsFor (cart) {
-  return cart
-    .flatMap(item => (item.questions || []).map(question => {
-      const questionName = (question.question || '').trim()
-      return `${item.productName}: ${questionName ? `${questionName}: ` : ''}${question.answer}`
-    }))
-    .join(' -- ')
-}
-
 async function eventHookLogic (config, connectionContainer) {
   const { user, application, thing, payment, customData, createEvent } = connectionContainer
 
@@ -26,7 +17,7 @@ async function eventHookLogic (config, connectionContainer) {
 
   const [
     apiHost,
-    posId,
+    _posId,
     connectSignature,
     encryptedKey,
     mediaNumber,
@@ -36,7 +27,6 @@ async function eventHookLogic (config, connectionContainer) {
   ] = config
 
   try {
-    assert(posId, 'POS ID is not configured.')
     assert(encryptedKey, 'Connect encrypted key is not configured.')
 
     const tableId = (() => {
@@ -61,7 +51,6 @@ async function eventHookLogic (config, connectionContainer) {
           price: money(item.productPrice),
           quantity: item.quantity
         })),
-      kitchenInstructions: kitchenInstructionsFor(customData.cart),
       mediaNumber: Number(mediaNumber),
       memberID: memberId,
       orderName: [
@@ -85,7 +74,7 @@ async function eventHookLogic (config, connectionContainer) {
     assert(payload.items.length > 0, 'No bag items have "Your ID" set.')
 
     const httpResponse = await fetch(
-      `${apiHost.replace(/\/$/, '')}/pos/${encodeURIComponent(posId)}/orders`,
+      `${apiHost.replace(/\/$/, '')}/pos/${encodeURIComponent(application.theirId || 'NO_APPLICATION_THEIR_ID')}/orders`,
       {
         method: 'POST',
         headers: {
@@ -142,7 +131,7 @@ module.exports = new Connection({
   logo: cdn => `${cdn}/connections/CONNECTION_SWIFTPOS.svg`,
   configNames: [
     'API host',
-    'POS ID',
+    'POS ID (IGNORE)',
     'Connect signature',
     'Connect encrypted key',
     'Media number',
