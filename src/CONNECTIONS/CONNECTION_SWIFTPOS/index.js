@@ -45,12 +45,24 @@ async function eventHookLogic (config, connectionContainer) {
       contactNumber: payment.phone || '',
       items: customData.cart
         .filter(item => item.productTheirId)
-        .map(item => ({
+        .flatMap(item => [{
           menuItemID: Number(item.productTheirId),
           parentID: -1,
           price: money(item.productPrice),
           quantity: item.quantity
-        })),
+        }, ...(item.questions || []).flatMap(question => {
+          const answers = Array.isArray(question.answer) ? question.answer : [question.answer]
+
+          return answers
+            .map(answer => (question.options || []).find(option => option.name === answer))
+            .filter(option => option && option.theirId)
+            .map(option => ({
+              menuItemID: Number(option.theirId),
+              parentID: -1,
+              price: money(option.delta),
+              quantity: item.quantity
+            }))
+        })]),
       mediaNumber: Number(mediaNumber),
       memberID: memberId,
       orderName: [
