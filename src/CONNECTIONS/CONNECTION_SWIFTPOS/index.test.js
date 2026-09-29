@@ -11,7 +11,7 @@ beforeEach(() => {
   container = {
     user: { id: 'user' },
     application: { id: 'application', theirId: '1' },
-    payment: { id: 'payment', total: 2595 },
+    payment: { id: 'payment', total: 2595, customDataPublic: { getRaw: () => ({}) } },
     customData: {
       cart: [{
         productTheirId: '2481',
@@ -65,6 +65,41 @@ it('supports a single answer and carries through the quantity and option price d
   expect(payload.items).toEqual([
     { menuItemID: 2481, parentID: -1, price: 25.95, quantity: 2 },
     { menuItemID: 556190, parentID: -1, price: 1.5, quantity: 2 }
+  ])
+})
+
+it('supports separate single-option deal questions and preserves repeated selections', async () => {
+  const options = [
+    { name: 'Cajun King Prawn Taco', theirId: '556190' },
+    { name: 'Franks Hot Sauce Chicken Wings', theirId: '556192' },
+    { name: 'Sweet Potato Falafel', theirId: '556194' },
+    { name: 'Mac & Cheese Bites', theirId: '556195' },
+    { name: 'Peach & Feta Salad', theirId: '556191' },
+    { name: 'Salt & Pepper Fries', theirId: '556196' },
+    { name: 'Duck Bao Bun Slider', theirId: '556193' }
+  ].map(option => ({ ...option, delta: 0, subProducts: [], forSale: true }))
+  container.customData.cart = [{
+    productId: 'f908550b-d1f1-453d-b4a2-942859a7be05',
+    productName: '3 Small Plates Deal',
+    productPrice: 2595,
+    productCurrency: 'GBP',
+    productTheirId: '2481',
+    quantity: 1,
+    questions: ['Mac & Cheese Bites', 'Cajun King Prawn Taco', 'Cajun King Prawn Taco'].map((answer, index) => ({
+      type: 'option',
+      options,
+      question: `Item ${index + 1}`,
+      answer,
+      connectionHandleAsProduct: false
+    }))
+  }]
+
+  const payload = await submit()
+  expect(payload.items).toEqual([
+    { menuItemID: 2481, parentID: -1, price: 25.95, quantity: 1 },
+    { menuItemID: 556195, parentID: -1, price: 0, quantity: 1 },
+    { menuItemID: 556190, parentID: -1, price: 0, quantity: 1 },
+    { menuItemID: 556190, parentID: -1, price: 0, quantity: 1 }
   ])
 })
 
