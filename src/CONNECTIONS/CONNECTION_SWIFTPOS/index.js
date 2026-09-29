@@ -66,9 +66,9 @@ async function eventHookLogic (config, connectionContainer) {
       mediaNumber: Number(mediaNumber),
       memberID: memberId,
       orderName: [
-        tableId && `Table ${tableId}`,
-        customerName
-      ].filter(Boolean).join(' - ') || payment.id,
+        ...Object.values(payment.customDataPublic.getRaw()),
+        ...[thing && thing.name, customerName].filter(Boolean)
+      ].join(' - ') || payment.id,
       orderType,
       paymentAmount: 0,
       paymentTypeID: Number(paymentTypeId),
