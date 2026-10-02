@@ -18,7 +18,9 @@ items must have a valid mapping. An optional touchpoint external ID supplies the
 numeric table number.
 
 Prices are tax-inclusive unit prices from the paid cart, converted from minor
-currency units. VAT comes from each Sticky product's `vat--*` tag; untagged
+currency units. A non-zero account `flatTax` overrides product VAT, including
+missing products and conflicting tags. Otherwise VAT comes from each Sticky
+product's `vat--*` tag; untagged
 products use zero VAT, consistent with Sticky's product VAT calculation.
 Conflicting VAT tags and fractional rates (such as 12.5%, which the API's integer
 `taxRate` schema cannot represent) fail explicitly.

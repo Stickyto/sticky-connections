@@ -179,3 +179,29 @@ it('rejects a failed later page rather than returning a partial catalogue', asyn
     .mockResolvedValueOnce(response('Unavailable', 503))
   await expect(connection.methods.getLocations.logic({ config })).rejects.toThrow('503')
 })
+
+
+it.each([[], [{ id: 'product', tags_v2: ['vat--0', 'vat--5'], media: '[]', questions: '[]' }]].map(products => [products]))('uses account tax without loading products: %j', products => {
+  container.user.flatTax = 20
+  container.rdic.get().read.mockResolvedValue(products)
+  return hook(config, container).then(() => {
+    const order = JSON.parse(fetch.mock.calls[2][1].body).orders[0]
+    expect(order.products[0]).toMatchObject({ price: 6, taxRate: 20, taxValue: 1 })
+    expect(container.rdic.get().read).not.toHaveBeenCalled()
+  })
+})
+
+it('uses the account rounding rule at a half penny', async () => {
+  container.user.flatTax = 20
+  container.customData.cart[0].productPrice = 3
+  await hook(config, container)
+  const order = JSON.parse(fetch.mock.calls[2][1].body).orders[0]
+  expect(order.products[0]).toMatchObject({ price: 0.03, taxRate: 20, taxValue: 0.01 })
+})
+
+it('rejects a fractional account rate rather than falling back to product tags', async () => {
+  container.user.flatTax = 12.5
+  await hook(config, container)
+  expect(fetch).not.toHaveBeenCalled()
+  expect(container.createEvent).toHaveBeenCalledWith(expect.objectContaining({ type: 'CONNECTION_BAD' }))
+})

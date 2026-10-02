@@ -2,6 +2,8 @@ const { assert } = require('@stickyto/openbox-node-utils')
 const { Product } = require('openbox-entities')
 const Connection = require('../Connection')
 
+const { hasFlatTax, taxFromGross } = require('openbox-entities/tax')
+
 const API_HOST = 'https://api.eu-west-1.kappture.com'
 
 function integer (value, label, max = 2147483647, min = 1) {
@@ -63,7 +65,8 @@ async function eventHookLogic (config, connectionContainer) {
     reference = Number(payment.id.replace(/\D/g, '').slice(0, 9))
 
     const productIds = customData.cart.map(item => item.productId)
-    const cartProducts = (await rdic.get('datalayerRelational').read('products', { id: productIds, user_id: user.id }))
+    const useFlatTax = hasFlatTax(user.flatTax)
+    const cartProducts = (useFlatTax ? [] : await rdic.get('datalayerRelational').read('products', { id: productIds, user_id: user.id }))
       .map(row => new Product().fromDatalayerRelational(row))
     const products = []
     for (const item of customData.cart) {
@@ -74,12 +77,15 @@ async function eventHookLogic (config, connectionContainer) {
         : { plu: integer(item.productTheirId, `Kappture PLU for '${item.productName}'`), productId: 0, productGroupId: 0 }
       const quantity = integer(item.quantity, `Quantity for '${item.productName}'`, 32767)
       const price = money(item.productPrice)
-      const product = cartProducts.find(product => product.id === item.productId)
-      assert(product, `Product '${item.productName}' could not be found to determine its VAT rate.`)
-      const vatTags = product.tags.toArray().filter(tag => tag.startsWith('vat--'))
-      assert(vatTags.length <= 1, `Product '${item.productName}' has conflicting VAT tags.`)
-      const vatTag = vatTags[0]
-      const taxRate = !vatTag || vatTag === 'vat--no' ? 0 : vatTag === 'vat--125' ? 12.5 : Number(vatTag.slice(5))
+      let taxRate = user.flatTax
+      if (!useFlatTax) {
+        const product = cartProducts.find(product => product.id === item.productId)
+        assert(product, `Product '${item.productName}' could not be found to determine its VAT rate.`)
+        const vatTags = product.tags.toArray().filter(tag => tag.startsWith('vat--'))
+        assert(vatTags.length <= 1, `Product '${item.productName}' has conflicting VAT tags.`)
+        const vatTag = vatTags[0]
+        taxRate = !vatTag || vatTag === 'vat--no' ? 0 : vatTag === 'vat--125' ? 12.5 : Number(vatTag.slice(5))
+      }
       integer(taxRate, `Tax rate for '${item.productName}'`, 100, 0)
       products.push({
         ...productMapping,
@@ -88,7 +94,7 @@ async function eventHookLogic (config, connectionContainer) {
         price,
         priceBandId,
         taxRate,
-        taxValue: (item.productPrice - Math.round(item.productPrice / (1 + taxRate / 100))) / 100
+        taxValue: (useFlatTax ? taxFromGross(item.productPrice, taxRate) : item.productPrice - Math.round(item.productPrice / (1 + taxRate / 100))) / 100
       })
     }
 
