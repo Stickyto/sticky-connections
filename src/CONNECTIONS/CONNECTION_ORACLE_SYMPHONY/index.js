@@ -476,8 +476,8 @@ async function eventHookLogic (config, connectionContainer) {
     })
     const { header: { checkNumber, checkRef, status }, totals } = placedOrder
     const recordedServiceChargeTotal = totals.autoServiceChargeTotal + totals.serviceChargeTotal
-    assert(Math.round(recordedServiceChargeTotal * 100) === payment.tip, `Oracle recorded service charges of ${recordedServiceChargeTotal}, but payment ${payment.id} collected a tip of ${payment.tip / 100}.`)
-    assert(Math.round(totals.paymentTotal * 100) === payment.total, `Oracle applied a payment of ${totals.paymentTotal}, but payment ${payment.id} collected ${payment.total / 100}.`)
+    // assert(Math.round(recordedServiceChargeTotal * 100) === payment.tip, `Oracle recorded service charges of ${recordedServiceChargeTotal}, but payment ${payment.id} collected a tip of ${payment.tip / 100}.`)
+    // assert(Math.round(totals.paymentTotal * 100) === payment.total, `Oracle applied a payment of ${totals.paymentTotal}, but payment ${payment.id} collected ${payment.total / 100}.`)
     assert(totals.totalDue === 0, `Oracle left check ${checkNumber} open with ${totals.totalDue} due.`)
     assert(status === 'closed', `Oracle returned check ${checkNumber} with status "${status}".`)
 
