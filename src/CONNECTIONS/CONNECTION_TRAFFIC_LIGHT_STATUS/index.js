@@ -2,7 +2,7 @@ const Connection = require('../Connection')
 const { deserialize, isUrl, services } = require('@stickyto/openbox-node-utils')
 const { encode } = require('html-entities')
 
-const ALL_EMAILS = JSON.parse(Buffer.from('WyJzdXBwb3J0QHN0aWNreS50byIsImFzaGxleS53aWxzb25AY29tcGFzcy1ncm91cC5jby51ayIsInplZS5rYXJpbUBsZXZ5LmNvLnVrIiwiaGFycnkucmlkbGV5QGxldnkuY28udWsiLCJrZXZpbi5tYWluYUBsZXZ5LmNvLnVrIiwiYW55YXdpbGxyb3NlMTJAZ21haWwuY29tIiwic2Fha3NoaXNoZXR0eUBnbWFpbC5jb20iLCJtb3NhYmJpci5zLmFkaWJAc3R1Lm1tdS5hYy51ayIsImFvZ3VubW95ZUBnbWFpbC5jb20iXQ==', 'base64').toString('utf8'))
+const ALL_EMAILS = JSON.parse(Buffer.from('WwogICJzdXBwb3J0QHN0aWNreS50byIsCiAgImFzaGxleS53aWxzb25AY29tcGFzcy1ncm91cC5jby51ayIsCiAgInplZS5rYXJpbUBsZXZ5LmNvLnVrIiwKICAiaGFycnkucmlkbGV5QGxldnkuY28udWsiLAogICJrZXZpbi5tYWluYUBsZXZ5LmNvLnVrIiwKICAiYW55YXdpbGxyb3NlMTJAZ21haWwuY29tIiwKICAic2Fha3NoaXNoZXR0eUBnbWFpbC5jb20iLAogICJtb3NhYmJpci5zLmFkaWJAc3R1Lm1tdS5hYy51ayIsCiAgImFvZ3VubW95ZUBnbWFpbC5jb20iLAogICJjaW50aWFqam9obkBnbWFpbC5jb20iLAogICJhbmFlZHVtcEBnbWFpbC5jb20iLAogICJhbGF5YW5kZWlkcmlzQG91dGxvb2suY29tIiwKICAiYW51Y2hham9zZXBoaW5lNkBnbWFpbC5jb20iCl0=', 'base64').toString('utf8'))
 
 const SYSTEMS = [
   {
