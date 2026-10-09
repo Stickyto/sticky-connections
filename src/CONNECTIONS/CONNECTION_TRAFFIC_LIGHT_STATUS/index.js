@@ -77,6 +77,14 @@ const SYSTEMS = [
     sla: 1200,
     emails: [
     ]
+  },
+  {
+    id: 'COORS',
+    name: 'Coors (MDU)',
+    color: '#006AB3',
+    sla: 1200,
+    emails: [
+    ]
   }
 ]
 
