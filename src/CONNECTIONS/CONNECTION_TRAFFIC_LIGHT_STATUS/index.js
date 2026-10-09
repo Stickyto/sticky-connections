@@ -2,7 +2,7 @@ const Connection = require('../Connection')
 const { deserialize, isUrl, services } = require('@stickyto/openbox-node-utils')
 const { encode } = require('html-entities')
 
-const ALL_EMAILS = JSON.parse(Buffer.from('WwogICJzdXBwb3J0QHN0aWNreS50byIsCiAgImFzaGxleS53aWxzb25AY29tcGFzcy1ncm91cC5jby51ayIsCiAgInplZS5rYXJpbUBsZXZ5LmNvLnVrIiwKICAiaGFycnkucmlkbGV5QGxldnkuY28udWsiLAogICJrZXZpbi5tYWluYUBsZXZ5LmNvLnVrIiwKICAiYW55YXdpbGxyb3NlMTJAZ21haWwuY29tIiwKICAic2Fha3NoaXNoZXR0eUBnbWFpbC5jb20iLAogICJtb3NhYmJpci5zLmFkaWJAc3R1Lm1tdS5hYy51ayIsCiAgImFvZ3VubW95ZUBnbWFpbC5jb20iLAogICJjaW50aWFqam9obkBnbWFpbC5jb20iLAogICJhbmFlZHVtcEBnbWFpbC5jb20iLAogICJhbGF5YW5kZWlkcmlzQG91dGxvb2suY29tIiwKICAiYW51Y2hham9zZXBoaW5lNkBnbWFpbC5jb20iCl0=', 'base64').toString('utf8'))
+const ALL_EMAILS = JSON.parse(Buffer.from('WwogICJqYW1lc19tdUBzdGlja3kudG8iLAogICJhc2hsZXkud2lsc29uQGNvbXBhc3MtZ3JvdXAuY28udWsiLAogICJ6ZWUua2FyaW1AbGV2eS5jby51ayIsCiAgImhhcnJ5LnJpZGxleUBsZXZ5LmNvLnVrIiwKICAia2V2aW4ubWFpbmFAbGV2eS5jby51ayIsCiAgImFueWF3aWxscm9zZTEyQGdtYWlsLmNvbSIsCiAgInNhYWtzaGlzaGV0dHlAZ21haWwuY29tIiwKICAibW9zYWJiaXIucy5hZGliQHN0dS5tbXUuYWMudWsiLAogICJhb2d1bm1veWVAZ21haWwuY29tIiwKICAiY2ludGlhampvaG5AZ21haWwuY29tIiwKICAiYW5hZWR1bXBAZ21haWwuY29tIiwKICAiYWxheWFuZGVpZHJpc0BvdXRsb29rLmNvbSIsCiAgImFudWNoYWpvc2VwaGluZTZAZ21haWwuY29tIgpd', 'base64').toString('utf8'))
 
 const SYSTEMS = [
   {
@@ -11,7 +11,7 @@ const SYSTEMS = [
     color: '#e72077',
     sla: 1200,
     emails: [
-      'helpdesk@kappture.co.uk'
+      // 'helpdesk@kappture.co.uk'
     ]
   },
   {
@@ -20,7 +20,7 @@ const SYSTEMS = [
     color: '#e72077',
     sla: 1200,
     emails: [
-      'helpdesk@kappture.co.uk'
+      // 'helpdesk@kappture.co.uk'
     ]
   },
   {
@@ -36,7 +36,7 @@ const SYSTEMS = [
     color: '#ff00bf',
     sla: 1200,
     emails: [
-      'support@boxbar.live'
+      // 'support@boxbar.live'
     ]
   },
   {
