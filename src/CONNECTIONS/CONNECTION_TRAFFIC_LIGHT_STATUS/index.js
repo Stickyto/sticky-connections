@@ -63,6 +63,22 @@ const SYSTEMS = [
     ]
   },
   {
+    id: 'COORS',
+    name: 'Coors (MDU)',
+    color: '#006AB3',
+    sla: 1200,
+    emails: [
+    ]
+  },
+  {
+    id: 'MDU',
+    name: 'MDU',
+    color: '#000000',
+    sla: 1200,
+    emails: [
+    ]
+  },
+  {
     id: 'MU_IT',
     name: '44187 [MU] IT',
     color: '#C50317',
@@ -74,14 +90,6 @@ const SYSTEMS = [
     id: 'MU_NETWORK',
     name: '44187 [MU] Network',
     color: '#C50317',
-    sla: 1200,
-    emails: [
-    ]
-  },
-  {
-    id: 'COORS',
-    name: 'Coors (MDU)',
-    color: '#006AB3',
     sla: 1200,
     emails: [
     ]
