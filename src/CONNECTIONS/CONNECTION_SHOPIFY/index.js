@@ -1,49 +1,48 @@
-const { sum, assert } = require('@stickyto/openbox-node-utils')
+const { assert, isUuid } = require('@stickyto/openbox-node-utils')
 const Connection = require('../Connection')
-// const makeRequest = require('./makeRequest')
 
-async function eventHookLogic(wasSuccessful, config, connectionContainer,) {
-  const { user, application, thing, payment, createEvent } = connectionContainer
-  const [configDomain, configOrderSuccess, configOrderFail] = config
-  const userPaymentId = payment.userPaymentId
+function priceToMinorUnits(price) {
+  const asNumber = Number(price)
+  assert(Number.isFinite(asNumber), `Shopify total_price is not a valid number: ${price}`)
+  return Math.round(asNumber * 100)
+}
 
-  if (config.some(_ => _.length === 0) || !userPaymentId) {
-    return
+function firstString(...values) {
+  const found = values.find(_ => typeof _ === 'string' && _.trim().length > 0)
+  return found ? found.trim() : undefined
+}
+
+function getContact(body) {
+  return {
+    email: firstString(body.email, body.contact_email, body.customer && body.customer.email),
+    phone: firstString(
+      body.phone,
+      body.customer && body.customer.phone,
+      body.billing_address && body.billing_address.phone,
+      body.shipping_address && body.shipping_address.phone
+    )
+  }
+}
+
+async function postJson(privateKey, url, json) {
+  const response = await fetch(
+    url,
+    {
+      method: 'post',
+      headers: {
+        'content-type': 'application/json',
+        'authorization': `Bearer ${privateKey}`
+      },
+      body: JSON.stringify(json)
+    }
+  )
+  const responseText = await response.text()
+
+  if (!response.ok) {
+    throw new Error(`!response.ok: [${url}]: ${responseText}`)
   }
 
-  //   const eventPayload = {
-  //     userId: user.id,
-  //     applicationId: application ? application.id : undefined,
-  //     thingId: thing ? thing.id : undefined,
-  //     paymentId: payment.id,
-  //   }
-
-  //   try {
-  //     const reqUrl = `https://${configDomain}/wp-json/sticky-payment/v1/payment-notification`
-  //     const reqBody = {
-  //       private_key: user.privateKey,
-  //       order_number: userPaymentId,
-  //       order_status: wasSuccessful ? configOrderSuccess : configOrderFail
-  //     }
-  //     global.rdic.logger.log({}, '[CONNECTION_SHOPIFY]', { wasSuccessful, userPaymentId, configDomain, configOrderSuccess, configOrderFail, reqUrl, reqBody })
-
-  //     const response = await makeRequest(
-  //       'post',
-  //       reqUrl,
-  //       reqBody
-  //     )
-  //     createEvent({
-  //       ...eventPayload,
-  //       type: 'CONNECTION_GOOD',
-  //       customData: { id: 'CONNECTION_SHOPIFY', theirId: `Payment ID ${payment.id} / ${userPaymentId} status set to "${response.order_status}".` }
-  //     })
-  //   } catch (e) {
-  //     createEvent({
-  //       ...eventPayload,
-  //       type: 'CONNECTION_BAD',
-  //       customData: { id: 'CONNECTION_SHOPIFY', theirId: userPaymentId, message: e.message }
-  //     })
-  //   }
+  return responseText ? JSON.parse(responseText) : {}
 }
 
 module.exports = new Connection({
@@ -51,9 +50,73 @@ module.exports = new Connection({
   name: 'Shopify',
   color: '#95BF47',
   logo: cdn => `${cdn}/connections/CONNECTION_SHOPIFY.svg`,
-  configNames: ['Domain', 'Access token'],
-  configDefaults: ['xyz.myshopify.com', ''],
-  eventHooks: {
-    'SESSION_CART_PAY': (...args) => eventHookLogic(true, ...args)
+  configNames: ['Flow ID'],
+  configDefaults: [''],
+  methods: {
+    order: {
+      name: 'Order',
+      logic: async ({ connectionContainer, config = [], body }) => {
+        const { user, rdic } = connectionContainer
+        const [applicationId] = config
+        const { apiUrl } = rdic.get('environment')
+        const { email, phone } = getContact(body)
+
+        assert(isUuid(applicationId), 'Flow ID is not a UUID.')
+        assert(typeof body.currency === 'string' && body.currency.length > 0, 'Shopify currency is missing.')
+        assert(body.order_number !== undefined, 'Shopify order_number is missing.')
+
+        const payment = await postJson(
+          user.privateKey,
+          `${apiUrl}/v1/applications/unknown-application-3/payments`,
+          {
+            total: priceToMinorUnits(body.total_price),
+            currency: body.currency,
+            userPaymentId: String(body.order_number),
+            email,
+            phone
+          }
+        )
+
+        const shortLink = await postJson(
+          user.privateKey,
+          `${apiUrl}/v2/short-links`,
+          {
+            whichUrl: `${apiUrl}/go/flow/${applicationId}?paymentId=${payment.id}`,
+            type: 'REDIRECT'
+          }
+        )
+
+        const shares = []
+        if (phone) {
+          shares.push(await postJson(
+            user.privateKey,
+            `${apiUrl}/v2/trigger/share`,
+            {
+              entity: 'short-link',
+              entityId: shortLink.id,
+              destination: 'sms',
+              to: phone
+            }
+          ))
+        }
+        if (email) {
+          shares.push(await postJson(
+            user.privateKey,
+            `${apiUrl}/v2/trigger/share`,
+            {
+              entity: 'short-link',
+              entityId: shortLink.id,
+              destination: 'email',
+              to: email
+            }
+          ))
+        }
+
+        return {
+          shortLink,
+          shares
+        }
+      }
+    }
   }
 })
