@@ -71,14 +71,6 @@ const SYSTEMS = [
     ]
   },
   {
-    id: 'MDU',
-    name: 'MDU',
-    color: '#000000',
-    sla: 1200,
-    emails: [
-    ]
-  },
-  {
     id: 'MU_IT',
     name: '44187 [MU] IT',
     color: '#C50317',
