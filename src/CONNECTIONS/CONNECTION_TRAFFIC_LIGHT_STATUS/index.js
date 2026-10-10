@@ -11,7 +11,7 @@ const SYSTEMS = [
     color: '#e72077',
     sla: 1200,
     emails: [
-      // 'helpdesk@kappture.co.uk'
+      'helpdesk@kappture.co.uk'
     ]
   },
   {
@@ -20,7 +20,7 @@ const SYSTEMS = [
     color: '#e72077',
     sla: 1200,
     emails: [
-      // 'helpdesk@kappture.co.uk'
+      'helpdesk@kappture.co.uk'
     ]
   },
   {
@@ -36,7 +36,7 @@ const SYSTEMS = [
     color: '#ff00bf',
     sla: 1200,
     emails: [
-      // 'support@boxbar.live'
+      'support@boxbar.live'
     ]
   },
   {
@@ -96,6 +96,43 @@ const SYSTEMS = [
   }
 ]
 
+const getEventLinkedIncidentId = event => {
+  if (!event || !event.moreEventIds) return undefined
+  return event.moreEventIds.toArray()[0]
+}
+
+const getCustomDataValue = (customData, key) => {
+  if (!customData) return undefined
+  return customData.readFrom(key)
+}
+
+const sendIncidentEmail = async (rdic, { user, system, thing, event, customData, federatedUser, includeSupplierEmails = false, subjectVerb = 'New' }) => {
+  if (!system) return
+  const emails = [...new Set([
+    ...ALL_EMAILS,
+    ...(includeSupplierEmails && Array.isArray(system.emails) ? system.emails : []),
+    federatedUser && federatedUser.email
+  ].filter(_ => _))]
+  const priority = String(getCustomDataValue(customData, 'Priority') || 'P0').slice(0, 2)
+  const description = String(getCustomDataValue(customData, 'Description') || 'No description supplied.')
+  const photoUrl = deserialize(getCustomDataValue(customData, 'Photo'), user, true)
+  const photoLink = typeof photoUrl === 'string' && isUrl(photoUrl)
+    ? `<p><a href="${encode(photoUrl)}"><strong>View uploaded photo</strong></a></p>`
+    : ''
+  const incidentId = getEventLinkedIncidentId(event) || event.id
+  const subject = `[${priority}] ${subjectVerb} Traffic Light Status incident · ${system.name}`
+  const asset = thing ? `${encode(thing.name || 'Unknown asset')} (${encode(thing.theirId || '?')})` : 'Unknown asset'
+  const message = `
+<p><strong>INC-${incidentId.substring(0, 8).toUpperCase()}</strong></p>
+<p><strong>System:</strong> ${encode(system.name)}</p>
+<p><strong>Asset:</strong> ${asset}</p>
+<p><strong>Priority:</strong> ${encode(priority)}</p>
+<p><strong>Description:</strong> ${encode(description)}</p>
+${photoLink}
+`
+  await Promise.all(emails.map(to => services.mail.quickSend(rdic, { user, subject, message, to })))
+}
+
 module.exports = new Connection({
   id: 'CONNECTION_TRAFFIC_LIGHT_STATUS',
   name: 'Traffic Light Status',
@@ -141,25 +178,32 @@ module.exports = new Connection({
           'Description': customData['Anything else we should know?']
         }
       })
-      if (system && Array.isArray(system.emails)) {
-        const emails = [...new Set([...ALL_EMAILS, ...system.emails, whichFu && whichFu.email].filter(_ => _))]
-        const priority = (customData['This is a...'] || 'P0').slice(0, 2)
-        const description = customData['Anything else we should know?'] || 'No description supplied.'
-        const photoUrl = deserialize(customData['What can you see?'], user, true)
-        const photoLink = typeof photoUrl === 'string' && isUrl(photoUrl)
-          ? `<p><a href="${encode(photoUrl)}"><strong>View uploaded photo</strong></a></p>`
-          : ''
-        const subject = `[${priority}] New Traffic Light Status incident · ${system.name}`
-        const message = `
-<p><strong>INC-${incident.id.substring(0, 8).toUpperCase()}</strong></p>
-<p><strong>System:</strong> ${encode(system.name)}</p>
-<p><strong>Asset:</strong> ${encode(thing.name)} (${encode(thing.theirId)})</p>
-<p><strong>Priority:</strong> ${encode(priority)}</p>
-<p><strong>Description:</strong> ${encode(description)}</p>
-${photoLink}
-`
-        await Promise.all(emails.map(to => services.mail.quickSend(rdic, { user, subject, message, to })))
-      }
+      await sendIncidentEmail(rdic, {
+        user,
+        system,
+        thing,
+        event: incident,
+        customData: incident.customData,
+        federatedUser: whichFu
+      })
+    },
+    'TRAFFIC_LIGHT_STATUS_INCIDENT_ESCALATE': async function (config, connectionContainer) {
+      const { rdic, event, user, thing, customData } = connectionContainer
+      const systemId = thing && thing.customData.get('Traffic Light Status system')
+      const system = SYSTEMS.find(_ => _.id === systemId)
+      const whichFu = event.federatedUserId
+        ? await rdic.dlGetFederatedUser({ userId: user.id, federatedUserId: event.federatedUserId })
+        : undefined
+      await sendIncidentEmail(rdic, {
+        user,
+        system,
+        thing,
+        event,
+        customData,
+        federatedUser: whichFu,
+        includeSupplierEmails: true,
+        subjectVerb: 'Escalated'
+      })
     }
   }
 })
