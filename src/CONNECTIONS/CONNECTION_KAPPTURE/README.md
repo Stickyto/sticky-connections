@@ -14,7 +14,9 @@ All requests use `https://api.eu-west-1.kappture.com`.
 
 Set the flow's **External system ID** to the Kappture tender ID returned by
 `GET /tender`. Set each product's **Your ID** to its Kappture **PLU**. All cart
-items must have a valid mapping. An optional touchpoint external ID supplies the
+items must have a valid mapping. Order products send this number as both `plu`
+and `productId`, with `productGroupId: 1` for numeric mappings, matching Kappture's
+confirmed payload. An optional touchpoint external ID supplies the
 numeric table number.
 
 Prices are tax-inclusive unit prices from the paid cart, converted from minor
@@ -45,5 +47,6 @@ npx jest src/CONNECTIONS/CONNECTION_KAPPTURE/index.test.js --runInBand --config 
 The products **Pull** action authenticates and reads `/product?count=100&page=1`,
 following `totalPages`. It returns a flat JSON array of `{ id, name }` and performs
 no local writes. Each returned `id` is `productId---productGroupId`, which order
-injection accepts as a Kappture product/group mapping. Existing numeric PLU
+injection accepts as a Kappture product/group mapping, sending the product ID as
+both `plu` and `productId` and preserving the returned group ID. Existing numeric PLU
 mappings remain supported. Pull does not assign or change any product's Your ID.

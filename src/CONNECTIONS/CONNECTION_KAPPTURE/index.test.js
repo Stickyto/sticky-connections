@@ -47,7 +47,7 @@ it('authenticates, validates the tender and submits the paid cart using the docu
   expect(order).toEqual({
     sessionId: 7, priceBandId: 2, terminalId: 10, reference: expect.any(Number),
     tableNumber: 12, openDateTime: new Date(1737376496000).toISOString(),
-    products: [{ plu: 987654, productName: 'Coffee', productId: 0, productGroupId: 0, quantity: 2, price: 6, priceBandId: 2, taxRate: 20, taxValue: 1 }],
+    products: [{ plu: 987654, productName: 'Coffee', productId: 987654, productGroupId: 1, quantity: 2, price: 6, priceBandId: 2, taxRate: 20, taxValue: 1 }],
     tenders: [{ tenderId: 3, value: 12 }]
   })
   expect(order.reference).toBeGreaterThanOrEqual(0)
@@ -160,8 +160,7 @@ it('pulls every product page as flat JSON and uses the returned mapping in order
     .mockResolvedValueOnce(response({ processCount: 1 }))
   await hook(config, container)
   const product = JSON.parse(fetch.mock.calls[2][1].body).orders[0].products[0]
-  expect(product).toMatchObject({ productId: 123, productGroupId: 45 })
-  expect(product.plu).toBeUndefined()
+  expect(product).toMatchObject({ plu: 123, productId: 123, productGroupId: 45 })
 })
 
 it('returns an empty list for an empty catalogue', async () => {

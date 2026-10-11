@@ -72,9 +72,12 @@ async function eventHookLogic (config, connectionContainer) {
     for (const item of customData.cart) {
       const ids = String(item.productTheirId).split('---')
       assert(ids.length <= 2, `Invalid Kappture product mapping for '${item.productName}'.`)
-      const productMapping = ids.length === 2
-        ? { productId: integer(ids[0], 'Product ID'), productGroupId: integer(ids[1], 'Product group ID') }
-        : { plu: integer(item.productTheirId, `Kappture PLU for '${item.productName}'`), productId: 0, productGroupId: 0 }
+      const productId = integer(ids[0], `Kappture product ID / PLU for '${item.productName}'`)
+      const productMapping = {
+        plu: productId,
+        productId,
+        productGroupId: ids.length === 2 ? integer(ids[1], 'Product group ID') : 1
+      }
       const quantity = integer(item.quantity, `Quantity for '${item.productName}'`, 32767)
       const price = money(item.productPrice)
       let taxRate = user.flatTax
