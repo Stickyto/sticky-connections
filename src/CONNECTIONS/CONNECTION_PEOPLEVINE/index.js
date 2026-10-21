@@ -14,7 +14,7 @@ module.exports = new Connection({
       name: 'Verify',
       logic: async ({ connectionContainer, config = [], body = {} }) => {
         const { rdic, user } = connectionContainer
-        let number = typeof body.number === 'string' || typeof body.number === 'number' ? String(body.number).trim() : ''
+        const number = typeof body.number === 'string' || typeof body.number === 'number' ? String(body.number).trim() : ''
         const name = typeof body.name === 'string' ? body.name.trim() : ''
 
         const { sessionId } = body
@@ -23,8 +23,8 @@ module.exports = new Connection({
         assert(session, 'session did not resolve!')
         const userSector = session.userSectors.readFrom(user.id)
 
-        assert(number && name, `Membership number ${number} isn't right - sorry (1).`)
-        number = parseInt(number, 10)
+        assert(/^\d+$/.test(number) && Number.isSafeInteger(Number(number)) && Number(number) > 0 && name,
+          `Membership number ${number} isn't right - sorry (1).`)
 
         const [endpoint, username, password, companyId] = config
         assert(
@@ -57,33 +57,33 @@ module.exports = new Connection({
           method: 'GET',
           headers
         })
+        const matchesNameAndStatus = member => member?.status === 'active' &&
+          member.customer?.first_name?.trim().toLowerCase() === name.toLowerCase()
+        let member
         if (directResponse.status === 200) {
-          const member = await directResponse.json()
-          if (member?.customer?.first_name?.trim().toLowerCase() === name.toLowerCase()) {
-            userSector.writeTo('ID', member.customer_id)
-            userSector.writeTo(`${user.name} Peoplevine membership name`, name)
-            userSector.writeTo(`${user.name} Peoplevine membership number`, number)
-            if (!session.crossUserSector.readFrom('name')) {
-              session.crossUserSector.writeTo('name', name)
-            }
-            await rdic.get('datalayerRelational').updateOne('sessions', session.id, session.toDatalayerRelational(['userSectors', 'crossUserSector']))
-            return { number: member.card_id, name: member.customer.first_name.trim() }
+          const directMember = await directResponse.json()
+          if (Number(directMember?.id) === Number(number) && matchesNameAndStatus(directMember)) {
+            member = directMember
           }
         }
 
-        const query = new URLSearchParams({ Customer_Id: number, Status: 'active' })
-        const response = await fetch(`${api}/memberships/members?${query}`, { method: 'GET', headers })
-        assert(response.ok, `PeopleVine membership lookup failed (${response.status}).`)
-        const members = await response.json()
-        assert(Array.isArray(members), 'PeopleVine resolved an invalid membership response.')
-        const member = members.find(member =>
-          member?.customer_id === number && member.status === 'active' &&
-          member.customer?.first_name?.trim().toLowerCase() === name.toLowerCase()
-        )
+        // PeopleVine has separate member, printed card and customer identifiers.
+        // Query each separately: combining filters would require every ID to match.
+        for (const [filter, field] of [['Card_Id', 'card_id'], ['Customer_Id', 'customer_id']]) {
+          if (member) break
+          const query = new URLSearchParams({ [filter]: number, Status: 'active' })
+          const response = await fetch(`${api}/memberships/members?${query}`, { method: 'GET', headers })
+          if (response.status === 204) continue
+          assert(response.ok, `PeopleVine membership lookup failed (${response.status}).`)
+          const members = await response.json()
+          assert(Array.isArray(members), 'PeopleVine resolved an invalid membership response.')
+          member = members.find(candidate => matchesNameAndStatus(candidate) &&
+            (field === 'card_id' ? String(candidate[field]) === number : Number(candidate[field]) === Number(number)))
+        }
         assert(member, `Membership number ${number} isn't right - sorry (2).`)
         userSector.writeTo('ID', member.customer_id)
         userSector.writeTo(`${user.name} Peoplevine membership name`, name)
-        userSector.writeTo(`${user.name} Peoplevine membership number`, number)
+        userSector.writeTo(`${user.name} Peoplevine membership number`, Number(number))
         if (!session.crossUserSector.readFrom('name')) {
           session.crossUserSector.writeTo('name', name)
         }
