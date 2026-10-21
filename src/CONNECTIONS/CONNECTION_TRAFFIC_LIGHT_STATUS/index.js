@@ -95,7 +95,7 @@ const getEventLinkedIncidentId = event => {
 
 const getCustomDataValue = (customData, key) => {
   if (!customData) return undefined
-  return customData.readFrom(key)
+  return typeof customData.get === 'function' ? customData.get(key) : customData[key]
 }
 
 const sendIncidentEmail = async (rdic, { user, system, thing, event, customData, federatedUser, includeSupplierEmails = false, subjectVerb = 'New' }) => {
