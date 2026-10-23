@@ -28,7 +28,8 @@
   "scripts": {
     "symlink": "rm -rf node_modules/openbox-*; rm -rf node_modules/sticky-*; ln -s $(pwd)/../openbox-entities node_modules/openbox-entities;",
     "test": "jest",
-    "test:peoplevine:integration": "node --env-file-if-exists=.env --test src/CONNECTIONS/CONNECTION_PEOPLEVINE/integration.cjs"
+    "test:peoplevine:integration": "node --env-file-if-exists=.env --test src/CONNECTIONS/CONNECTION_PEOPLEVINE/integration.cjs",
+    "test:tevalis:integration": "node --env-file-if-exists=.env --test src/CONNECTIONS/CONNECTION_TEVALIS/integration.cjs"
   },
   "jest": {
     "setupFiles": [

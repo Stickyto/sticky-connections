@@ -1,0 +1,86 @@
+{
+  "SiteID": 10979,
+  "Products": [
+    {
+      "ProductId": 1003,
+      "ProductName": "Coke",
+      "Description": "",
+      "ProductGroupId": 27,
+      "ProductGroupName": "Soft Drinks",
+      "ProductTypeId": 17,
+      "ProductTypeName": "Beverage",
+      "IsVirtuallySellable": true,
+      "IsAlcohol": false,
+      "AlcoholPercent": 0.0,
+      "ThirdPartyReference": "",
+      "ProductInfo": null,
+      "CostPricePerSKU": 0.0,
+      "ImageSaveDate": null,
+      "Prices": [
+        {
+          "PriceId": 4,
+          "PriceGroupID": 2,
+          "MeasureID": 18,
+          "GrossPrice": 2.0,
+          "Barcode": "",
+          "TaxGroupID": 1005,
+          "PLU": "1003_18_2",
+          "ProductID": 1003,
+          "ProductName": "Coke",
+          "Calories": 0,
+          "CostPrice": 0.0,
+          "OptionGroups": [],
+          "DefaultOptions": []
+        },
+        {
+          "PriceId": 5,
+          "PriceGroupID": 2,
+          "MeasureID": 19,
+          "GrossPrice": 3.5,
+          "Barcode": "",
+          "TaxGroupID": 1005,
+          "PLU": "1003_19_2",
+          "ProductID": 1003,
+          "ProductName": "Coke",
+          "Calories": 0,
+          "CostPrice": 0.0,
+          "OptionGroups": [],
+          "DefaultOptions": []
+        }
+      ]
+    },
+    {
+      "ProductId": 1014,
+      "ProductName": "Cheese Burger",
+      "Description": "",
+      "ProductGroupId": 29,
+      "ProductGroupName": "Burgers",
+      "ProductTypeId": 18,
+      "ProductTypeName": "Food",
+      "IsVirtuallySellable": true,
+      "IsAlcohol": false,
+      "AlcoholPercent": 0.0,
+      "ThirdPartyReference": "",
+      "ProductInfo": null,
+      "CostPricePerSKU": 0.0,
+      "ImageSaveDate": null,
+      "Prices": [
+        {
+          "PriceId": 25,
+          "PriceGroupID": 2,
+          "MeasureID": 13,
+          "GrossPrice": 8.99,
+          "Barcode": "",
+          "TaxGroupID": 1005,
+          "PLU": "1014_13_2",
+          "ProductID": 1014,
+          "ProductName": "Cheese Burger",
+          "Calories": 0,
+          "CostPrice": 0.0,
+          "OptionGroups": [],
+          "DefaultOptions": []
+        }
+      ]
+    }
+  ]
+}

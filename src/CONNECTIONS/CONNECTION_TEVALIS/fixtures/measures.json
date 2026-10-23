@@ -1,0 +1,23 @@
+{
+  "SiteID": 10979,
+  "Measures": [
+    {
+      "MeasureID": 13,
+      "Name": "Each",
+      "OfSKU": 1.0,
+      "ShortName": ""
+    },
+    {
+      "MeasureID": 18,
+      "Name": "284ml/50000ml",
+      "OfSKU": 0.0057,
+      "ShortName": "284ml"
+    },
+    {
+      "MeasureID": 19,
+      "Name": "568ml/50000ml",
+      "OfSKU": 0.0114,
+      "ShortName": "568ml"
+    }
+  ]
+}
