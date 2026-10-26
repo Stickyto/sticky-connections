@@ -37,8 +37,7 @@ async function request (path, config, body) {
   const headers = { ...config.headers }
   if (method === 'POST') {
     assert(typeof config.guid2 === 'string' && config.guid2.trim(), 'Tevalis GUID2 is required for placing orders.')
-    // Tevalis compares GUID2 case-sensitively and expects canonical lowercase.
-    headers.GUID2 = config.guid2.trim().toLowerCase()
+    headers.GUID2 = config.guid2.trim()
   }
   const res = await fetch(`${API_HOST}/${path}`, {
     method,
@@ -78,7 +77,16 @@ async function eventHookLogic (config, connectionContainer) {
       .map(row => new Product().fromDatalayerRelational(row))
     let cartTotal = 0
     const orderItems = customData.cart.map(item => {
-      const priceId = integer(item.productTheirId, `Tevalis price ID for '${item.productName}'`)
+      let theirId = item.productTheirId
+      if (!theirId) {
+        const selectedOptions = (item.questions || []).flatMap(question => {
+          const answers = Array.isArray(question.answer) ? question.answer : [question.answer]
+          return (question.options || []).filter(option => answers.includes(option.name) && option.theirId)
+        })
+        assert(selectedOptions.length <= 1, `Multiple Tevalis price IDs selected for '${item.productName}'.`)
+        theirId = selectedOptions[0] && selectedOptions[0].theirId
+      }
+      const priceId = integer(theirId, `Tevalis price ID for '${item.productName}'`)
       const quantity = integer(item.quantity, `Quantity for '${item.productName}'`)
       money(item.productPrice)
       const gross = item.productPrice * quantity

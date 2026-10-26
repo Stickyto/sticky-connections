@@ -56,6 +56,69 @@ it('balances bill discounts and tips using the paid total', async () => {
   })
 })
 
+function noodlesCart () {
+  return [{
+    productId: '439dc826-b9cc-4e3a-a22b-0fda5d55c985',
+    productName: 'Singapore Noodles', productPrice: 1745, productCurrency: 'GBP', productTagsV2: [], quantity: 1,
+    questions: [{
+      type: 'option', question: 'Flavour', answer: 'Chicken', connectionHandleAsProduct: false,
+      options: [
+        { name: 'Chicken', delta: 0, subProducts: [], forSale: true, theirId: '65118' },
+        { name: 'Prawns', delta: 0, subProducts: [], forSale: true, theirId: '64465' },
+        { name: 'Vegetarian', delta: 0, subProducts: [], forSale: true, theirId: '64682' }
+      ]
+    }]
+  }]
+}
+
+it.each([['Chicken', 65118], ['Prawns', 64465], ['Vegetarian', 64682]])('uses the selected %s option price ID when the cart item has no productTheirId', async (answer, priceId) => {
+  container.customData.cart = noodlesCart()
+  container.customData.cart[0].questions[0].answer = answer
+  container.payment.total = 1745
+  container.user.flatTax = 20
+  await hook(config, container)
+  expect(fetch).toHaveBeenCalledTimes(1)
+  expect(JSON.parse(fetch.mock.calls[0][1].body).OrderItems).toEqual([
+    { PriceId: priceId, ProductName: 'Singapore Noodles', Quantity: 1, TotalGross: 17.45, VatRate: 20 }
+  ])
+  expect(container.createEvent).toHaveBeenCalledWith(expect.objectContaining({ type: 'CONNECTION_GOOD' }))
+})
+
+it('keeps the top-level price ID when selected options also have mappings', async () => {
+  container.customData.cart[0].questions = noodlesCart()[0].questions
+  await hook(config, container)
+  expect(JSON.parse(fetch.mock.calls[0][1].body).OrderItems[0].PriceId).toBe(987654)
+})
+
+it('supports the two-option Question 1 cart without a top-level productTheirId', async () => {
+  container.customData.cart = noodlesCart()
+  const item = container.customData.cart[0]
+  item.questions[0].question = 'Question 1'
+  item.questions[0].options.pop()
+  container.payment.total = 1745
+  container.rdic.get().read.mockResolvedValue([{ id: item.productId, media: '[]', questions: '[]', tags_v2: ['vat--20'] }])
+  await hook(config, container)
+  expect(fetch).toHaveBeenCalledTimes(1)
+  expect(JSON.parse(fetch.mock.calls[0][1].body).OrderItems).toEqual([
+    { PriceId: 65118, ProductName: 'Singapore Noodles', Quantity: 1, TotalGross: 17.45, VatRate: 20 }
+  ])
+  expect(container.createEvent).toHaveBeenCalledWith(expect.objectContaining({ type: 'CONNECTION_GOOD' }))
+})
+
+it.each([
+  ['unmatched answer', questions => { questions[0].answer = 'Beef' }],
+  ['unmapped selected option', questions => { delete questions[0].options[0].theirId }],
+  ['invalid selected price ID', questions => { questions[0].options[0].theirId = '65118abc' }],
+  ['multiple selected price IDs', questions => { questions.push({ ...questions[0], answer: 'Prawns' }) }]
+])('rejects an option price mapping with %s before submitting', async (_, change) => {
+  delete container.customData.cart[0].productTheirId
+  container.customData.cart[0].questions = noodlesCart()[0].questions
+  change(container.customData.cart[0].questions)
+  await hook(config, container)
+  expect(fetch).not.toHaveBeenCalled()
+  expect(container.createEvent).toHaveBeenCalledWith(expect.objectContaining({ type: 'CONNECTION_BAD' }))
+})
+
 it('supports free products, untagged VAT, no table and optional configuration', async () => {
   container.payment = { ...container.payment, total: 0, name: undefined, extra: undefined }
   container.customData.cart[0].productPrice = 0
@@ -118,11 +181,15 @@ it.each([0, 1, 2, 3, 4])('requires order configuration field %s', async field =>
   expect(container.createEvent).toHaveBeenCalledWith(expect.objectContaining({ type: 'CONNECTION_BAD' }))
 })
 
-it('normalizes GUID2 casing and whitespace to avoid Tevalis write authentication failures', async () => {
+it.each([
+  '0123456789ABCDEF0123456789ABCDEF',
+  '0123456789abcdef0123456789abcdef',
+  '01234567-89Ab-CdEf-0123-456789aBcDeF'
+])('preserves GUID2 casing and format while trimming whitespace: %s', async guid2 => {
   const sandboxConfig = [...config]
-  sandboxConfig[3] = ' B2d67bca-b1d5-4687-bed5-ef18dd351f99 '
+  sandboxConfig[3] = ` ${guid2} `
   await hook(sandboxConfig, container)
-  expect(fetch.mock.calls[0][1].headers.GUID2).toBe('b2d67bca-b1d5-4687-bed5-ef18dd351f99')
+  expect(fetch.mock.calls[0][1].headers.GUID2).toBe(guid2)
 })
 
 it('allows Tevalis to select the terminal when none is configured', async () => {
