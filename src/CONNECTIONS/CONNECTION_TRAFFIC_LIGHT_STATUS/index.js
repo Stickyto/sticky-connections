@@ -2,8 +2,6 @@ const Connection = require('../Connection')
 const { deserialize, isUrl, services } = require('@stickyto/openbox-node-utils')
 const { encode } = require('html-entities')
 
-const ALL_EMAILS = JSON.parse(Buffer.from('WwogICJqYW1lc19tdUBzdGlja3kudG8iLAogICJhc2hsZXkud2lsc29uQGNvbXBhc3MtZ3JvdXAuY28udWsiLAogICJ6ZWUua2FyaW1AbGV2eS5jby51ayIsCiAgImhhcnJ5LnJpZGxleUBsZXZ5LmNvLnVrIiwKICAia2V2aW4ubWFpbmFAbGV2eS5jby51ayIsCiAgImFueWF3aWxscm9zZTEyQGdtYWlsLmNvbSIsCiAgInNhYWtzaGlzaGV0dHlAZ21haWwuY29tIiwKICAibW9zYWJiaXIucy5hZGliQHN0dS5tbXUuYWMudWsiLAogICJhb2d1bm1veWVAZ21haWwuY29tIiwKICAiY2ludGlhampvaG5AZ21haWwuY29tIiwKICAiYW5hZWR1bXBAZ21haWwuY29tIiwKICAiYWxheWFuZGVpZHJpc0BvdXRsb29rLmNvbSIsCiAgImFudWNoYWpvc2VwaGluZTZAZ21haWwuY29tIgpd', 'base64').toString('utf8'))
-
 const SYSTEMS = [
   {
     id: 'KAPPTURE',
@@ -98,18 +96,18 @@ const getCustomDataValue = (customData, key) => {
   return typeof customData.get === 'function' ? customData.get(key) : customData[key]
 }
 
-const sendIncidentEmail = async (rdic, { user, system, thing, event, customData, federatedUser, includeSupplierEmails = false, subjectVerb = 'New' }) => {
+const sendIncidentEmail = async (rdic, { user, system, thing, event, customData, federatedUser, includeSystemEmails = false, subjectVerb = 'New' }) => {
   if (!system) return
   const emails = [...new Set([
-    ...ALL_EMAILS,
-    ...(includeSupplierEmails && Array.isArray(system.emails) ? system.emails : []),
+    ...user.customData.get('Traffic Light Status incident emails') || [],
+    ...(includeSystemEmails && Array.isArray(system.emails) ? system.emails : []),
     federatedUser && federatedUser.email
   ].filter(_ => _))]
   const priority = String(getCustomDataValue(customData, 'Priority') || 'P0').slice(0, 2)
   const description = String(getCustomDataValue(customData, 'Description') || 'No description supplied.')
   const photoUrl = deserialize(getCustomDataValue(customData, 'Photo'), user, true)
   const photoLink = typeof photoUrl === 'string' && isUrl(photoUrl)
-    ? `<p><a href="${encode(photoUrl)}"><strong>View uploaded photo</strong></a></p>`
+    ? `<p><a href="${encode(photoUrl)}"><strong>View photo</strong></a></p>`
     : ''
   const incidentId = getEventLinkedIncidentId(event) || event.id
   const subject = `[${priority}] ${subjectVerb} Traffic Light Status incident · ${system.name}`
@@ -193,7 +191,7 @@ module.exports = new Connection({
         event,
         customData,
         federatedUser: whichFu,
-        includeSupplierEmails: true,
+        includeSystemEmails: true,
         subjectVerb: 'Escalated'
       })
     }
