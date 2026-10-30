@@ -205,6 +205,15 @@ async function eventHookLogic (config, connectionContainer) {
     payment.userPaymentId = r.data.sale_id
     await rdic.get('datalayerRelational').updateOne('payments', payment.id, payment.toDatalayerRelational(['user_payment_id']))
 
+    await createEvent({
+      type: 'CONNECTION_GOOD',
+      userId: user.id,
+      paymentId: event.paymentId,
+      applicationId: application ? application.id : undefined,
+      thingId: thing ? thing.id : undefined,
+      customData: {id: 'CONNECTION_SUMUP', theirId: r.data.sale_id}
+    })
+
   } catch (e) {
     goFail(e)
   }
