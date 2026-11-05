@@ -107,7 +107,8 @@ async function eventHookLogic (config, connectionContainer) {
     } catch (_) {
       throw new Error(`SwiftPOS returned invalid JSON: ${responseBody}`)
     }
-    assert(typeof response.orderID === 'number', `SwiftPOS response does not contain a numeric orderID.\n\n${responseBody}`)
+    assert(response && response.orderSuccessful !== false, `SwiftPOS rejected order: ${(response && response.message) || responseBody}`)
+    assert(Number.isInteger(response.orderID) && response.orderID > 0, `SwiftPOS response does not contain a positive integer orderID.\n\n${responseBody}`)
 
     createEvent({
       type: 'CONNECTION_GOOD',

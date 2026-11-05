@@ -38,13 +38,79 @@ beforeEach(() => {
 
 afterEach(() => { global.fetch = originalFetch })
 
-async function submit () {
+async function submit (expectedEventType = 'CONNECTION_GOOD') {
   const config = [...connection.configDefaults]
   config[3] = 'encrypted-key'
   await connection.eventHooks.SESSION_CART_PAY(config, container)
-  expect(container.createEvent).toHaveBeenCalledWith(expect.objectContaining({ type: 'CONNECTION_GOOD' }))
+  expect(container.createEvent).toHaveBeenCalledWith(expect.objectContaining({ type: expectedEventType }))
   return JSON.parse(fetch.mock.calls[0][1].body)
 }
+
+it('records the reported terminal rejection as a failure even when HTTP succeeds', async () => {
+  const response = {
+    orderID: 0,
+    receiptID: 0,
+    preOrderID: null,
+    receiptText: null,
+    date: '2026-11-04T11:00:54.9964711',
+    orderSuccessful: false,
+    message: 'Order item/s 2376, 2374 do not exist at the SwiftPOS Terminal. Please check the ID/s are valid and ask for a Full Update of the terminal to be done. Items with invalid IDs can only be processed if a description is provided.',
+    posTransactionId: null,
+    receiptImage: null
+  }
+  global.fetch.mockResolvedValue({ ok: true, text: async () => JSON.stringify(response) })
+
+  await submit('CONNECTION_BAD')
+
+  expect(container.createEvent).toHaveBeenCalledTimes(1)
+  expect(container.createEvent).toHaveBeenCalledWith(expect.objectContaining({
+    paymentId: 'payment',
+    customData: {
+      id: 'CONNECTION_SWIFTPOS',
+      message: `SwiftPOS rejected order: ${response.message}`
+    }
+  }))
+})
+
+it('rejects an unsuccessful order even when it has a positive order ID', async () => {
+  global.fetch.mockResolvedValue({
+    ok: true,
+    text: async () => JSON.stringify({ orderID: 123, orderSuccessful: false, message: 'Order rejected' })
+  })
+
+  await submit('CONNECTION_BAD')
+
+  expect(container.createEvent).toHaveBeenCalledTimes(1)
+})
+
+it.each([0, -1, 1.5, '123', null, undefined])('rejects an invalid order ID (%s) even when success is reported', async orderID => {
+  global.fetch.mockResolvedValue({
+    ok: true,
+    text: async () => JSON.stringify({ orderID, orderSuccessful: true })
+  })
+
+  await submit('CONNECTION_BAD')
+
+  expect(container.createEvent).toHaveBeenCalledTimes(1)
+  expect(container.createEvent).toHaveBeenCalledWith(expect.objectContaining({
+    customData: {
+      id: 'CONNECTION_SWIFTPOS',
+      message: expect.stringContaining('positive integer orderID')
+    }
+  }))
+})
+
+it('records success when SwiftPOS reports success with a positive order ID', async () => {
+  const response = { orderID: 123, orderSuccessful: true }
+  global.fetch.mockResolvedValue({ ok: true, text: async () => JSON.stringify(response) })
+
+  await submit()
+
+  expect(container.createEvent).toHaveBeenCalledTimes(1)
+  expect(container.createEvent).toHaveBeenCalledWith(expect.objectContaining({
+    customData: { id: 'CONNECTION_SWIFTPOS', theirId: JSON.stringify(response, null, 2) }
+  }))
+})
 
 it('injects each checklist selection as a product using its option ID, even when the product flag is false', async () => {
   const payload = await submit()
