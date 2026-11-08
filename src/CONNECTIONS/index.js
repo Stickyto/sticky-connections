@@ -161,6 +161,10 @@ const CONNECTIONS = new Map([
     require('./CONNECTION_NEON')
   ],
   [
+    'CONNECTION_WHATSAPP',
+    require('./CONNECTION_WHATSAPP')
+  ],
+  [
     'CONNECTION_API',
     require('./CONNECTION_API')
   ],
