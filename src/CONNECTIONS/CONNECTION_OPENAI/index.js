@@ -2,7 +2,7 @@ const path = require('node:path')
 
 const { assert, uuid, getNow } = require('@stickyto/openbox-node-utils')
 const { FederatedUser, Event, MagicBucket } = require('openbox-entities')
-const { default: PROMPT_CHAT } = require('./PROMPT_CHAT')
+const PROMPT_CHAT = require('./PROMPT_CHAT')
 const Connection = require('../Connection')
 const _ = require('../../_')
 
