@@ -1,7 +1,7 @@
 const { assert, isUuid } = require('@stickyto/openbox-node-utils')
 const Connection = require('../Connection')
 
-const TEST_FORCE_LOYALTY = true
+const TEST_FORCE_LOYALTY = false
 
 function money (value, label) {
   assert(Number.isSafeInteger(value) && value >= 0, `${label} must be a non-negative amount in minor currency units.`)
@@ -52,10 +52,13 @@ async function eventHookLogic (config, connectionContainer) {
     assert(!isNaN(customerNumber), 'No validated Neon membership number was found in the payment session.')
     reference = payment.id.replace(/-/g, '').slice(0, 25)
     // Integer minor units: { 'Neon points': 100 } requests a 1.00 redemption.
-    const rawLoyaltyTotal = TEST_FORCE_LOYALTY ? payment.total : payment.customDataPublic?.get('Neon points')
+    const selectedPoints = payment.customDataPublic?.get('Neon points')
+    const rawLoyaltyTotal = selectedPoints ?? (TEST_FORCE_LOYALTY ? payment.total : 0)
     const requestedPoints = parseInt(rawLoyaltyTotal, 10) || 0
     const availablePoints = parseInt(userSector.readFrom(`${user.name} loyalty points available`), 10) || 0
-    const loyaltyTotal = Math.max(0, Math.min(requestedPoints, payment.total, availablePoints))
+    // Selected points are already included in the discount; payment.total is the remaining cash charge.
+    const redemptionLimit = selectedPoints === undefined ? payment.total : (payment.discount || 0)
+    const loyaltyTotal = Math.max(0, Math.min(requestedPoints, redemptionLimit, availablePoints))
     const body = {
       CustomerNumber: customerNumber,
       Item: { Id: itemNumber, Name: null, FixedPrice: false, Redeemable: true },
